@@ -90,8 +90,22 @@ export default function AdminRolesPage() {
 
   async function changeRole(userId: string, newRole: string) {
     setUpdatingId(userId)
-    await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
-    setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole as UserRole } : u))
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      const res = await fetch('/api/change-role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, newRole, adminEmail: user?.email }),
+      })
+      const result = await res.json()
+      if (result.ok) {
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole as UserRole } : u))
+      } else {
+        alert('Greška: ' + (result.error || 'Nepoznata greška'))
+      }
+    } catch (err) {
+      alert('Greška pri promjeni role')
+    }
     setUpdatingId(null)
   }
 
