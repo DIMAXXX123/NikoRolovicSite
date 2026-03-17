@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'moderator' | 'admin'
+export type UserRole = 'student' | 'moderator' | 'admin' | 'creator'
 export type PhotoStatus = 'pending' | 'approved' | 'rejected'
 
 export interface VerifiedStudent {

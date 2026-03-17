@@ -142,6 +142,16 @@
   animation: shimmer 1.5s infinite;
 }
 
+/* Slide down (for toasts) */
+@keyframes slideDown {
+  from { opacity: 0; transform: translate(-50%, -20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out;
+}
+
 /* ============================================
    SUCCESS ANIMATION
    ============================================ */
@@ -229,4 +239,17 @@
 }
 .theme-btn:active {
   transform: scale(0.95);
+}
+
+/* ============================================
+   PERFORMANCE MODE
+   ============================================ */
+body.perf-mode * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Page content transition */
+.page-content-transition {
+  transition: opacity 0.15s ease-in-out;
 }

@@ -1,20 +1,98 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
-import { BookOpen, ChevronRight } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { BookOpen, ChevronRight, ChevronLeft, Plus, X, Play, Brain, RotateCcw } from 'lucide-react'
 import type { Lecture, Profile } from '@/lib/types'
+
+const DEFAULT_SUBJECTS = [
+  { name: 'Fizika', emoji: '⚛️' },
+  { name: 'Matematika', emoji: '📐' },
+  { name: 'CSBH', emoji: '📖' },
+  { name: 'Hemija', emoji: '🧪' },
+  { name: 'Engleski', emoji: '🇬🇧' },
+  { name: 'Italjanski', emoji: '🇮🇹' },
+  { name: 'Fizicko', emoji: '🏃' },
+  { name: 'Likovno', emoji: '🎨' },
+  { name: 'Biologija', emoji: '🧬' },
+  { name: 'Istorija', emoji: '🏛️' },
+  { name: 'Geografija', emoji: '🌍' },
+]
+
+const OPTIONAL_SUBJECTS = [
+  { name: 'Njemacki', emoji: '🇩🇪' },
+  { name: 'Spanski', emoji: '🇪🇸' },
+  { name: 'Izb_spanski', emoji: '🇪🇸' },
+]
+
+type ViewState = 'subjects' | 'lectures' | 'lecture' | 'quiz'
+
+interface FlashCard {
+  question: string
+  answer: string
+}
+
+function generateFlashcards(lecture: Lecture): FlashCard[] {
+  const lines = lecture.content.split('\n').filter(l => l.trim().length > 20)
+  const cards: FlashCard[] = []
+
+  for (let i = 0; i < Math.min(lines.length, 5); i++) {
+    const line = lines[i].trim()
+    if (line.includes(':') || line.includes('-') || line.includes('–')) {
+      const sep = line.includes(':') ? ':' : line.includes('–') ? '–' : '-'
+      const parts = line.split(sep)
+      if (parts.length >= 2 && parts[0].trim().length > 3) {
+        cards.push({
+          question: parts[0].trim().replace(/^[-•*]\s*/, ''),
+          answer: parts.slice(1).join(sep).trim(),
+        })
+      }
+    }
+  }
+
+  if (cards.length === 0) {
+    const sentences = lecture.content.split(/[.!?]+/).filter(s => s.trim().length > 15).slice(0, 4)
+    sentences.forEach((s, i) => {
+      const trimmed = s.trim()
+      const words = trimmed.split(' ')
+      if (words.length >= 4) {
+        const blankIdx = Math.floor(words.length / 2)
+        const answer = words[blankIdx]
+        const question = words.map((w, j) => j === blankIdx ? '______' : w).join(' ')
+        cards.push({ question, answer })
+      }
+    })
+  }
+
+  if (cards.length === 0) {
+    cards.push({
+      question: `Šta je glavna tema lekcije "${lecture.title}"?`,
+      answer: `Ova lekcija pokriva temu: ${lecture.subject} - ${lecture.title}`,
+    })
+  }
+
+  return cards
+}
 
 export default function LecturesPage() {
   const [lectures, setLectures] = useState<Lecture[]>([])
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [selectedClass, setSelectedClass] = useState<number>(1)
+  const [view, setView] = useState<ViewState>('subjects')
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null)
   const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null)
   const [loading, setLoading] = useState(true)
+  const [extraSubjects, setExtraSubjects] = useState<string[]>([])
+  const [showAddSubject, setShowAddSubject] = useState(false)
+  const [flashcards, setFlashcards] = useState<FlashCard[]>([])
+  const [currentCard, setCurrentCard] = useState(0)
+  const [flipped, setFlipped] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
+    const saved = localStorage.getItem('extra_subjects')
+    if (saved) setExtraSubjects(JSON.parse(saved))
     loadData()
   }, [])
 
@@ -26,51 +104,175 @@ export default function LecturesPage() {
         .select('*')
         .eq('id', user.id)
         .single()
-      if (profileData) {
-        setProfile(profileData)
-        setSelectedClass(profileData.class_number)
-      }
+      if (profileData) setProfile(profileData)
     }
     setLoading(false)
   }
 
-  useEffect(() => {
-    loadLectures()
-  }, [selectedClass])
-
-  async function loadLectures() {
+  const loadLectures = useCallback(async (subject: string) => {
+    if (!profile) return
     const { data } = await supabase
       .from('lectures')
       .select('*')
-      .eq('class_number', selectedClass)
+      .eq('class_number', profile.class_number)
+      .eq('subject', subject)
       .order('created_at', { ascending: false })
-
     if (data) setLectures(data)
+  }, [profile])
+
+  function handleSubjectTap(subject: string) {
+    setSelectedSubject(subject)
+    setView('lectures')
+    loadLectures(subject)
   }
 
-  // Group by subject
-  const groupedBySubject = lectures.reduce((acc, lecture) => {
-    if (!acc[lecture.subject]) acc[lecture.subject] = []
-    acc[lecture.subject].push(lecture)
-    return acc
-  }, {} as Record<string, Lecture[]>)
+  function handleLectureTap(lecture: Lecture) {
+    setSelectedLecture(lecture)
+    setView('lecture')
+  }
 
-  if (selectedLecture) {
+  function handleQuiz(lecture: Lecture) {
+    const cards = generateFlashcards(lecture)
+    setFlashcards(cards)
+    setCurrentCard(0)
+    setFlipped(false)
+    setView('quiz')
+  }
+
+  function goBack() {
+    if (view === 'quiz') {
+      setView('lecture')
+    } else if (view === 'lecture') {
+      setView('lectures')
+      setSelectedLecture(null)
+    } else if (view === 'lectures') {
+      setView('subjects')
+      setSelectedSubject(null)
+    }
+  }
+
+  function addSubject(name: string) {
+    const updated = [...extraSubjects, name]
+    setExtraSubjects(updated)
+    localStorage.setItem('extra_subjects', JSON.stringify(updated))
+  }
+
+  function removeSubject(name: string) {
+    const updated = extraSubjects.filter(s => s !== name)
+    setExtraSubjects(updated)
+    localStorage.setItem('extra_subjects', JSON.stringify(updated))
+  }
+
+  const allSubjects = [
+    ...DEFAULT_SUBJECTS,
+    ...OPTIONAL_SUBJECTS.filter(s => extraSubjects.includes(s.name)),
+  ]
+
+  const subjectLectureCounts = lectures.length > 0 ? {} : {}
+  // We don't have all counts preloaded; show them in the subject grid when available
+
+  const availableOptional = OPTIONAL_SUBJECTS.filter(s => !extraSubjects.includes(s.name))
+
+  // ========== QUIZ VIEW ==========
+  if (view === 'quiz' && selectedLecture) {
+    const card = flashcards[currentCard]
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <button onClick={goBack} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
+          <ChevronLeft className="w-4 h-4" /> Nazad na lekciju
+        </button>
+
+        <div className="text-center space-y-1">
+          <h1 className="text-xl font-bold gradient-text">Provjeri znanje</h1>
+          <p className="text-xs text-muted-foreground">{selectedLecture.title}</p>
+          <p className="text-xs text-muted-foreground">{currentCard + 1} / {flashcards.length}</p>
+        </div>
+
+        {card && (
+          <div
+            className="relative min-h-[220px] cursor-pointer perspective-1000"
+            onClick={() => setFlipped(!flipped)}
+          >
+            <div className={`w-full min-h-[220px] transition-all duration-500 ${flipped ? 'animate-scale-in' : 'animate-fade-in'}`}>
+              <Card className="border-border/30 bg-card/50 backdrop-blur min-h-[220px] flex items-center justify-center">
+                <CardContent className="p-6 text-center space-y-4">
+                  {!flipped ? (
+                    <>
+                      <Brain className="w-8 h-8 mx-auto text-primary opacity-60" />
+                      <p className="text-lg font-medium leading-relaxed">{card.question}</p>
+                      <p className="text-xs text-muted-foreground">Tapni za odgovor</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-8 h-8 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
+                        <span className="text-green-400 text-lg">✓</span>
+                      </div>
+                      <p className="text-lg font-medium text-green-400 leading-relaxed">{card.answer}</p>
+                      <p className="text-xs text-muted-foreground">Tapni za sljedeće pitanje</p>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-2 justify-center">
+          <button
+            onClick={(e) => { e.stopPropagation(); setFlipped(false); setCurrentCard(Math.max(0, currentCard - 1)) }}
+            disabled={currentCard === 0}
+            className="px-4 py-2 rounded-xl bg-muted text-sm disabled:opacity-30 transition-all active:scale-95"
+          >
+            ← Prethodno
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              if (flipped && currentCard < flashcards.length - 1) {
+                setFlipped(false)
+                setCurrentCard(currentCard + 1)
+              } else if (!flipped) {
+                setFlipped(true)
+              } else {
+                setCurrentCard(0)
+                setFlipped(false)
+              }
+            }}
+            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm transition-all active:scale-95"
+          >
+            {flipped && currentCard === flashcards.length - 1 ? (
+              <span className="flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Ponovo</span>
+            ) : flipped ? 'Sljedeće →' : 'Otkrij'}
+          </button>
+        </div>
+
+        {/* Progress dots */}
+        <div className="flex justify-center gap-1.5">
+          {flashcards.map((_, i) => (
+            <div
+              key={i}
+              className={`w-2 h-2 rounded-full transition-all ${
+                i === currentCard ? 'bg-primary scale-125' : i < currentCard ? 'bg-primary/40' : 'bg-muted'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // ========== LECTURE DETAIL VIEW ==========
+  if (view === 'lecture' && selectedLecture) {
     return (
       <div className="space-y-4 animate-fade-in">
-        <button
-          onClick={() => setSelectedLecture(null)}
-          className="text-sm text-primary flex items-center gap-1"
-        >
-          ← Nazad
+        <button onClick={goBack} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
+          <ChevronLeft className="w-4 h-4" /> Nazad
         </button>
         <div className="space-y-2">
-          <span className="text-xs text-primary font-medium uppercase tracking-wider">
-            {selectedLecture.subject}
-          </span>
+          <Badge variant="secondary" className="text-xs">{selectedLecture.subject}</Badge>
           <h1 className="text-2xl font-bold">{selectedLecture.title}</h1>
           <p className="text-xs text-muted-foreground">
-            {selectedLecture.class_number}. razred · {new Date(selectedLecture.created_at).toLocaleDateString('sr-Latn')}
+            {profile?.class_number}-{profile?.section_number} · {new Date(selectedLecture.created_at).toLocaleDateString('sr-Latn')}
           </p>
         </div>
         <div className="prose prose-invert prose-sm max-w-none">
@@ -78,74 +280,163 @@ export default function LecturesPage() {
             {selectedLecture.content}
           </div>
         </div>
-      </div>
-    )
-  }
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold gradient-text">Lekcije</h1>
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-20 rounded-2xl bg-muted animate-pulse" />
-        ))}
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-4 animate-fade-in">
-      <h1 className="text-2xl font-bold gradient-text">Lekcije</h1>
-      
-      {/* Class selector */}
-      <div className="flex gap-2">
-        {[1, 2, 3, 4].map((n) => (
+        <div className="space-y-3 pt-4 border-t border-border/30">
           <button
-            key={n}
-            onClick={() => setSelectedClass(n)}
-            className={`flex-1 py-2 text-sm rounded-xl transition-all ${
-              selectedClass === n
-                ? 'bg-gradient-to-r from-purple-600 to-violet-700 text-white font-medium'
-                : 'bg-muted text-muted-foreground'
-            }`}
+            onClick={() => handleQuiz(selectedLecture)}
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-violet-700 text-white font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-lg hover:shadow-purple-500/20"
           >
-            {n}. razred
+            <Brain className="w-4 h-4" />
+            Provjeri znanje
           </button>
-        ))}
-      </div>
 
-      {profile && selectedClass === profile.class_number && (
-        <p className="text-xs text-primary">✨ Tvoj razred</p>
-      )}
-
-      {Object.keys(groupedBySubject).length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Nema lekcija za ovaj razred</p>
+          {selectedLecture.video_url && (
+            <a
+              href={selectedLecture.video_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 rounded-2xl bg-muted text-foreground font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:bg-muted/80"
+            >
+              <Play className="w-4 h-4" />
+              Pogledaj video
+            </a>
+          )}
         </div>
-      ) : (
-        Object.entries(groupedBySubject).map(([subject, subjectLectures]) => (
-          <div key={subject} className="space-y-2">
-            <h2 className="text-sm font-semibold text-primary uppercase tracking-wider">{subject}</h2>
-            {subjectLectures.map((lecture) => (
+      </div>
+    )
+  }
+
+  // ========== LECTURES LIST VIEW ==========
+  if (view === 'lectures' && selectedSubject) {
+    const subjectInfo = [...DEFAULT_SUBJECTS, ...OPTIONAL_SUBJECTS].find(s => s.name === selectedSubject)
+    return (
+      <div className="space-y-4 animate-fade-in">
+        <button onClick={goBack} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
+          <ChevronLeft className="w-4 h-4" /> Svi predmeti
+        </button>
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">{subjectInfo?.emoji}</span>
+          <div>
+            <h1 className="text-2xl font-bold">{selectedSubject}</h1>
+            <p className="text-xs text-muted-foreground">{lectures.length} lekcija</p>
+          </div>
+        </div>
+
+        {lectures.length === 0 ? (
+          <div className="text-center py-16 text-muted-foreground">
+            <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p>Nema lekcija za ovaj predmet</p>
+          </div>
+        ) : (
+          <div className="space-y-2 animate-stagger">
+            {lectures.map((lecture) => (
               <Card
                 key={lecture.id}
-                className="border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98]"
-                onClick={() => setSelectedLecture(lecture)}
+                className="border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98] card-hover"
+                onClick={() => handleLectureTap(lecture)}
               >
                 <CardContent className="p-4 flex items-center justify-between">
-                  <div>
+                  <div className="space-y-0.5">
                     <h3 className="font-medium text-sm">{lecture.title}</h3>
                     <p className="text-xs text-muted-foreground">
                       {new Date(lecture.created_at).toLocaleDateString('sr-Latn')}
                     </p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 </CardContent>
               </Card>
             ))}
           </div>
-        ))
+        )}
+      </div>
+    )
+  }
+
+  // ========== LOADING ==========
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold gradient-text">Lekcije</h1>
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-28 rounded-2xl bg-muted animate-pulse" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // ========== SUBJECTS GRID VIEW ==========
+  return (
+    <div className="space-y-4 animate-fade-in">
+      <h1 className="text-2xl font-bold gradient-text">Lekcije</h1>
+
+      {profile && (
+        <Badge variant="secondary" className="text-xs">
+          Tvoj razred: {profile.class_number}-{profile.section_number}
+        </Badge>
+      )}
+
+      <div className="grid grid-cols-2 gap-3 animate-stagger">
+        {allSubjects.map((subject) => (
+          <Card
+            key={subject.name}
+            className="border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98] card-hover overflow-hidden"
+            onClick={() => handleSubjectTap(subject.name)}
+          >
+            <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+              <span className="text-3xl">{subject.emoji}</span>
+              <h3 className="font-medium text-sm">{subject.name}</h3>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Add subject button */}
+      {availableOptional.length > 0 && (
+        <div className="space-y-3">
+          <button
+            onClick={() => setShowAddSubject(!showAddSubject)}
+            className="w-full py-3 rounded-2xl border border-dashed border-border/50 text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4" />
+            Dodaj predmet
+          </button>
+
+          {showAddSubject && (
+            <div className="space-y-2 animate-fade-in">
+              {availableOptional.map((subject) => (
+                <Card
+                  key={subject.name}
+                  className="border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98]"
+                  onClick={() => { addSubject(subject.name); setShowAddSubject(false) }}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <span className="text-xl">{subject.emoji}</span>
+                    <span className="text-sm font-medium">{subject.name}</span>
+                    <Plus className="w-4 h-4 text-primary ml-auto" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Remove extra subjects */}
+      {extraSubjects.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {extraSubjects.map((name) => (
+            <button
+              key={name}
+              onClick={() => removeSubject(name)}
+              className="flex items-center gap-1 px-3 py-1 rounded-full bg-muted text-xs text-muted-foreground hover:text-destructive transition-all"
+            >
+              {name}
+              <X className="w-3 h-3" />
+            </button>
+          ))}
+        </div>
       )}
     </div>
   )

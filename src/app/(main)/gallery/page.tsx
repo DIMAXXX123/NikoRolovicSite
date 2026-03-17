@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Camera, Plus, X, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -13,14 +13,73 @@ export default function GalleryPage() {
   const [loading, setLoading] = useState(true)
   const [showUpload, setShowUpload] = useState(false)
   const [caption, setCaption] = useState('')
+  const [anonymous, setAnonymous] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
+  const showToast = useCallback((message: string) => {
+    setToast(message)
+    setTimeout(() => setToast(null), 3000)
+  }, [])
+
   useEffect(() => {
     loadPhotos()
+
+    // Realtime subscription for new approved photos
+    const channel = supabase
+      .channel('photos-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'photos', filter: 'status=eq.approved' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async (payload: any) => {
+          const newPhoto = payload.new as Photo
+          // Fetch user profile for the new photo
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, class_number, section_number, role')
+            .eq('id', newPhoto.user_id)
+            .single()
+
+          const photoWithUser = { ...newPhoto, user: profile || undefined }
+          setPhotos((prev) => [photoWithUser, ...prev])
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'photos', filter: 'status=eq.approved' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async (payload: any) => {
+          const updated = payload.new as Photo
+          // Only add if it was just approved (not already in list)
+          setPhotos((prev) => {
+            if (prev.some((p) => p.id === updated.id)) return prev
+            // Fetch user info and prepend
+            supabase
+              .from('profiles')
+              .select('first_name, last_name, class_number, section_number, role')
+              .eq('id', updated.user_id)
+              .single()
+              .then(({ data: profile }: { data: any }) => {
+                setPhotos((current) => {
+                  if (current.some((p) => p.id === updated.id)) return current
+                  return [{ ...updated, user: profile || undefined }, ...current]
+                })
+              })
+            return prev
+          })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   async function loadPhotos() {
@@ -58,7 +117,7 @@ export default function GalleryPage() {
       .upload(fileName, selectedFile)
 
     if (uploadError) {
-      alert('Greška pri uploadu')
+      showToast('Greška pri uploadu')
       setUploading(false)
       return
     }
@@ -67,12 +126,29 @@ export default function GalleryPage() {
       .from('photos')
       .getPublicUrl(fileName)
 
-    const { data: photoData } = await supabase.from('photos').insert({
+    const insertData: Record<string, unknown> = {
       image_url: publicUrl,
       caption: caption || null,
       user_id: user.id,
       status: 'pending',
-    }).select('id').single()
+    }
+
+    // Add anonymous flag if supported
+    if (anonymous) {
+      insertData.anonymous = true
+    }
+
+    const { data: photoData, error: insertError } = await supabase.from('photos').insert(insertData).select('id').single()
+
+    // If anonymous column doesn't exist, retry without it
+    if (insertError && anonymous) {
+      await supabase.from('photos').insert({
+        image_url: publicUrl,
+        caption: caption || null,
+        user_id: user.id,
+        status: 'pending',
+      }).select('id').single()
+    }
 
     // Get user name for notification
     const { data: profile } = await supabase
@@ -82,15 +158,16 @@ export default function GalleryPage() {
       .single()
 
     // Notify admins via Telegram
-    if (photoData) {
+    const pid = photoData?.id
+    if (pid) {
       try {
         await fetch('/api/telegram/notify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            photoId: photoData.id,
+            photoId: pid,
             imageUrl: publicUrl,
-            userName: profile ? `${profile.first_name} ${profile.last_name}` : 'Nepoznat',
+            userName: anonymous ? 'Anonim' : (profile ? `${profile.first_name} ${profile.last_name}` : 'Nepoznat'),
             caption: caption || '',
           }),
         })
@@ -103,16 +180,17 @@ export default function GalleryPage() {
     setSelectedFile(null)
     setPreviewUrl(null)
     setCaption('')
+    setAnonymous(false)
     setUploading(false)
-    alert('Foto je poslat na moderaciju! 📸')
+    showToast('Fotografija poslata na moderaciju')
   }
 
   if (loading) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold gradient-text">Galerija</h1>
+        <h1 className="text-2xl font-bold gradient-text">Dumbs</h1>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="aspect-[3/4] rounded-2xl bg-muted animate-pulse" />
+          <div key={i} className="aspect-[3/4] rounded-2xl bg-muted animate-shimmer" />
         ))}
       </div>
     )
@@ -120,8 +198,15 @@ export default function GalleryPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium shadow-lg animate-slide-down">
+          {toast}
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold gradient-text">Galerija</h1>
+        <h1 className="text-2xl font-bold gradient-text">Dumbs</h1>
       </div>
 
       {/* Upload modal */}
@@ -164,6 +249,17 @@ export default function GalleryPage() {
               className="bg-background/50"
             />
 
+            {/* Anonymous toggle */}
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <div
+                className={`relative w-10 h-5 rounded-full transition-colors ${anonymous ? 'bg-primary' : 'bg-muted'}`}
+                onClick={() => setAnonymous(!anonymous)}
+              >
+                <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${anonymous ? 'translate-x-5' : ''}`} />
+              </div>
+              <span className="text-sm text-muted-foreground">Anonimno</span>
+            </label>
+
             <Button
               onClick={handleUpload}
               disabled={!selectedFile || uploading}
@@ -190,22 +286,31 @@ export default function GalleryPage() {
         <div className="space-y-4">
           {photos.map((photo, index) => (
             <div key={photo.id} className="relative rounded-2xl overflow-hidden animate-slide-up card-hover" style={{ animationDelay: `${index * 0.05}s` }}>
+              {/* Shimmer skeleton while image loads */}
+              {!loadedImages.has(photo.id) && (
+                <div className="absolute inset-0 bg-muted animate-shimmer rounded-2xl" />
+              )}
               <img
                 src={photo.image_url}
                 alt={photo.caption || ''}
-                className="w-full aspect-[3/4] object-cover"
+                className={`w-full aspect-[3/4] object-cover transition-opacity duration-300 ${loadedImages.has(photo.id) ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => setLoadedImages((prev) => new Set(prev).add(photo.id))}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <div className="flex items-center gap-2">
                   <p className="font-semibold text-white text-sm">
-                    {photo.user?.first_name} {photo.user?.last_name}
+                    {(photo as Photo & { anonymous?: boolean }).anonymous
+                      ? 'Anonim'
+                      : `${photo.user?.first_name} ${photo.user?.last_name}`}
                   </p>
-                  {photo.user?.role && <RoleBadge role={photo.user.role} />}
+                  {!(photo as Photo & { anonymous?: boolean }).anonymous && photo.user?.role && <RoleBadge role={photo.user.role} />}
                 </div>
-                <p className="text-white/60 text-xs">
-                  {photo.user?.class_number}-{photo.user?.section_number}
-                </p>
+                {!(photo as Photo & { anonymous?: boolean }).anonymous && (
+                  <p className="text-white/60 text-xs">
+                    {photo.user?.class_number}-{photo.user?.section_number}
+                  </p>
+                )}
                 {photo.caption && (
                   <p className="text-white/80 text-sm mt-1">{photo.caption}</p>
                 )}

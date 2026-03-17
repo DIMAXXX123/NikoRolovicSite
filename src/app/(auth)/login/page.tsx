@@ -40,7 +40,7 @@ export default function LoginPage() {
       <SuccessAnimation
         message="Uspešna prijava!"
         onComplete={() => {
-          router.push('/news')
+          router.push('/gallery')
           router.refresh()
         }}
       />
@@ -50,7 +50,7 @@ export default function LoginPage() {
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
       <CardHeader className="text-center space-y-2 pb-2">
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center mb-2">
+        <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-2" style={{ background: 'var(--theme-primary, #a78bfa)' }}>
           <span className="text-2xl font-bold text-white">NR</span>
         </div>
         <h1 className="text-2xl font-bold gradient-text">Gimnazija Niko Rolović</h1>

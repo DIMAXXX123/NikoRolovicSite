@@ -1,4 +1,7 @@
-export type UserRole = 'student' | 'moderator' | 'admin'
+// DB CHECK constraint should include: 'student', 'moderator', 'admin', 'creator'
+// ALTER TABLE profiles DROP CONSTRAINT profiles_role_check;
+// ALTER TABLE profiles ADD CONSTRAINT profiles_role_check CHECK (role IN ('student', 'moderator', 'admin', 'creator'));
+export type UserRole = 'student' | 'moderator' | 'admin' | 'creator'
 
 export interface Profile {
   id: string
@@ -25,6 +28,8 @@ export interface NewsItem {
   user_liked?: boolean
 }
 
+export type EventType = 'test' | 'ispit' | 'dogadjaj' | 'drugo'
+
 export interface Event {
   id: string
   title: string
@@ -32,6 +37,7 @@ export interface Event {
   event_date: string
   event_time: string | null
   location: string | null
+  event_type?: EventType | null
   author_id: string | null
   created_at: string
 }
@@ -42,6 +48,7 @@ export interface Lecture {
   subject: string
   content: string
   class_number: number
+  video_url?: string | null
   author_id: string | null
   created_at: string
   updated_at: string

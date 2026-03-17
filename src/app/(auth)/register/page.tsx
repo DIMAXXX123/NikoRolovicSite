@@ -48,7 +48,7 @@ export default function RegisterPage() {
       return
     }
 
-    // Step 2: Create auth user (Supabase sends OTP code to email)
+    // Step 2: Create auth user
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
@@ -87,6 +87,9 @@ export default function RegisterPage() {
       })
     }
 
+    // Step 5: Send OTP code via signInWithOtp (sends a 6-digit code, not a link)
+    await supabase.auth.signInWithOtp({ email: email.trim().toLowerCase() })
+
     // Save email for verify page
     localStorage.setItem('verify_email', email.trim().toLowerCase())
     router.push('/verify')
@@ -95,7 +98,7 @@ export default function RegisterPage() {
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
       <CardHeader className="text-center space-y-2 pb-2">
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center mb-2">
+        <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-2" style={{ background: 'var(--theme-primary, #a78bfa)' }}>
           <span className="text-2xl font-bold text-white">NR</span>
         </div>
         <h1 className="text-2xl font-bold gradient-text">Registracija</h1>
@@ -183,8 +186,8 @@ export default function RegisterPage() {
           {error && (
             <p className="text-destructive text-sm text-center">{error}</p>
           )}
-          <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800" disabled={loading}>
-            {loading ? 'Registracija...' : 'Registruj se'}
+          <Button type="submit" className="w-full h-14 text-lg font-bold bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)] transition-shadow" disabled={loading}>
+            {loading ? 'Registracija...' : 'REGISTRUJ SE'}
           </Button>
         </form>
         <div className="mt-4 text-center">

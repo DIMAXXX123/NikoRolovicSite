@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { Shield, Star } from 'lucide-react'
+import { Shield, Star, Crown } from 'lucide-react'
 
 interface RoleBadgeProps {
   role: string
@@ -9,6 +9,7 @@ interface RoleBadgeProps {
 }
 
 const roleConfig = {
+  creator: { label: 'Creator', icon: Crown, className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
   admin: { label: 'Admin', icon: Shield, className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
   moderator: { label: 'Mod', icon: Star, className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   student: { label: '', icon: null, className: '' },

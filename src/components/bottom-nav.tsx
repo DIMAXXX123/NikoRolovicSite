@@ -5,10 +5,10 @@ import { usePathname } from 'next/navigation'
 import { Newspaper, Calendar, BookOpen, Camera, User } from 'lucide-react'
 
 const navItems = [
+  { href: '/gallery', label: 'Dumbs', icon: Camera },
   { href: '/news', label: 'Novosti', icon: Newspaper },
-  { href: '/events', label: 'Događaji', icon: Calendar },
+  { href: '/events', label: 'Kalendar', icon: Calendar },
   { href: '/lectures', label: 'Lekcije', icon: BookOpen },
-  { href: '/gallery', label: 'Galerija', icon: Camera },
   { href: '/profile', label: 'Profil', icon: User },
 ]
 

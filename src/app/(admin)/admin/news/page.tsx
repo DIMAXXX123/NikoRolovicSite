@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, X } from 'lucide-react'
+import { Plus, Trash2, X, ImagePlus } from 'lucide-react'
 import type { NewsItem } from '@/lib/types'
 
 export default function AdminNewsPage() {
@@ -15,8 +15,10 @@ export default function AdminNewsPage() {
   const [showForm, setShowForm] = useState(false)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -31,6 +33,14 @@ export default function AdminNewsPage() {
     if (data) setNews(data)
   }
 
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImageFile(file)
+      setImagePreview(URL.createObjectURL(file))
+    }
+  }
+
   async function createNews(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -38,16 +48,36 @@ export default function AdminNewsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
+    let imageUrl: string | null = null
+
+    // Upload image if selected
+    if (imageFile) {
+      const fileExt = imageFile.name.split('.').pop()
+      const fileName = `news-${user.id}-${Date.now()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(fileName, imageFile)
+
+      if (!uploadError) {
+        const { data: { publicUrl } } = supabase.storage
+          .from('photos')
+          .getPublicUrl(fileName)
+        imageUrl = publicUrl
+      }
+    }
+
     await supabase.from('news').insert({
       title,
       content,
-      image_url: imageUrl || null,
+      image_url: imageUrl,
       author_id: user.id,
     })
 
     setTitle('')
     setContent('')
-    setImageUrl('')
+    setImageFile(null)
+    setImagePreview(null)
     setShowForm(false)
     setLoading(false)
     loadNews()
@@ -86,8 +116,35 @@ export default function AdminNewsPage() {
                 <Textarea value={content} onChange={(e) => setContent(e.target.value)} required rows={4} className="bg-background/50" />
               </div>
               <div className="space-y-2">
-                <Label>URL slike (opciono)</Label>
-                <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="bg-background/50" placeholder="https://..." />
+                <Label>Slika (opciono)</Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageSelect}
+                />
+                {imagePreview ? (
+                  <div className="relative">
+                    <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-xl" />
+                    <button
+                      type="button"
+                      onClick={() => { setImageFile(null); setImagePreview(null) }}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center"
+                    >
+                      <X className="w-3 h-3 text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full h-24 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary transition-colors"
+                  >
+                    <ImagePlus className="w-6 h-6" />
+                    <span className="text-xs">Izaberi sliku</span>
+                  </button>
+                )}
               </div>
               <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-violet-700">
                 {loading ? 'Objavljuje se...' : 'Objavi'}

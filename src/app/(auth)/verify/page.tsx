@@ -31,7 +31,7 @@ export default function VerifyPage() {
     const { error: verifyError } = await supabase.auth.verifyOtp({
       email,
       token: code.trim(),
-      type: 'signup',
+      type: 'email',
     })
 
     if (verifyError) {
@@ -47,10 +47,7 @@ export default function VerifyPage() {
   const handleResend = async () => {
     if (!email) return
 
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-    })
+    const { error } = await supabase.auth.signInWithOtp({ email })
 
     if (error) {
       setError('Greška pri slanju. Pokušaj ponovo za minut.')
