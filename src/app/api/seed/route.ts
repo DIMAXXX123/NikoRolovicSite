@@ -13,11 +13,16 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function GET(request: Request) {
+  try {
   const { searchParams } = new URL(request.url)
   const secret = searchParams.get('secret')
 
-  if (secret !== 'niko2026') {
+  if (!secret || secret !== (process.env.ADMIN_SECRET || 'xK9$mP2vL7nQ4wR8jF5bY3hT6dA1cE0')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!SUPABASE_SERVICE_KEY) {
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
@@ -150,4 +155,7 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({ ok: true, message: 'Seed complete!' })
+  } catch {
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
 }

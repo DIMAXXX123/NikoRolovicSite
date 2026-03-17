@@ -9,18 +9,19 @@ import { createClient } from '@supabase/supabase-js'
 // - CSRF: Next.js validates Origin headers on API routes in production.
 
 export async function GET(request: Request) {
+  try {
   const { searchParams } = new URL(request.url)
   const secret = searchParams.get('secret')
 
-  if (secret !== 'niko2026') {
+  if (!secret || secret !== (process.env.ADMIN_SECRET || 'xK9$mP2vL7nQ4wR8jF5bY3hT6dA1cE0')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  
+
   if (!serviceKey) {
-    return NextResponse.json({ error: 'No service key configured' }, { status: 500 })
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
   }
 
   const supabase = createClient(supabaseUrl, serviceKey)
@@ -29,7 +30,7 @@ export async function GET(request: Request) {
   const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
   
   if (usersError) {
-    return NextResponse.json({ error: usersError.message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to list users' }, { status: 500 })
   }
 
   const results = []
@@ -89,4 +90,7 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({ ok: true, results })
+  } catch {
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
 }

@@ -260,7 +260,7 @@ export default function GradesPage() {
 
       {/* Overall average card */}
       {overallAvg !== null && (
-        <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${avgGradient(overallAvg)} p-5 shadow-xl mb-6`}>
+        <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${avgGradient(overallAvg)} p-5 shadow-xl mb-8`}>
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
           <div className="relative flex items-center justify-between">

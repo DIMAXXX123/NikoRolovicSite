@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+// Rate limiting: In-memory rate limit (resets on deploy). Consider persistent rate limiting for production.
+
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
 const ADMIN_CHAT_IDS = (process.env.TELEGRAM_ADMIN_IDS || '').split(',').filter(Boolean)
 
@@ -8,10 +10,21 @@ const requestCounts = new Map<string, number>()
 
 export async function POST(request: Request) {
   try {
-    const { firstName, lastName, classNumber, sectionNumber, fingerprint } = await request.json()
+    const body = await request.json()
+    const { firstName, lastName, classNumber, sectionNumber, fingerprint } = body
 
-    if (!firstName || !lastName || !classNumber || !sectionNumber) {
-      return NextResponse.json({ error: 'Sva polja su obavezna' }, { status: 400 })
+    // Input validation
+    if (!firstName || typeof firstName !== 'string' || firstName.length > 100) {
+      return NextResponse.json({ error: 'Neispravno ime' }, { status: 400 })
+    }
+    if (!lastName || typeof lastName !== 'string' || lastName.length > 100) {
+      return NextResponse.json({ error: 'Neispravno prezime' }, { status: 400 })
+    }
+    if (!classNumber || typeof classNumber !== 'number' || classNumber < 1 || classNumber > 4) {
+      return NextResponse.json({ error: 'Neispravan razred' }, { status: 400 })
+    }
+    if (!sectionNumber || typeof sectionNumber !== 'number' || sectionNumber < 1 || sectionNumber > 10) {
+      return NextResponse.json({ error: 'Neispravno odjeljenje' }, { status: 400 })
     }
 
     // Rate limit: max 2 requests per fingerprint
@@ -22,7 +35,9 @@ export async function POST(request: Request) {
     }
     requestCounts.set(key, count + 1)
 
-    const text = `📋 Zahtjev za dodavanje učenika!\n\n👤 ${firstName} ${lastName}\n🏫 Razred: ${classNumber}-${sectionNumber}`
+    // Sanitize display text
+    const safeName = `${firstName} ${lastName}`.slice(0, 100)
+    const text = `📋 Zahtjev za dodavanje učenika!\n\n👤 ${safeName}\n🏫 Razred: ${classNumber}-${sectionNumber}`
 
     for (const chatId of ADMIN_CHAT_IDS) {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -44,7 +59,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ ok: true })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Greška' }, { status: 500 })
   }
 }

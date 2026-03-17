@@ -415,7 +415,7 @@ export default function ProfilePage() {
       <Button
         onClick={() => setShowCalculator(true)}
         variant="outline"
-        className="w-full justify-start gap-2"
+        className="w-full justify-start gap-2 mb-2"
       >
         <Calculator className="w-4 h-4" />
         Kalkulator proseka
