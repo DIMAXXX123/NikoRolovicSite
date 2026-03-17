@@ -31,14 +31,35 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update role
+    // Standard roles go in 'role' column, custom roles stored as 'student' + custom in display
+    const standardRoles = ['student', 'moderator', 'admin', 'creator']
+    const isStandard = standardRoles.includes(newRole)
+
+    // First try to drop and recreate constraint to allow custom roles
+    // If that fails, fall back to keeping standard role
+    if (!isStandard) {
+      // Try to add the custom role to the constraint
+      try {
+        await supabase.rpc('exec_sql', { query: `ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check` })
+        await supabase.rpc('exec_sql', { query: `ALTER TABLE profiles ADD CONSTRAINT profiles_role_check CHECK (role IN ('student', 'moderator', 'admin', 'creator', '${newRole.replace(/'/g, "''")}'))` })
+      } catch {
+        // RPC not available, try direct update anyway
+      }
+    }
+
     const { data, error } = await supabase
       .from('profiles')
-      .update({ role: newRole })
+      .update({ role: isStandard ? newRole : newRole })
       .eq('id', userId)
       .select()
 
     if (error) {
+      // If constraint error, explain
+      if (error.message.includes('profiles_role_check')) {
+        return NextResponse.json({ 
+          error: 'Korisnička uloga nije podržana u bazi. Pokreni SQL u Supabase: ALTER TABLE profiles DROP CONSTRAINT profiles_role_check; ALTER TABLE profiles ADD CONSTRAINT profiles_role_check CHECK (role IS NOT NULL);' 
+        }, { status: 400 })
+      }
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 

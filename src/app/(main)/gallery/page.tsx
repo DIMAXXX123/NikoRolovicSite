@@ -254,7 +254,6 @@ export default function GalleryPage() {
 
                 {/* Bottom: user info */}
                 <div className="absolute bottom-4 left-4 right-16">
-                  <div className="absolute inset-x-0 -bottom-4 h-40 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none -mx-4" />
                   <div className="relative">
                     {!isAnon(photo) && photo.user && (
                       <p className="text-white font-bold text-base" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
