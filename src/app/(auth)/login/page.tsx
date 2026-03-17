@@ -30,7 +30,24 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError('Pogrešan email ili lozinka')
+      if (error.message.includes('Invalid login credentials')) {
+        // Check if email exists in profiles
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', email.trim().toLowerCase())
+          .single()
+        
+        if (!profile) {
+          setError('Nalog sa ovom email adresom ne postoji')
+        } else {
+          setError('Pogrešna lozinka')
+        }
+      } else if (error.message.includes('Email not confirmed')) {
+        setError('Email nije potvrđen. Provjeri inbox.')
+      } else {
+        setError('Greška pri prijavi. Pokušaj ponovo.')
+      }
       setLoading(false)
     } else {
       setShowSuccess(true)
