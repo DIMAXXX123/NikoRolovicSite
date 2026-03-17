@@ -49,7 +49,7 @@ export default function RegisterPage() {
       return
     }
 
-    // Step 2: Create auth user (Supabase sends confirmation email)
+    // Step 2: Create auth user (Supabase sends OTP code to email)
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
@@ -60,7 +60,6 @@ export default function RegisterPage() {
           class_number: parseInt(classNumber),
           section_number: parseInt(sectionNumber),
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
 
@@ -89,6 +88,8 @@ export default function RegisterPage() {
       })
     }
 
+    // Save email for verify page
+    localStorage.setItem('verify_email', email.trim().toLowerCase())
     router.push('/verify')
   }
 
