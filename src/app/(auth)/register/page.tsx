@@ -18,6 +18,11 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showRequestForm, setShowRequestForm] = useState(false)
+  const [reqIme, setReqIme] = useState('')
+  const [reqPrezime, setReqPrezime] = useState('')
+  const [reqRazred, setReqRazred] = useState('1')
+  const [reqOdjeljenje, setReqOdjeljenje] = useState('1')
   const router = useRouter()
   const supabase = createClient()
 
@@ -184,7 +189,65 @@ export default function RegisterPage() {
             />
           </div>
           {error && (
-            <p className="text-destructive text-sm text-center">{error}</p>
+            <div className="space-y-3">
+              <p className="text-destructive text-sm text-center">{error}</p>
+              {error.includes('Nismo te pronašli') && !showRequestForm && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setShowRequestForm(true)
+                    setReqIme(firstName)
+                    setReqPrezime(lastName)
+                    setReqRazred(classNumber)
+                    setReqOdjeljenje(sectionNumber)
+                  }}
+                >
+                  Pošalji zahtjev za dodavanje
+                </Button>
+              )}
+              {showRequestForm && (
+                <div className="space-y-3 p-3 rounded-lg border border-border/50 bg-background/30">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="reqIme">Ime</Label>
+                      <Input id="reqIme" value={reqIme} onChange={(e) => setReqIme(e.target.value)} className="bg-background/50" required />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="reqPrezime">Prezime</Label>
+                      <Input id="reqPrezime" value={reqPrezime} onChange={(e) => setReqPrezime(e.target.value)} className="bg-background/50" required />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="reqRazred">Razred</Label>
+                      <select id="reqRazred" value={reqRazred} onChange={(e) => setReqRazred(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        {[1, 2, 3, 4].map((n) => (<option key={n} value={n}>{n}. razred</option>))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="reqOdjeljenje">Odjeljenje</Label>
+                      <select id="reqOdjeljenje" value={reqOdjeljenje} onChange={(e) => setReqOdjeljenje(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        {[1, 2, 3, 4, 5, 6].map((n) => (<option key={n} value={n}>{n}. odjeljenje</option>))}
+                      </select>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={() => {
+                      const msg = `Zahtjev za dodavanje na portal: ${reqIme.trim()} ${reqPrezime.trim()}, ${reqRazred}-${reqOdjeljenje}`
+                      window.open(`https://t.me/Dima_ivasch?text=${encodeURIComponent(msg)}`, '_blank')
+                    }}
+                    disabled={!reqIme.trim() || !reqPrezime.trim()}
+                  >
+                    Pošalji
+                  </Button>
+                  <p className="text-muted-foreground text-xs text-center">Tvoj zahtjev će biti pregledan od strane administratora.</p>
+                </div>
+              )}
+            </div>
           )}
           <Button type="submit" className="w-full h-14 text-lg font-bold bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)] transition-shadow" disabled={loading}>
             {loading ? 'Registracija...' : 'REGISTRUJ SE'}
