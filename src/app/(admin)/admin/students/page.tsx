@@ -165,7 +165,7 @@ export default function AdminStudentsPage() {
             <div>
               <p className="font-medium text-sm text-white">{student.first_name} {student.last_name}</p>
               <p className="text-xs text-slate-400">
-                {student.class_number}-{student.section_number} · {student.email}
+                {student.class_number}-{student.section_number}{student.email && !student.email.includes('@pending.local') && !student.email.includes('@temp.com') ? ` · ${student.email}` : ''}
               </p>
             </div>
             <div className="flex items-center gap-2">
