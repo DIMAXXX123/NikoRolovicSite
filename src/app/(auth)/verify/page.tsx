@@ -106,7 +106,7 @@ export default function VerifyPage() {
         </div>
         <h1 className="text-2xl font-bold">Unesi kod</h1>
         <p className="text-muted-foreground text-sm">
-          Poslali smo 6-cifreni kod na <span className="text-foreground font-medium">{email}</span>
+          Poslali smo 8-cifreni kod na <span className="text-foreground font-medium">{email}</span>
         </p>
       </CardHeader>
       <CardContent>
@@ -114,11 +114,11 @@ export default function VerifyPage() {
           <Input
             type="text"
             inputMode="numeric"
-            placeholder="000000"
+            placeholder="00000000"
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
             className="bg-background/50 text-center text-2xl tracking-[0.5em] font-mono"
-            maxLength={6}
+            maxLength={8}
             required
           />
           {error && (
@@ -127,7 +127,7 @@ export default function VerifyPage() {
           <Button
             type="submit"
             className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800"
-            disabled={loading || code.length !== 6}
+            disabled={loading || code.length < 6}
           >
             {loading ? 'Provera...' : 'Potvrdi'}
           </Button>
@@ -142,3 +142,4 @@ export default function VerifyPage() {
     </Card>
   )
 }
+
