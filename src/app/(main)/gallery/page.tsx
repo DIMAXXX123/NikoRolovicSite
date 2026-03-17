@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Camera, Plus, X, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { RoleBadge } from '@/components/role-badge'
 import type { Photo, Profile } from '@/lib/types'
 
 export default function GalleryPage() {
@@ -25,7 +26,7 @@ export default function GalleryPage() {
   async function loadPhotos() {
     const { data } = await supabase
       .from('photos')
-      .select('*, user:profiles!user_id(first_name, last_name, class_number, section_number)')
+      .select('*, user:profiles!user_id(first_name, last_name, class_number, section_number, role)')
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
 
@@ -65,12 +66,37 @@ export default function GalleryPage() {
       .from('photos')
       .getPublicUrl(fileName)
 
-    await supabase.from('photos').insert({
+    const { data: photoData } = await supabase.from('photos').insert({
       image_url: publicUrl,
       caption: caption || null,
       user_id: user.id,
       status: 'pending',
-    })
+    }).select('id').single()
+
+    // Get user name for notification
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', user.id)
+      .single()
+
+    // Notify admins via Telegram
+    if (photoData) {
+      try {
+        await fetch('/api/telegram/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            photoId: photoData.id,
+            imageUrl: publicUrl,
+            userName: profile ? `${profile.first_name} ${profile.last_name}` : 'Nepoznat',
+            caption: caption || '',
+          }),
+        })
+      } catch (e) {
+        // Notification failed silently
+      }
+    }
 
     setShowUpload(false)
     setSelectedFile(null)
@@ -178,9 +204,12 @@ export default function GalleryPage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4">
-                <p className="font-semibold text-white text-sm">
-                  {photo.user?.first_name} {photo.user?.last_name}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-white text-sm">
+                    {photo.user?.first_name} {photo.user?.last_name}
+                  </p>
+                  {photo.user?.role && <RoleBadge role={photo.user.role} />}
+                </div>
                 <p className="text-white/60 text-xs">
                   {photo.user?.class_number}-{photo.user?.section_number}
                 </p>

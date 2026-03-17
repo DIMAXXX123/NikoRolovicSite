@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Heart } from 'lucide-react'
+import { RoleBadge } from '@/components/role-badge'
 import type { NewsItem } from '@/lib/types'
 
 export default function NewsPage() {
@@ -22,7 +23,7 @@ export default function NewsPage() {
 
     const { data: newsData } = await supabase
       .from('news')
-      .select('*, author:profiles!author_id(first_name, last_name)')
+      .select('*, author:profiles!author_id(first_name, last_name, role)')
       .order('created_at', { ascending: false })
 
     if (newsData) {
@@ -121,10 +122,14 @@ export default function NewsPage() {
               <h2 className="text-lg font-semibold">{item.title}</h2>
               <p className="text-muted-foreground text-sm line-clamp-3">{item.content}</p>
               <div className="flex items-center justify-between pt-2">
-                <div className="text-xs text-muted-foreground">
-                  {item.author && `${item.author.first_name} ${item.author.last_name}`}
-                  {' · '}
-                  {new Date(item.created_at).toLocaleDateString('sr-Latn')}
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  {item.author && (
+                    <>
+                      <span>{item.author.first_name} {item.author.last_name}</span>
+                      <RoleBadge role={item.author.role || 'student'} />
+                    </>
+                  )}
+                  <span>· {new Date(item.created_at).toLocaleDateString('sr-Latn')}</span>
                 </div>
                 <button
                   onClick={() => toggleLike(item.id, item.user_liked || false)}
