@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [sectionNumber, setSectionNumber] = useState('1')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showRequestForm, setShowRequestForm] = useState(false)
@@ -28,6 +29,10 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (password !== confirmPassword) {
+      setError('Lozinke se ne poklapaju')
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -186,6 +191,19 @@ export default function RegisterPage() {
               placeholder="Minimum 6 karaktera"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="bg-background/50"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Potvrdi lozinku</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="Ponovi lozinku"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
               className="bg-background/50"
