@@ -24,7 +24,7 @@ export default function MainLayout({
   }, [pathname])
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-24">
       {/* Fixed glassmorphism header */}
       <header className="fixed top-0 left-0 right-0 z-50 glass-header">
         <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">

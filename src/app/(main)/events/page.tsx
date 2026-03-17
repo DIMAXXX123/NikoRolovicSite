@@ -184,7 +184,7 @@ export default function EventsPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold gradient-text">Kalendar</h1>
+        <h1 className="text-3xl font-bold gradient-text tracking-tight">Kalendar</h1>
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-28 rounded-2xl bg-muted animate-pulse" />
         ))}
@@ -197,7 +197,7 @@ export default function EventsPage() {
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setSelectedDay(null); setShowAddEvent(false) }}>
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-lg bg-background border-t border-border/50 rounded-t-3xl p-5 pb-8 animate-slide-up max-h-[70vh] overflow-y-auto"
+        className="relative w-full max-w-lg bg-background border-t border-border/50 rounded-t-3xl p-5 pb-24 animate-slide-up max-h-[60vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         <div className="w-12 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
@@ -210,54 +210,18 @@ export default function EventsPage() {
           </button>
         </div>
 
-        {eventsByDay[selectedDay] && eventsByDay[selectedDay].length > 0 ? (
-          <div className="space-y-3">
-            {eventsByDay[selectedDay].map((event) => {
-              const type = event.event_type || 'drugo'
-              const config = EVENT_TYPE_CONFIG[type] || EVENT_TYPE_CONFIG.drugo
-              return (
-                <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur">
-                  <CardContent className="p-4 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Badge className={`text-xs ${config.color} border-0`}>{config.label}</Badge>
-                      <h3 className="font-semibold text-sm">{event.title}</h3>
-                    </div>
-                    {event.description && (
-                      <p className="text-sm text-muted-foreground">{event.description}</p>
-                    )}
-                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                      {event.event_time && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {formatTime(event.event_time)}
-                        </span>
-                      )}
-                      {event.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" /> {event.location}
-                        </span>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-6">Nema događaja za ovaj dan</p>
-        )}
-
-        {/* Admin add event */}
+        {/* Admin add event - top of modal */}
         {isAdmin && !showAddEvent && (
           <button
             onClick={() => { setAddingForDay(selectedDay); setShowAddEvent(true) }}
-            className="w-full mt-4 py-3 rounded-2xl border border-dashed border-border/50 text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all active:scale-[0.98]"
+            className="w-full mb-4 py-3 rounded-2xl border border-dashed border-border/50 text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" /> Dodaj događaj
           </button>
         )}
 
         {showAddEvent && (
-          <div className="mt-4 space-y-3 animate-fade-in">
+          <div className="mb-4 space-y-3 animate-fade-in">
             <input
               type="text"
               placeholder="Naziv događaja"
@@ -312,6 +276,43 @@ export default function EventsPage() {
             </button>
           </div>
         )}
+
+        {eventsByDay[selectedDay] && eventsByDay[selectedDay].length > 0 ? (
+          <div className="space-y-3">
+            {eventsByDay[selectedDay].map((event) => {
+              const type = event.event_type || 'drugo'
+              const config = EVENT_TYPE_CONFIG[type] || EVENT_TYPE_CONFIG.drugo
+              return (
+                <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur">
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge className={`text-xs ${config.color} border-0`}>{config.label}</Badge>
+                      <h3 className="font-semibold text-sm">{event.title}</h3>
+                    </div>
+                    {event.description && (
+                      <p className="text-sm text-muted-foreground">{event.description}</p>
+                    )}
+                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                      {event.event_time && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {formatTime(event.event_time)}
+                        </span>
+                      )}
+                      {event.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" /> {event.location}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-6">Nema događaja za ovaj dan</p>
+        )}
+
       </div>
     </div>
   )
@@ -327,7 +328,7 @@ export default function EventsPage() {
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold gradient-text">Kalendar</h1>
+        <h1 className="text-3xl font-bold gradient-text tracking-tight">Kalendar</h1>
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           <button
             onClick={() => setView('calendar')}
@@ -442,7 +443,7 @@ export default function EventsPage() {
               const type = event.event_type || 'drugo'
               const config = EVENT_TYPE_CONFIG[type] || EVENT_TYPE_CONFIG.drugo
               return (
-                <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur animate-slide-up card-hover overflow-hidden" style={{ animationDelay: `${index * 0.05}s` }}>
+                <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur animate-slide-up card-hover overflow-hidden gradient-overlay glow-hover" style={{ animationDelay: `${index * 0.05}s` }}>
                   <CardContent className="p-0">
                     <div className="flex">
                       <div className={`flex-shrink-0 w-20 bg-gradient-to-br ${dayColors[index % dayColors.length]} flex flex-col items-center justify-center p-3`}>

@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, Eye } from 'lucide-react'
 import { SuccessAnimation } from '@/components/success-animation'
+import { SiteTour } from '@/components/site-tour'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [showTour, setShowTour] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -33,6 +35,10 @@ export default function LoginPage() {
     } else {
       setShowSuccess(true)
     }
+  }
+
+  if (showTour) {
+    return <SiteTour onClose={() => setShowTour(false)} />
   }
 
   if (showSuccess) {
@@ -104,6 +110,13 @@ export default function LoginPage() {
               Nemaš nalog? Registruj se
             </Button>
           </Link>
+          <button
+            onClick={() => setShowTour(true)}
+            className="w-full py-3 rounded-xl text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 transition-all hover:bg-muted/50"
+          >
+            <Eye className="w-4 h-4" />
+            Pogledaj sajt
+          </button>
         </div>
       </CardContent>
     </Card>

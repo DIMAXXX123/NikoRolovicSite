@@ -4,13 +4,13 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { BookOpen, ChevronRight, ChevronLeft, Plus, X, Play, Brain, RotateCcw } from 'lucide-react'
+import { BookOpen, ChevronRight, ChevronLeft, Plus, X, Play, Brain, RotateCcw, Heart } from 'lucide-react'
 import type { Lecture, Profile } from '@/lib/types'
 
 const DEFAULT_SUBJECTS = [
   { name: 'Fizika', emoji: '⚛️' },
   { name: 'Matematika', emoji: '📐' },
-  { name: 'CSBH', emoji: '📖' },
+  { name: 'CSBH', emoji: '🇲🇪' },
   { name: 'Hemija', emoji: '🧪' },
   { name: 'Engleski', emoji: '🇬🇧' },
   { name: 'Italjanski', emoji: '🇮🇹' },
@@ -88,11 +88,14 @@ export default function LecturesPage() {
   const [flashcards, setFlashcards] = useState<FlashCard[]>([])
   const [currentCard, setCurrentCard] = useState(0)
   const [flipped, setFlipped] = useState(false)
+  const [likedLectures, setLikedLectures] = useState<Record<string, boolean>>({})
   const supabase = createClient()
 
   useEffect(() => {
     const saved = localStorage.getItem('extra_subjects')
     if (saved) setExtraSubjects(JSON.parse(saved))
+    const savedLikes = localStorage.getItem('lecture_likes')
+    if (savedLikes) setLikedLectures(JSON.parse(savedLikes))
     loadData()
   }, [])
 
@@ -161,6 +164,21 @@ export default function LecturesPage() {
     const updated = extraSubjects.filter(s => s !== name)
     setExtraSubjects(updated)
     localStorage.setItem('extra_subjects', JSON.stringify(updated))
+  }
+
+  function toggleLike(lectureId: string) {
+    const updated = { ...likedLectures }
+    if (updated[lectureId]) {
+      delete updated[lectureId]
+    } else {
+      updated[lectureId] = true
+    }
+    setLikedLectures(updated)
+    localStorage.setItem('lecture_likes', JSON.stringify(updated))
+  }
+
+  function getLikeCount(lectureId: string): number {
+    return likedLectures[lectureId] ? 1 : 0
   }
 
   const allSubjects = [
@@ -269,7 +287,24 @@ export default function LecturesPage() {
           <ChevronLeft className="w-4 h-4" /> Nazad
         </button>
         <div className="space-y-2">
-          <Badge variant="secondary" className="text-xs">{selectedLecture.subject}</Badge>
+          <div className="flex items-center justify-between">
+            <Badge variant="secondary" className="text-xs">{selectedLecture.subject}</Badge>
+            <button
+              onClick={() => toggleLike(selectedLecture.id)}
+              className="flex items-center gap-1.5 transition-all duration-200 active:scale-110"
+            >
+              <Heart
+                className={`w-5 h-5 transition-all ${
+                  likedLectures[selectedLecture.id]
+                    ? 'fill-red-500 text-red-500'
+                    : 'text-muted-foreground'
+                }`}
+              />
+              <span className={`text-sm ${likedLectures[selectedLecture.id] ? 'text-red-500' : 'text-muted-foreground'}`}>
+                {likedLectures[selectedLecture.id] ? 1 : 0}
+              </span>
+            </button>
+          </div>
           <h1 className="text-2xl font-bold">{selectedLecture.title}</h1>
           <p className="text-xs text-muted-foreground">
             {profile?.class_number}-{profile?.section_number} · {new Date(selectedLecture.created_at).toLocaleDateString('sr-Latn')}
@@ -336,13 +371,18 @@ export default function LecturesPage() {
                 onClick={() => handleLectureTap(lecture)}
               >
                 <CardContent className="p-4 flex items-center justify-between">
-                  <div className="space-y-0.5">
+                  <div className="space-y-0.5 flex-1 min-w-0">
                     <h3 className="font-medium text-sm">{lecture.title}</h3>
                     <p className="text-xs text-muted-foreground">
                       {new Date(lecture.created_at).toLocaleDateString('sr-Latn')}
                     </p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {likedLectures[lecture.id] && (
+                      <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                    )}
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -356,7 +396,7 @@ export default function LecturesPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold gradient-text">Lekcije</h1>
+        <h1 className="text-3xl font-bold gradient-text tracking-tight">Lekcije</h1>
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="h-28 rounded-2xl bg-muted animate-pulse" />
@@ -369,7 +409,7 @@ export default function LecturesPage() {
   // ========== SUBJECTS GRID VIEW ==========
   return (
     <div className="space-y-4 animate-fade-in">
-      <h1 className="text-2xl font-bold gradient-text">Lekcije</h1>
+      <h1 className="text-3xl font-bold gradient-text tracking-tight">Lekcije</h1>
 
       {profile && (
         <Badge variant="secondary" className="text-xs">
@@ -381,12 +421,12 @@ export default function LecturesPage() {
         {allSubjects.map((subject) => (
           <Card
             key={subject.name}
-            className="border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98] card-hover overflow-hidden"
+            className="border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98] card-hover overflow-hidden gradient-overlay glow-hover"
             onClick={() => handleSubjectTap(subject.name)}
           >
-            <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-              <span className="text-3xl">{subject.emoji}</span>
-              <h3 className="font-medium text-sm">{subject.name}</h3>
+            <CardContent className="p-5 flex flex-col items-center text-center gap-2.5">
+              <span className="text-4xl">{subject.emoji}</span>
+              <h3 className="font-semibold text-sm">{subject.name}</h3>
             </CardContent>
           </Card>
         ))}
