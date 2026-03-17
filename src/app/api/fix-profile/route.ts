@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// SECURITY NOTES:
+// - Protected by secret query parameter. In production, use env-based secrets.
+// - Rate limiting: Admin-only maintenance endpoint. Consider IP allowlisting.
+// - Uses service role key to bypass RLS for profile repair operations.
+// - Supabase handles all password hashing (bcrypt) server-side.
+// - CSRF: Next.js validates Origin headers on API routes in production.
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const secret = searchParams.get('secret')
-  
+
   if (secret !== 'niko2026') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

@@ -6,6 +6,14 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Calendar, MapPin, Clock } from 'lucide-react'
 import type { Event } from '@/lib/types'
 
+const dayColors = [
+  'from-purple-500 to-violet-600',
+  'from-blue-500 to-cyan-600',
+  'from-emerald-500 to-green-600',
+  'from-orange-500 to-amber-600',
+  'from-pink-500 to-rose-600',
+]
+
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,6 +47,16 @@ export default function EventsPage() {
   function formatTime(timeStr: string | null) {
     if (!timeStr) return null
     return timeStr.slice(0, 5)
+  }
+
+  function getDaysUntil(dateStr: string) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const eventDate = new Date(dateStr + 'T00:00:00')
+    const diff = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    if (diff === 0) return 'Danas'
+    if (diff === 1) return 'Sutra'
+    return `Za ${diff} dana`
   }
 
   // Group events by month for calendar view
@@ -93,19 +111,23 @@ export default function EventsPage() {
           <p>Nema predstojećih događaja</p>
         </div>
       ) : view === 'list' ? (
-        events.map((event) => (
-          <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur animate-slide-up">
-            <CardContent className="p-4">
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-700/20 flex flex-col items-center justify-center">
-                  <span className="text-lg font-bold text-primary">
+        events.map((event, index) => (
+          <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur animate-slide-up card-hover overflow-hidden" style={{ animationDelay: `${index * 0.05}s` }}>
+            <CardContent className="p-0">
+              <div className="flex">
+                {/* Big bold date box */}
+                <div className={`flex-shrink-0 w-20 bg-gradient-to-br ${dayColors[index % dayColors.length]} flex flex-col items-center justify-center p-3`}>
+                  <span className="text-2xl font-extrabold text-white leading-none">
                     {new Date(event.event_date + 'T00:00:00').getDate()}
                   </span>
-                  <span className="text-[10px] text-primary uppercase">
+                  <span className="text-xs font-semibold text-white/90 uppercase mt-0.5">
                     {new Date(event.event_date + 'T00:00:00').toLocaleDateString('sr-Latn', { month: 'short' })}
                   </span>
+                  <span className="text-[9px] text-white/70 font-medium mt-1 bg-white/20 rounded-full px-1.5 py-0.5">
+                    {getDaysUntil(event.event_date)}
+                  </span>
                 </div>
-                <div className="flex-1 space-y-1">
+                <div className="flex-1 p-4 space-y-1">
                   <h3 className="font-semibold">{event.title}</h3>
                   {event.description && (
                     <p className="text-sm text-muted-foreground line-clamp-2">{event.description}</p>
@@ -137,15 +159,15 @@ export default function EventsPage() {
         Object.entries(groupedByMonth).map(([month, monthEvents]) => (
           <div key={month} className="space-y-3">
             <h2 className="text-sm font-semibold text-primary uppercase tracking-wider">{month}</h2>
-            {monthEvents.map((event) => (
-              <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur">
-                <CardContent className="p-3 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-bold text-primary">
+            {monthEvents.map((event, index) => (
+              <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur card-hover overflow-hidden">
+                <CardContent className="p-0 flex items-stretch">
+                  <div className={`w-14 bg-gradient-to-br ${dayColors[index % dayColors.length]} flex items-center justify-center flex-shrink-0`}>
+                    <span className="text-lg font-extrabold text-white">
                       {new Date(event.event_date + 'T00:00:00').getDate()}
                     </span>
                   </div>
-                  <div>
+                  <div className="p-3">
                     <p className="font-medium text-sm">{event.title}</p>
                     <p className="text-xs text-muted-foreground">
                       {event.event_time && `${formatTime(event.event_time)} · `}

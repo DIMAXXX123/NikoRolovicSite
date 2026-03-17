@@ -46,13 +46,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!authorized) return null
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#0a0a0f]">
       <div className="max-w-lg mx-auto px-4 pt-4 pb-8">
-        <Link href="/profile" className="flex items-center gap-1 text-sm text-primary mb-4">
+        <Link href="/profile" className="flex items-center gap-1 text-sm text-primary mb-4 hover:text-primary/80 transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Nazad
         </Link>
-        {children}
+        <div className="admin-content">
+          {children}
+        </div>
       </div>
     </div>
   )

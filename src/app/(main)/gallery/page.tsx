@@ -29,6 +29,7 @@ export default function GalleryPage() {
       .select('*, user:profiles!user_id(first_name, last_name, class_number, section_number, role)')
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
+      .limit(50)
 
     if (data) setPhotos(data)
     setLoading(false)
@@ -121,14 +122,6 @@ export default function GalleryPage() {
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold gradient-text">Galerija</h1>
-        <Button
-          size="sm"
-          onClick={() => setShowUpload(true)}
-          className="bg-gradient-to-r from-purple-600 to-violet-700 rounded-xl"
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          Dodaj
-        </Button>
       </div>
 
       {/* Upload modal */}
@@ -195,8 +188,8 @@ export default function GalleryPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {photos.map((photo) => (
-            <div key={photo.id} className="relative rounded-2xl overflow-hidden animate-slide-up">
+          {photos.map((photo, index) => (
+            <div key={photo.id} className="relative rounded-2xl overflow-hidden animate-slide-up card-hover" style={{ animationDelay: `${index * 0.05}s` }}>
               <img
                 src={photo.image_url}
                 alt={photo.caption || ''}
@@ -221,6 +214,14 @@ export default function GalleryPage() {
           ))}
         </div>
       )}
+
+      {/* Floating Action Button */}
+      <button
+        onClick={() => setShowUpload(true)}
+        className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform"
+      >
+        <Plus className="w-7 h-7" />
+      </button>
     </div>
   )
 }

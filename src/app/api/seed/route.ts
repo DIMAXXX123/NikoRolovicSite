@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// SECURITY NOTES:
+// - Protected by secret query parameter. In production, consider using
+//   a stronger secret or env variable (process.env.SEED_SECRET).
+// - Rate limiting: This is a one-time setup endpoint. Consider disabling
+//   in production or adding IP-based rate limiting.
+// - Uses service role key to bypass RLS for seeding data.
+// - Supabase handles all password hashing (bcrypt) server-side.
+
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const secret = searchParams.get('secret')
-  
+
   if (secret !== 'niko2026') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

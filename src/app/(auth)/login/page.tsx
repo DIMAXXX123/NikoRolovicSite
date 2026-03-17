@@ -8,12 +8,15 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { UserPlus } from 'lucide-react'
+import { SuccessAnimation } from '@/components/success-animation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -28,9 +31,20 @@ export default function LoginPage() {
       setError('Pogrešan email ili lozinka')
       setLoading(false)
     } else {
-      router.push('/news')
-      router.refresh()
+      setShowSuccess(true)
     }
+  }
+
+  if (showSuccess) {
+    return (
+      <SuccessAnimation
+        message="Uspešna prijava!"
+        onComplete={() => {
+          router.push('/news')
+          router.refresh()
+        }}
+      />
+    )
   }
 
   return (
@@ -75,9 +89,20 @@ export default function LoginPage() {
             {loading ? 'Prijava...' : 'Prijavi se'}
           </Button>
         </form>
-        <div className="mt-4 text-center">
-          <Link href="/register" className="text-sm text-primary hover:underline">
-            Nemaš nalog? Registruj se
+        <div className="mt-6 text-center space-y-3">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border/50" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-card px-2 text-muted-foreground">ili</span>
+            </div>
+          </div>
+          <Link href="/register" className="block">
+            <Button variant="outline" className="w-full border-primary/50 text-primary hover:bg-primary/10 hover:border-primary text-base py-5 font-semibold gap-2">
+              <UserPlus className="w-5 h-5" />
+              Nemaš nalog? Registruj se
+            </Button>
           </Link>
         </div>
       </CardContent>

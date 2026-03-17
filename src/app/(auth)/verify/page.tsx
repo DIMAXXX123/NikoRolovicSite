@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Mail } from 'lucide-react'
+import { SuccessAnimation } from '@/components/success-animation'
 
 export default function VerifyPage() {
   const [code, setCode] = useState('')
@@ -41,21 +42,16 @@ export default function VerifyPage() {
 
     setSuccess(true)
     localStorage.removeItem('verify_email')
-    
-    setTimeout(() => {
-      router.push('/news')
-      router.refresh()
-    }, 1500)
   }
 
   const handleResend = async () => {
     if (!email) return
-    
+
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email,
     })
-    
+
     if (error) {
       setError('Greška pri slanju. Pokušaj ponovo za minut.')
     } else {
@@ -66,15 +62,13 @@ export default function VerifyPage() {
 
   if (success) {
     return (
-      <Card className="border-border/50 bg-card/50 backdrop-blur-xl text-center">
-        <CardContent className="p-8 space-y-4">
-          <div className="mx-auto w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center">
-            <span className="text-4xl">✅</span>
-          </div>
-          <h1 className="text-2xl font-bold">Nalog verifikovan!</h1>
-          <p className="text-muted-foreground">Preusmeravanje...</p>
-        </CardContent>
-      </Card>
+      <SuccessAnimation
+        message="Nalog verifikovan!"
+        onComplete={() => {
+          router.push('/news')
+          router.refresh()
+        }}
+      />
     )
   }
 
@@ -104,9 +98,9 @@ export default function VerifyPage() {
           {error && (
             <p className="text-destructive text-sm">{error}</p>
           )}
-          <Button 
-            type="submit" 
-            className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800" 
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800"
             disabled={loading || code.length !== 6}
           >
             {loading ? 'Provera...' : 'Potvrdi'}

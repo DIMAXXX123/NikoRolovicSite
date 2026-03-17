@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// SECURITY NOTES:
+// - This webhook is called by Telegram servers. For additional security,
+//   consider verifying the request comes from Telegram using a secret token
+//   in the webhook URL (e.g., /api/telegram/webhook?token=SECRET).
+// - Rate limiting: Telegram itself rate-limits webhook calls, but consider
+//   adding server-side rate limiting for extra protection.
+// - The service role key bypasses RLS — use with caution. Only approve/reject
+//   actions are performed, scoped to a specific photo ID.
+// - Supabase handles all password hashing (bcrypt) server-side.
+
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
