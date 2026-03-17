@@ -134,13 +134,18 @@ export default function LecturesPage() {
 
   const loadLectures = useCallback(async (subject: string) => {
     if (!profile) return
-    const { data } = await supabase
+    console.log('[Lectures] Loading for class_number:', profile.class_number, 'subject:', subject)
+    const { data, error } = await supabase
       .from('lectures')
       .select('*')
       .eq('class_number', profile.class_number)
       .eq('subject', subject)
       .order('created_at', { ascending: false })
-    if (data) setLectures(data)
+    if (error) console.error('[Lectures] Query error:', error)
+    if (data) {
+      console.log('[Lectures] Found:', data.length, 'lectures', data.map((l: Lecture) => ({ id: l.id, title: l.title, contentPreview: l.content?.substring(0, 100) })))
+      setLectures(data)
+    }
   }, [profile])
 
   function handleSubjectTap(subject: string) {
@@ -342,9 +347,16 @@ export default function LecturesPage() {
           </p>
         </div>
         <div className="prose prose-invert prose-sm max-w-none">
-          <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed text-sm">
-            {selectedLecture.content}
-          </div>
+          {selectedLecture.content.includes('<') ? (
+            <div
+              className="text-foreground/90 leading-relaxed text-sm [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_li]:mb-1 [&_strong]:font-bold [&_em]:italic [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_img]:rounded-xl [&_img]:max-w-full"
+              dangerouslySetInnerHTML={{ __html: selectedLecture.content }}
+            />
+          ) : (
+            <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed text-sm">
+              {selectedLecture.content}
+            </div>
+          )}
         </div>
 
         <div className="space-y-3 pt-4 border-t border-border/30">

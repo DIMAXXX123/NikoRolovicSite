@@ -28,7 +28,12 @@ export function BottomNav() {
     }
   }, [])
 
-  const items = getResolvedNavItems(navIds)
+  // Ensure 'profile' (Još) is always the last (rightmost) item
+  const orderedIds = (() => {
+    const withoutProfile = navIds.filter(id => id !== 'profile')
+    return [...withoutProfile, 'profile']
+  })()
+  const items = getResolvedNavItems(orderedIds)
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav glass-premium">
