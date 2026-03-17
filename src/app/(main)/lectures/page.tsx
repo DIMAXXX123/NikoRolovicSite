@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { BookOpen, ChevronRight, ChevronLeft, Plus, X, Play, Brain, RotateCcw, Heart } from 'lucide-react'
+import { LikeBurst } from '@/components/like-burst'
 import type { Lecture, Profile } from '@/lib/types'
 
 const DEFAULT_SUBJECTS = [
@@ -89,6 +90,7 @@ export default function LecturesPage() {
   const [currentCard, setCurrentCard] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [likedLectures, setLikedLectures] = useState<Record<string, boolean>>({})
+  const [likeBurst, setLikeBurst] = useState<{ x: number; y: number; key: number } | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -166,12 +168,15 @@ export default function LecturesPage() {
     localStorage.setItem('extra_subjects', JSON.stringify(updated))
   }
 
-  function toggleLike(lectureId: string) {
+  function toggleLike(lectureId: string, e?: React.MouseEvent) {
     const updated = { ...likedLectures }
     if (updated[lectureId]) {
       delete updated[lectureId]
     } else {
       updated[lectureId] = true
+      if (e) {
+        setLikeBurst({ x: e.clientX - 20, y: e.clientY - 20, key: Date.now() })
+      }
     }
     setLikedLectures(updated)
     localStorage.setItem('lecture_likes', JSON.stringify(updated))
@@ -283,6 +288,14 @@ export default function LecturesPage() {
   if (view === 'lecture' && selectedLecture) {
     return (
       <div className="space-y-4 animate-fade-in">
+        {likeBurst && (
+          <LikeBurst
+            key={likeBurst.key}
+            x={likeBurst.x}
+            y={likeBurst.y}
+            onDone={() => setLikeBurst(null)}
+          />
+        )}
         <button onClick={goBack} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
           <ChevronLeft className="w-4 h-4" /> Nazad
         </button>
@@ -290,7 +303,7 @@ export default function LecturesPage() {
           <div className="flex items-center justify-between">
             <Badge variant="secondary" className="text-xs">{selectedLecture.subject}</Badge>
             <button
-              onClick={() => toggleLike(selectedLecture.id)}
+              onClick={(e) => toggleLike(selectedLecture.id, e)}
               className="flex items-center gap-1.5 transition-all duration-200 active:scale-110"
             >
               <Heart

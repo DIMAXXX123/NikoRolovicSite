@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Newspaper, Calendar, BookOpen, Camera, User } from 'lucide-react'
+import { Newspaper, Calendar, BookOpen, Camera, MoreHorizontal } from 'lucide-react'
 
 const navItems = [
   { href: '/gallery', label: 'Dumbs', icon: Camera },
   { href: '/news', label: 'Novosti', icon: Newspaper },
   { href: '/events', label: 'Kalendar', icon: Calendar },
   { href: '/lectures', label: 'Lekcije', icon: BookOpen },
-  { href: '/profile', label: 'Profil', icon: User },
+  { href: '/profile', label: 'Još', icon: MoreHorizontal },
 ]
 
 export function BottomNav() {

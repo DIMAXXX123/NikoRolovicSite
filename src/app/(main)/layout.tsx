@@ -14,10 +14,16 @@ export default function MainLayout({
   const [opacity, setOpacity] = useState(1)
   const prevPath = useRef(pathname)
 
+  const [translateY, setTranslateY] = useState(0)
+
   useEffect(() => {
     if (prevPath.current !== pathname) {
       setOpacity(0)
-      const t = setTimeout(() => setOpacity(1), 30)
+      setTranslateY(8)
+      const t = setTimeout(() => {
+        setOpacity(1)
+        setTranslateY(0)
+      }, 50)
       prevPath.current = pathname
       return () => clearTimeout(t)
     }
@@ -38,7 +44,7 @@ export default function MainLayout({
         </div>
       </header>
       <main className="max-w-lg mx-auto px-4 pt-18">
-        <div className="page-content-transition" style={{ opacity }}>
+        <div className="page-content-transition" style={{ opacity, transform: `translateY(${translateY}px)` }}>
           {children}
         </div>
       </main>

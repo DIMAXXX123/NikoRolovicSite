@@ -291,6 +291,19 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Rich text editor placeholder */
+.admin-content [contenteditable]:empty::before {
+  content: attr(data-placeholder);
+  color: #64748b;
+  pointer-events: none;
+}
+
+/* Admin select option styling */
+.admin-content select option {
+  background-color: #1e293b;
+  color: #fff;
+}
+
 /* ============================================
    THEME SWITCHER
    ============================================ */
@@ -314,8 +327,14 @@ body.perf-mode * {
 
 /* Page content transition */
 .page-content-transition {
-  transition: opacity 0.15s ease-in-out;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
+
+/* ============================================
+   FONT SIZE
+   ============================================ */
+html.font-small { font-size: 14px; }
+html.font-large { font-size: 18px; }
 
 /* ============================================
    TOUR / ONBOARDING
