@@ -61,24 +61,19 @@ export default function AdminStudentsPage() {
   async function deleteStudent(id: string, student: VerifiedStudent) {
     if (!confirm('Obriši ovog učenika iz baze?')) return
 
-    // Find matching profile by name + class to kick them out
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('first_name', student.first_name)
-      .eq('last_name', student.last_name)
-      .eq('class_number', student.class_number)
-      .eq('section_number', student.section_number)
-      .single()
+    // Kick from ALL tables: verified_students + profiles + auth
+    await fetch('/api/kick-student', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: student.first_name,
+        lastName: student.last_name,
+        classNumber: student.class_number,
+        sectionNumber: student.section_number,
+      }),
+    })
 
-    if (profile) {
-      await fetch('/api/kick-student', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profileId: profile.id }),
-      })
-    }
-
+    // Also delete from verified_students via client (in case API didn't catch it)
     await supabase.from('verified_students').delete().eq('id', id)
     loadStudents()
   }

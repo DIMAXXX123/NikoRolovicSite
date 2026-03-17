@@ -9,20 +9,44 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No service key configured' }, { status: 500 })
   }
 
-  const { profileId } = await request.json()
-  if (!profileId) {
-    return NextResponse.json({ error: 'profileId required' }, { status: 400 })
-  }
+  const { profileId, firstName, lastName, classNumber, sectionNumber } = await request.json()
 
   const supabase = createClient(supabaseUrl, serviceKey)
 
-  // Delete the profile (RLS bypassed via service role)
-  await supabase.from('profiles').delete().eq('id', profileId)
+  // If we have a profileId, delete profile + auth user
+  if (profileId) {
+    await supabase.from('profiles').delete().eq('id', profileId)
+    await supabase.auth.admin.deleteUser(profileId)
+  }
 
-  // Delete the auth user — this invalidates all their sessions
-  const { error } = await supabase.auth.admin.deleteUser(profileId)
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  // Also delete from verified_students by name+class match
+  if (firstName && lastName) {
+    let query = supabase
+      .from('verified_students')
+      .delete()
+      .eq('first_name', firstName)
+      .eq('last_name', lastName)
+    
+    if (classNumber) query = query.eq('class_number', classNumber)
+    if (sectionNumber) query = query.eq('section_number', sectionNumber)
+    
+    await query
+  }
+
+  // If no profileId but we have name, find profile by name and delete
+  if (!profileId && firstName && lastName) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('first_name', firstName)
+      .eq('last_name', lastName)
+
+    if (profiles) {
+      for (const p of profiles) {
+        await supabase.from('profiles').delete().eq('id', p.id)
+        await supabase.auth.admin.deleteUser(p.id)
+      }
+    }
   }
 
   return NextResponse.json({ ok: true })
