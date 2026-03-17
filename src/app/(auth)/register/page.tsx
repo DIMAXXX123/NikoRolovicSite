@@ -26,7 +26,7 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
 
-    // Step 1: Verify student exists in verified_students
+    // Step 1: Verify student exists in verified_students (by name + class, email is optional)
     const { data: verified, error: verifyError } = await supabase
       .from('verified_students')
       .select('id, used')
@@ -34,7 +34,6 @@ export default function RegisterPage() {
       .eq('last_name', lastName.trim())
       .eq('class_number', parseInt(classNumber))
       .eq('section_number', parseInt(sectionNumber))
-      .eq('email', email.trim().toLowerCase())
       .single()
 
     if (verifyError || !verified) {
