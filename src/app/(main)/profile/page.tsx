@@ -5,13 +5,15 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation } from 'lucide-react'
+import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight } from 'lucide-react'
 import { RoleBadge } from '@/components/role-badge'
 import { RoleAnimation } from '@/components/role-animation'
 import { AVATARS, AvatarById } from '@/components/avatars'
 import { GpaCalculator } from './calculator'
 import { NavEditor } from './nav-editor'
+import { getNavConfig } from '@/lib/nav-config'
 import type { Profile } from '@/lib/types'
+import Link from 'next/link'
 
 const roleGradient: Record<string, string> = {
   creator: 'from-yellow-400 via-amber-500 to-yellow-600',
@@ -32,6 +34,45 @@ const roleLabel: Record<string, string> = {
   moderator: 'Moderator',
   admin: 'Administrator',
   creator: 'Kreator',
+}
+
+const QUICK_ACCESS_PAGES = [
+  { id: 'about', href: '/about', label: 'O školi', icon: School, color: 'from-emerald-500 to-teal-600' },
+  { id: 'schedule', href: '/schedule', label: 'Raspored', icon: Clock, color: 'from-blue-500 to-cyan-600' },
+  { id: 'grades', href: '/grades', label: 'Moje ocjene', icon: GraduationCap, color: 'from-purple-500 to-violet-600' },
+]
+
+function QuickAccessCards() {
+  const [navIds, setNavIds] = useState<string[]>([])
+
+  useEffect(() => {
+    setNavIds(getNavConfig())
+  }, [])
+
+  const hiddenPages = QUICK_ACCESS_PAGES.filter(p => !navIds.includes(p.id))
+
+  if (hiddenPages.length === 0) return null
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground font-medium px-1">Brzi pristup</p>
+      <div className="grid grid-cols-1 gap-2">
+        {hiddenPages.map((page) => (
+          <Link key={page.id} href={page.href}>
+            <Card className="border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98]">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${page.color} flex items-center justify-center flex-shrink-0`}>
+                  <page.icon className="w-4.5 h-4.5 text-white" />
+                </div>
+                <span className="text-sm font-medium flex-1">{page.label}</span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export default function ProfilePage() {
@@ -213,7 +254,7 @@ export default function ProfilePage() {
   }
 
   function clearCache() {
-    const keys = ['gpa_grades', 'extra_subjects', 'lecture_likes', 'user_avatar', 'app_lang', 'app_notifications', 'app_font_size']
+    const keys = ['gpa_grades', 'extra_subjects', 'lecture_likes', 'user_avatar', 'app_lang', 'app_notifications', 'app_font_size', 'my_grades_data']
     keys.forEach(k => localStorage.removeItem(k))
     setAvatarId(null)
     setLang('sr')
@@ -389,6 +430,9 @@ export default function ProfilePage() {
         <Navigation className="w-4 h-4" />
         Uredi navigaciju
       </Button>
+
+      {/* Quick-access cards for pages not in nav */}
+      <QuickAccessCards />
 
       {/* Settings panel */}
       <Button

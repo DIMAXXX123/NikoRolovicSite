@@ -192,18 +192,13 @@ export default function GalleryPage() {
 
   const isAnon = (photo: Photo) => (photo as Photo & { anonymous?: boolean }).anonymous
 
-  const CARD_HEIGHT = 'calc(100dvh - 128px)'
-
   if (loading) {
     return (
-      <div
-        className="h-[calc(100dvh-128px)] overflow-y-auto snap-y snap-mandatory"
-      >
+      <div className="h-[calc(100dvh-128px)] overflow-y-auto px-2 py-4 space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="snap-start flex-shrink-0 bg-muted animate-shimmer"
-            style={{ height: CARD_HEIGHT }}
+            className="aspect-[3/4] rounded-2xl bg-muted animate-shimmer"
           />
         ))}
       </div>
@@ -291,43 +286,41 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* TikTok-style vertical feed */}
+      {/* Photo feed - natural scrolling */}
       {photos.length === 0 ? (
-        <div className="flex items-center justify-center text-muted-foreground animate-fade-in" style={{ height: CARD_HEIGHT }}>
+        <div className="flex items-center justify-center text-muted-foreground animate-fade-in h-[calc(100dvh-128px)]">
           <div className="text-center">
             <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p>Još nema fotografija</p>
           </div>
         </div>
       ) : (
-        <div
-          className="overflow-y-auto snap-y snap-mandatory animate-fade-in"
-          style={{ height: CARD_HEIGHT }}
-        >
+        <div className="overflow-y-auto animate-fade-in space-y-3 px-2 py-4 pb-20" style={{ height: 'calc(100dvh - 128px)' }}>
           {photos.map((photo) => (
             <div
               key={photo.id}
-              className="snap-start relative flex-shrink-0 overflow-hidden"
-              style={{ height: CARD_HEIGHT }}
+              className="relative rounded-2xl overflow-hidden bg-black"
             >
               {/* Shimmer skeleton while loading */}
               {!loadedImages.has(photo.id) && (
                 <div className="absolute inset-0 bg-muted animate-shimmer" />
               )}
 
-              {/* Full-bleed photo */}
-              <img
-                src={photo.image_url}
-                alt={photo.caption || ''}
-                className={`w-full h-full object-cover transition-opacity duration-300 ${loadedImages.has(photo.id) ? 'opacity-100' : 'opacity-0'}`}
-                onLoad={() => setLoadedImages((prev) => new Set(prev).add(photo.id))}
-              />
+              {/* Photo with natural aspect ratio, max 4/5 */}
+              <div className="aspect-[3/4] max-h-[75vh]">
+                <img
+                  src={photo.image_url}
+                  alt={photo.caption || ''}
+                  className={`w-full h-full object-cover transition-opacity duration-300 ${loadedImages.has(photo.id) ? 'opacity-100' : 'opacity-0'}`}
+                  onLoad={() => setLoadedImages((prev) => new Set(prev).add(photo.id))}
+                />
+              </div>
 
-              {/* Right side actions */}
-              <div className="absolute right-3 bottom-24 flex flex-col items-center gap-5">
+              {/* Right side actions - heart outline only, no bg */}
+              <div className="absolute right-3 bottom-20 flex flex-col items-center gap-5">
                 <button
                   onClick={() => toggleLike(photo.id)}
-                  className="flex flex-col items-center gap-1 active:scale-125 transition-transform"
+                  className="active:scale-125 transition-transform"
                 >
                   <Heart
                     className={`w-7 h-7 drop-shadow-lg transition-all ${
@@ -339,35 +332,38 @@ export default function GalleryPage() {
                 </button>
               </div>
 
-              {/* Bottom overlay: user info + caption */}
-              <div className="absolute bottom-0 left-0 right-14 px-4 pb-4 bg-gradient-to-t from-black/60 via-black/20 to-transparent pt-16">
-                {!isAnon(photo) && photo.user && (
-                  <p className="text-white font-semibold text-sm drop-shadow-lg">
-                    {photo.user.first_name} {photo.user.last_name}
-                    {photo.user.class_number && photo.user.section_number && (
-                      <span className="font-normal text-white/70 ml-1.5 text-xs">
-                        {photo.user.class_number}/{photo.user.section_number}
-                      </span>
-                    )}
-                  </p>
-                )}
-                {photo.caption && (
-                  <p className="text-white/90 text-sm mt-1 drop-shadow-lg line-clamp-2">
-                    {photo.caption}
-                  </p>
-                )}
+              {/* Bottom overlay: gradient only bottom 30%, user info + caption */}
+              <div className="absolute bottom-0 left-0 right-14 pb-16 px-4">
+                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                <div className="relative">
+                  {!isAnon(photo) && photo.user && (
+                    <p className="text-white font-semibold text-sm drop-shadow-lg">
+                      {photo.user.first_name} {photo.user.last_name}
+                      {photo.user.class_number && photo.user.section_number && (
+                        <span className="font-normal text-white/70 ml-1.5 text-xs">
+                          {photo.user.class_number}/{photo.user.section_number}
+                        </span>
+                      )}
+                    </p>
+                  )}
+                  {photo.caption && (
+                    <p className="text-white/90 text-sm mt-1 drop-shadow-lg line-clamp-2">
+                      {photo.caption}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Fixed upload button - bottom left */}
+      {/* Fixed upload button - bottom left, bigger */}
       <button
         onClick={() => setShowUpload(true)}
-        className="fixed bottom-24 left-4 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform animate-bounce-in"
+        className="fixed bottom-24 left-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform animate-bounce-in"
       >
-        <Camera className="w-5 h-5" />
+        <Camera className="w-6 h-6" />
       </button>
     </>
   )

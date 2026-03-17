@@ -8,6 +8,15 @@ import { BookOpen, ChevronRight, ChevronLeft, Plus, X, Play, Brain, RotateCcw, T
 import { LikeBurst } from '@/components/like-burst'
 import type { Lecture, Profile } from '@/lib/types'
 
+const FLAG_SUBJECTS: Record<string, string> = {
+  'CSBH': 'https://flagcdn.com/24x18/me.png',
+  'Engleski': 'https://flagcdn.com/24x18/gb.png',
+  'Italjanski': 'https://flagcdn.com/24x18/it.png',
+  'Njemacki': 'https://flagcdn.com/24x18/de.png',
+  'Spanski': 'https://flagcdn.com/24x18/es.png',
+  'Izb_spanski': 'https://flagcdn.com/24x18/es.png',
+}
+
 const DEFAULT_SUBJECTS = [
   { name: 'Fizika', emoji: '⚛️' },
   { name: 'Matematika', emoji: '📐' },
@@ -27,6 +36,15 @@ const OPTIONAL_SUBJECTS = [
   { name: 'Spanski', emoji: '🇪🇸' },
   { name: 'Izb_spanski', emoji: '🇪🇸' },
 ]
+
+function SubjectIcon({ name, emoji, size = 'lg' }: { name: string; emoji: string; size?: 'lg' | 'sm' }) {
+  const flagUrl = FLAG_SUBJECTS[name]
+  if (flagUrl) {
+    const dims = size === 'lg' ? 'w-10 h-7' : 'w-6 h-4'
+    return <img src={flagUrl} alt={name} className={`${dims} object-contain`} />
+  }
+  return <span className={size === 'lg' ? 'text-4xl' : 'text-xl'}>{emoji}</span>
+}
 
 type ViewState = 'subjects' | 'lectures' | 'lecture' | 'quiz'
 
@@ -363,7 +381,7 @@ export default function LecturesPage() {
           <ChevronLeft className="w-4 h-4" /> Svi predmeti
         </button>
         <div className="flex items-center gap-3">
-          <span className="text-3xl">{subjectInfo?.emoji}</span>
+          {subjectInfo && <SubjectIcon name={subjectInfo.name} emoji={subjectInfo.emoji} size="lg" />}
           <div>
             <h1 className="text-2xl font-bold">{selectedSubject}</h1>
             <p className="text-xs text-muted-foreground">{lectures.length} lekcija</p>
@@ -435,7 +453,7 @@ export default function LecturesPage() {
             onClick={() => handleSubjectTap(subject.name)}
           >
             <CardContent className="p-5 flex flex-col items-center text-center gap-2.5">
-              <span className="text-4xl">{subject.emoji}</span>
+              <SubjectIcon name={subject.name} emoji={subject.emoji} size="lg" />
               <h3 className="font-semibold text-sm">{subject.name}</h3>
             </CardContent>
           </Card>
@@ -462,7 +480,7 @@ export default function LecturesPage() {
                   onClick={() => { addSubject(subject.name); setShowAddSubject(false) }}
                 >
                   <CardContent className="p-3 flex items-center gap-3">
-                    <span className="text-xl">{subject.emoji}</span>
+                    <SubjectIcon name={subject.name} emoji={subject.emoji} size="sm" />
                     <span className="text-sm font-medium">{subject.name}</span>
                     <Plus className="w-4 h-4 text-primary ml-auto" />
                   </CardContent>
