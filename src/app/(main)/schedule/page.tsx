@@ -47,6 +47,16 @@ function getSubjectColor(subject: string): string {
 
 type ScheduleData = Record<string, string>
 
+const DEFAULT_SCHEDULES: Record<string, ScheduleData> = {
+  'schedule_2_1': {
+    '0-1': 'Matematika', '0-2': 'Engleski', '0-3': 'Hemija', '0-4': 'Fizicko', '0-5': 'CSBH', '0-6': 'Biologija',
+    '1-1': 'Fizika', '1-2': 'Istorija', '1-3': 'Matematika', '1-4': 'Engleski', '1-5': 'Geografija', '1-6': 'Likovno',
+    '2-1': 'CSBH', '2-2': 'Hemija', '2-3': 'Biologija', '2-4': 'Matematika', '2-5': 'Fizika', '2-6': 'Engleski',
+    '3-1': 'Istorija', '3-2': 'Geografija', '3-3': 'Engleski', '3-4': 'CSBH', '3-5': 'Matematika', '3-6': 'Hemija',
+    '4-1': 'Fizicko', '4-2': 'Likovno', '4-3': 'Fizika', '4-4': 'Biologija', '4-5': 'Istorija',
+  },
+}
+
 function getStorageKey(classNum: number, sectionNum: number) {
   return `schedule_${classNum}_${sectionNum}`
 }
@@ -76,6 +86,9 @@ export default function SchedulePage() {
       } catch {
         setSchedule({})
       }
+    } else if (DEFAULT_SCHEDULES[key]) {
+      setSchedule(DEFAULT_SCHEDULES[key])
+      localStorage.setItem(key, JSON.stringify(DEFAULT_SCHEDULES[key]))
     } else {
       setSchedule({})
     }

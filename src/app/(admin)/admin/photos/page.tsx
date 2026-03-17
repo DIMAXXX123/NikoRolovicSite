@@ -63,8 +63,14 @@ export default function AdminPhotosPage() {
 
   async function deleteApprovedPhoto(photoId: string) {
     if (!confirm('Obriši ovu fotografiju?')) return
-    await supabase.from('photos').delete().eq('id', photoId)
-    setApprovedPhotos((prev) => prev.filter((p) => p.id !== photoId))
+    const res = await fetch('/api/delete-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ photoId }),
+    })
+    if (res.ok) {
+      setApprovedPhotos((prev) => prev.filter((p) => p.id !== photoId))
+    }
   }
 
   if (loading) {
