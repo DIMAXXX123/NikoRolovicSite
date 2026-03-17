@@ -58,8 +58,27 @@ export default function AdminStudentsPage() {
     loadStudents()
   }
 
-  async function deleteStudent(id: string) {
+  async function deleteStudent(id: string, student: VerifiedStudent) {
     if (!confirm('Obriši ovog učenika iz baze?')) return
+
+    // Find matching profile by name + class to kick them out
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('first_name', student.first_name)
+      .eq('last_name', student.last_name)
+      .eq('class_number', student.class_number)
+      .eq('section_number', student.section_number)
+      .single()
+
+    if (profile) {
+      await fetch('/api/kick-student', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profileId: profile.id }),
+      })
+    }
+
     await supabase.from('verified_students').delete().eq('id', id)
     loadStudents()
   }
@@ -137,7 +156,7 @@ export default function AdminStudentsPage() {
               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${student.used ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
                 {student.used ? 'Registrovan' : 'Čeka'}
               </span>
-              <button onClick={() => deleteStudent(student.id)} className="text-red-400 p-1 hover:text-red-300">
+              <button onClick={() => deleteStudent(student.id, student)} className="text-red-400 p-1 hover:text-red-300">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>

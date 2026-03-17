@@ -326,9 +326,8 @@ export default function GalleryPage() {
                     className={`w-7 h-7 transition-all ${
                       likedPhotos[photo.id]
                         ? 'fill-red-500 text-red-500'
-                        : 'text-white'
+                        : 'text-white/80'
                     }`}
-                    style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))' }}
                   />
                 </button>
               </div>
@@ -362,7 +361,7 @@ export default function GalleryPage() {
       {/* Fixed upload button - bottom left, bigger */}
       <button
         onClick={() => setShowUpload(true)}
-        className="fixed bottom-[5.5rem] left-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform animate-bounce-in"
+        className="fixed bottom-[5.5rem] right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform animate-bounce-in"
       >
         <Camera className="w-6 h-6" />
       </button>
