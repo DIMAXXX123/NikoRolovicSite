@@ -207,10 +207,10 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* TikTok-style full screen vertical scroll */}
-      <div className="-mx-4 -mt-4" style={{ height: 'calc(100dvh - 144px)' }}>
+      {/* TikTok-style vertical scroll */}
+      <div className="-mx-2" style={{ height: 'calc(100dvh - 144px)' }}>
         <div
-          className="h-full overflow-y-scroll"
+          className="h-full overflow-y-scroll px-1"
           style={{ scrollSnapType: 'y mandatory' }}
         >
           {photos.length === 0 ? (
@@ -222,14 +222,14 @@ export default function GalleryPage() {
             photos.map((photo) => (
               <div
                 key={photo.id}
-                className="relative w-full"
-                style={{ height: 'calc(100dvh - 144px)', scrollSnapAlign: 'start' }}
+                className="relative w-full rounded-2xl overflow-hidden mb-2"
+                style={{ height: 'calc(100dvh - 160px)', scrollSnapAlign: 'start' }}
               >
                 {/* Photo */}
                 <img
                   src={photo.image_url}
                   alt={photo.caption || ''}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-2xl"
                 />
 
                 {/* Right side: like button + count */}
