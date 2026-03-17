@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Camera, X, Send, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -18,14 +18,24 @@ export default function GalleryPage() {
   const [anonymous, setAnonymous] = useState(false)
   const [toast, setToast] = useState('')
   const [likedPhotos, setLikedPhotos] = useState<Record<string, boolean>>({})
+  const [heartAnimId, setHeartAnimId] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const lastTapRef = useRef<Record<string, number>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const feedEndRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
     loadPhotos()
+    loadCurrentUser()
     const saved = localStorage.getItem('photo_likes')
     if (saved) setLikedPhotos(JSON.parse(saved))
   }, [])
+
+  async function loadCurrentUser() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) setCurrentUserId(user.id)
+  }
 
   async function loadPhotos() {
     const { data } = await supabase
@@ -48,6 +58,20 @@ export default function GalleryPage() {
     setLikedPhotos(updated)
     localStorage.setItem('photo_likes', JSON.stringify(updated))
   }
+
+  const handleDoubleTap = useCallback((photoId: string) => {
+    const now = Date.now()
+    const lastTap = lastTapRef.current[photoId] || 0
+    if (now - lastTap < 300) {
+      // Double tap detected
+      toggleLike(photoId)
+      setHeartAnimId(photoId)
+      setTimeout(() => setHeartAnimId(null), 1000)
+      lastTapRef.current[photoId] = 0
+    } else {
+      lastTapRef.current[photoId] = now
+    }
+  }, [likedPhotos])
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -126,15 +150,76 @@ export default function GalleryPage() {
     return photo.anonymous === true
   }
 
+  function isOwnPhoto(photo: Photo) {
+    return currentUserId != null && photo.user_id === currentUserId
+  }
+
+  function formatTime(dateStr: string) {
+    const d = new Date(dateStr)
+    return d.toLocaleTimeString('sr-Latn', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  function formatDate(dateStr: string) {
+    const d = new Date(dateStr)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    if (d.toDateString() === today.toDateString()) return 'Danas'
+    if (d.toDateString() === yesterday.toDateString()) return 'Juče'
+    return d.toLocaleDateString('sr-Latn', { day: 'numeric', month: 'short' })
+  }
+
+  // Group photos by date
+  function groupByDate(photos: (Photo & { user?: Profile })[]) {
+    const groups: { date: string; photos: (Photo & { user?: Profile })[] }[] = []
+    const reversed = [...photos].reverse() // oldest first for chat feel
+
+    for (const photo of reversed) {
+      const dateKey = new Date(photo.created_at).toDateString()
+      const last = groups[groups.length - 1]
+      if (last && last.date === dateKey) {
+        last.photos.push(photo)
+      } else {
+        groups.push({ date: dateKey, photos: [photo] })
+      }
+    }
+    return groups
+  }
+
+  // Sender colors (Telegram-style rotating colors for different users)
+  const senderColors = [
+    'text-purple-400', 'text-emerald-400', 'text-sky-400', 'text-amber-400',
+    'text-rose-400', 'text-teal-400', 'text-indigo-400', 'text-orange-400',
+  ]
+
+  function getSenderColor(userId: string) {
+    let hash = 0
+    for (let i = 0; i < userId.length; i++) {
+      hash = ((hash << 5) - hash) + userId.charCodeAt(i)
+      hash |= 0
+    }
+    return senderColors[Math.abs(hash) % senderColors.length]
+  }
+
   if (loading) {
     return (
-      <div className="space-y-0">
-        {[1, 2].map((i) => (
-          <div key={i} className="h-[calc(100dvh-144px)] bg-muted animate-shimmer" />
+      <div className="flex flex-col gap-3 p-4 pt-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+            <div className={`rounded-2xl p-2.5 space-y-2 ${i % 2 === 0 ? 'max-w-[80%]' : 'max-w-[75%]'}`}
+                 style={{ background: 'rgba(255,255,255,0.04)' }}>
+              <div className="h-3 w-20 rounded-full bg-muted animate-shimmer" />
+              <div className={`rounded-xl bg-muted animate-shimmer ${i === 1 ? 'w-56 h-64' : i === 2 ? 'w-48 h-52' : 'w-60 h-72'}`} />
+              <div className="h-2.5 w-10 rounded-full bg-muted animate-shimmer ml-auto" />
+            </div>
+          </div>
         ))}
       </div>
     )
   }
+
+  const groups = groupByDate(photos)
 
   return (
     <>
@@ -207,79 +292,95 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* TikTok-style vertical scroll */}
-      <div className="-mx-2" style={{ height: 'calc(100dvh - 144px)' }}>
-        <div
-          className="h-full overflow-y-scroll px-1"
-          style={{ scrollSnapType: 'y mandatory' }}
-        >
-          {photos.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
-              <Camera className="w-12 h-12 mb-3 opacity-30" />
-              <p>Još nema fotografija</p>
-            </div>
-          ) : (
-            photos.map((photo) => (
-              <div
-                key={photo.id}
-                className="relative w-full rounded-2xl overflow-hidden mb-2"
-                style={{ height: 'calc(100dvh - 160px)', scrollSnapAlign: 'start' }}
-              >
-                {/* Photo */}
-                <img
-                  src={photo.image_url}
-                  alt={photo.caption || ''}
-                  className="w-full h-full object-cover rounded-2xl"
-                />
-
-                {/* Right side: like button + count */}
-                <div className="absolute right-3 bottom-24 flex flex-col items-center gap-1">
-                  <button
-                    onClick={() => toggleLike(photo.id)}
-                    className="active:scale-125 transition-transform p-2"
-                  >
-                    <Heart
-                      className={`w-8 h-8 transition-all ${
-                        likedPhotos[photo.id]
-                          ? 'fill-red-500 text-red-500'
-                          : 'text-white'
-                      }`}
-                      style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
-                    />
-                  </button>
-                  <span className="text-white text-xs font-bold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
-                    {likedPhotos[photo.id] ? 1 : 0}
-                  </span>
-                </div>
-
-                {/* Bottom: user info */}
-                <div className="absolute bottom-4 left-4 right-16">
-                  <div className="relative">
-                    {!isAnon(photo) && photo.user && (
-                      <p className="text-white font-bold text-base" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                        {photo.user.first_name} {photo.user.last_name}
-                        <span className="font-normal text-white/70 ml-2 text-sm">
-                          {photo.user.class_number}-{photo.user.section_number}
-                        </span>
-                      </p>
-                    )}
-                    {photo.caption && (
-                      <p className="text-white/80 text-sm mt-1 line-clamp-2" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
-                        {photo.caption}
-                      </p>
-                    )}
-                  </div>
-                </div>
+      {/* Chat-style photo feed */}
+      <div className="px-3 py-2 space-y-1 pb-24">
+        {photos.length === 0 ? (
+          <div className="h-[60vh] flex flex-col items-center justify-center text-muted-foreground">
+            <Camera className="w-12 h-12 mb-3 opacity-30" />
+            <p>Još nema fotografija</p>
+          </div>
+        ) : (
+          groups.map((group) => (
+            <div key={group.date}>
+              {/* Date separator */}
+              <div className="flex justify-center my-3">
+                <span className="text-[11px] text-muted-foreground/70 px-3 py-0.5 rounded-full"
+                      style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  {formatDate(group.photos[0].created_at)}
+                </span>
               </div>
-            ))
-          )}
-        </div>
+
+              {/* Photos in this date group */}
+              <div className="space-y-2">
+                {group.photos.map((photo) => {
+                  const own = isOwnPhoto(photo)
+                  const anon = isAnon(photo)
+
+                  return (
+                    <div key={photo.id} className={`${own ? 'ml-auto' : ''} max-w-[85%] animate-fade-in`}>
+                      <div className="relative rounded-2xl bg-card/80 p-2">
+                        {/* Sender name */}
+                        {!own && !anon && photo.user && (
+                          <p className="text-primary text-xs font-medium px-1 pb-1">
+                            {photo.user.first_name} {photo.user.last_name}
+                          </p>
+                        )}
+
+                        {/* Photo with double-tap */}
+                        <div
+                          className="relative select-none"
+                          onTouchEnd={() => handleDoubleTap(photo.id)}
+                          onClick={() => handleDoubleTap(photo.id)}
+                        >
+                          <img
+                            src={photo.image_url}
+                            alt={photo.caption || ''}
+                            className="rounded-xl w-full object-cover aspect-[3/4]"
+                            draggable={false}
+                          />
+
+                          {/* Heart animation overlay */}
+                          {heartAnimId === photo.id && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <Heart
+                                className="w-20 h-20 fill-red-500 text-red-500 animate-heart-pop"
+                                style={{ filter: 'drop-shadow(0 4px 12px rgba(239, 68, 68, 0.5))' }}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Caption */}
+                        {photo.caption && (
+                          <p className="text-sm text-foreground/80 px-1 pt-1.5 leading-snug">
+                            {photo.caption}
+                          </p>
+                        )}
+
+                        {/* Timestamp & like indicator - bottom right */}
+                        <div className="flex items-center justify-end gap-1.5 px-1 pt-1">
+                          {likedPhotos[photo.id] && (
+                            <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                          )}
+                          <span className="text-[10px] text-muted-foreground">
+                            {formatTime(photo.created_at)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={feedEndRef} />
       </div>
 
-      {/* Fixed upload button - bottom left */}
+      {/* Floating upload button - bottom right */}
       <button
         onClick={() => setShowUpload(true)}
-        className="fixed bottom-[5.5rem] left-4 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform"
+        className="fixed bottom-[5.5rem] right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform animate-bounce-in"
       >
         <Camera className="w-6 h-6" />
       </button>
