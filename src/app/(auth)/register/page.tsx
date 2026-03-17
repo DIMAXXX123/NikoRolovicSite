@@ -73,14 +73,17 @@ export default function RegisterPage() {
       return
     }
 
-    // Step 3: Mark student as used
-    await supabase
-      .from('verified_students')
-      .update({ used: true })
-      .eq('id', verified.id)
-
-    // Step 4: Create profile
+    // DON'T create profile yet - wait for email verification
+    // DON'T mark as used yet - only after verification
+    // Store verified_student_id for later
     if (authData.user) {
+      localStorage.setItem('pending_verified_id', verified.id)
+      localStorage.setItem('pending_class', classNumber)
+      localStorage.setItem('pending_section', sectionNumber)
+    }
+
+    // Old code kept for reference - profile creation moved to verify page
+    if (false && authData.user) {
       await supabase.from('profiles').insert({
         id: authData.user.id,
         first_name: firstName.trim(),

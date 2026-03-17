@@ -40,8 +40,37 @@ export default function VerifyPage() {
       return
     }
 
+    // Email verified! Now create profile and mark student as used
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const meta = user.user_metadata || {}
+      
+      // Create profile
+      await supabase.from('profiles').insert({
+        id: user.id,
+        first_name: meta.first_name || 'Unknown',
+        last_name: meta.last_name || 'Unknown',
+        email: user.email || email,
+        class_number: meta.class_number || parseInt(localStorage.getItem('pending_class') || '1'),
+        section_number: meta.section_number || parseInt(localStorage.getItem('pending_section') || '1'),
+        role: 'student',
+      })
+
+      // Mark verified student as used
+      const verifiedId = localStorage.getItem('pending_verified_id')
+      if (verifiedId) {
+        await supabase
+          .from('verified_students')
+          .update({ used: true })
+          .eq('id', verifiedId)
+      }
+    }
+
     setSuccess(true)
     localStorage.removeItem('verify_email')
+    localStorage.removeItem('pending_verified_id')
+    localStorage.removeItem('pending_class')
+    localStorage.removeItem('pending_section')
   }
 
   const handleResend = async () => {
