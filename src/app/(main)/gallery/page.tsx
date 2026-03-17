@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Camera, X, Send, Heart, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Camera, X, Send, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { Photo, Profile } from '@/lib/types'
@@ -18,11 +18,8 @@ export default function GalleryPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [likedPhotos, setLikedPhotos] = useState<Record<string, boolean>>({})
-  const [viewerIndex, setViewerIndex] = useState<number | null>(null)
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const touchStartX = useRef(0)
-  const touchDeltaX = useRef(0)
   const supabase = createClient()
 
   const showToast = useCallback((message: string) => {
@@ -193,57 +190,25 @@ export default function GalleryPage() {
     showToast('Fotografija poslata na moderaciju')
   }
 
-  // Fullscreen viewer navigation
-  function openViewer(index: number) {
-    setViewerIndex(index)
-  }
-
-  function closeViewer() {
-    setViewerIndex(null)
-  }
-
-  function nextPhoto() {
-    if (viewerIndex !== null && viewerIndex < photos.length - 1) {
-      setViewerIndex(viewerIndex + 1)
-    }
-  }
-
-  function prevPhoto() {
-    if (viewerIndex !== null && viewerIndex > 0) {
-      setViewerIndex(viewerIndex - 1)
-    }
-  }
-
-  function handleTouchStart(e: React.TouchEvent) {
-    touchStartX.current = e.touches[0].clientX
-    touchDeltaX.current = 0
-  }
-
-  function handleTouchMove(e: React.TouchEvent) {
-    touchDeltaX.current = e.touches[0].clientX - touchStartX.current
-  }
-
-  function handleTouchEnd() {
-    if (Math.abs(touchDeltaX.current) > 60) {
-      if (touchDeltaX.current < 0) nextPhoto()
-      else prevPhoto()
-    }
-    touchDeltaX.current = 0
-  }
-
   const isAnon = (photo: Photo) => (photo as Photo & { anonymous?: boolean }).anonymous
+
+  const CARD_HEIGHT = 'calc(100dvh - 128px)'
 
   if (loading) {
     return (
-      <div className="grid grid-cols-3 gap-0.5 animate-fade-in">
-        {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className="aspect-square bg-muted animate-shimmer" />
+      <div
+        className="h-[calc(100dvh-128px)] overflow-y-auto snap-y snap-mandatory"
+      >
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="snap-start flex-shrink-0 bg-muted animate-shimmer"
+            style={{ height: CARD_HEIGHT }}
+          />
         ))}
       </div>
     )
   }
-
-  const currentPhoto = viewerIndex !== null ? photos[viewerIndex] : null
 
   return (
     <>
@@ -326,120 +291,81 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* Fullscreen photo viewer */}
-      {currentPhoto && viewerIndex !== null && (
-        <div
-          className="fixed inset-0 z-50 bg-black flex flex-col"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          {/* Top bar */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/70 to-transparent">
-            <div className="flex items-center gap-2">
-              {!isAnon(currentPhoto) && currentPhoto.user ? (
-                <p className="text-white text-sm font-medium">
-                  {currentPhoto.user.first_name} {currentPhoto.user.last_name}
-                </p>
-              ) : (
-                <p className="text-white/60 text-sm">Anonim</p>
-              )}
-            </div>
-            <button onClick={closeViewer} className="p-2 rounded-full bg-white/10 backdrop-blur-sm active:scale-90 transition-transform">
-              <X className="w-5 h-5 text-white" />
-            </button>
-          </div>
-
-          {/* Photo */}
-          <div className="flex-1 flex items-center justify-center relative overflow-hidden">
-            <img
-              src={currentPhoto.image_url}
-              alt={currentPhoto.caption || ''}
-              className="max-w-full max-h-full object-contain animate-scale-in"
-            />
-
-            {/* Desktop nav arrows */}
-            {viewerIndex > 0 && (
-              <button onClick={prevPhoto} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors hidden sm:flex">
-                <ChevronLeft className="w-5 h-5 text-white" />
-              </button>
-            )}
-            {viewerIndex < photos.length - 1 && (
-              <button onClick={nextPhoto} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors hidden sm:flex">
-                <ChevronRight className="w-5 h-5 text-white" />
-              </button>
-            )}
-          </div>
-
-          {/* Bottom bar */}
-          <div className="absolute bottom-0 left-0 right-0 z-10 px-4 py-4 pb-8 bg-gradient-to-t from-black/70 to-transparent">
-            <div className="flex items-end justify-between">
-              <div className="flex-1 min-w-0 mr-4">
-                {currentPhoto.caption && (
-                  <p className="text-white/90 text-sm">{currentPhoto.caption}</p>
-                )}
-                <p className="text-white/40 text-xs mt-1">
-                  {viewerIndex + 1} / {photos.length}
-                </p>
-              </div>
-              <button
-                onClick={() => toggleLike(currentPhoto.id)}
-                className="p-3 active:scale-125 transition-transform"
-              >
-                <Heart
-                  className={`w-7 h-7 drop-shadow-lg transition-all ${
-                    likedPhotos[currentPhoto.id]
-                      ? 'fill-red-500 text-red-500'
-                      : 'text-white'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Instagram-style grid */}
+      {/* TikTok-style vertical feed */}
       {photos.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground animate-fade-in">
-          <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Još nema fotografija</p>
+        <div className="flex items-center justify-center text-muted-foreground animate-fade-in" style={{ height: CARD_HEIGHT }}>
+          <div className="text-center">
+            <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p>Još nema fotografija</p>
+          </div>
         </div>
       ) : (
-        <div className="animate-fade-in">
-          <div className="grid grid-cols-3 gap-0.5">
-            {photos.map((photo, index) => (
-              <button
-                key={photo.id}
-                onClick={() => openViewer(index)}
-                className="relative aspect-square overflow-hidden group active:scale-[0.97] transition-transform"
-                style={{ animationDelay: `${Math.min(index * 0.03, 0.3)}s` }}
-              >
-                {!loadedImages.has(photo.id) && (
-                  <div className="absolute inset-0 bg-muted animate-shimmer" />
+        <div
+          className="overflow-y-auto snap-y snap-mandatory animate-fade-in"
+          style={{ height: CARD_HEIGHT }}
+        >
+          {photos.map((photo) => (
+            <div
+              key={photo.id}
+              className="snap-start relative flex-shrink-0 overflow-hidden"
+              style={{ height: CARD_HEIGHT }}
+            >
+              {/* Shimmer skeleton while loading */}
+              {!loadedImages.has(photo.id) && (
+                <div className="absolute inset-0 bg-muted animate-shimmer" />
+              )}
+
+              {/* Full-bleed photo */}
+              <img
+                src={photo.image_url}
+                alt={photo.caption || ''}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${loadedImages.has(photo.id) ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => setLoadedImages((prev) => new Set(prev).add(photo.id))}
+              />
+
+              {/* Right side actions */}
+              <div className="absolute right-3 bottom-24 flex flex-col items-center gap-5">
+                <button
+                  onClick={() => toggleLike(photo.id)}
+                  className="flex flex-col items-center gap-1 active:scale-125 transition-transform"
+                >
+                  <Heart
+                    className={`w-7 h-7 drop-shadow-lg transition-all ${
+                      likedPhotos[photo.id]
+                        ? 'fill-red-500 text-red-500'
+                        : 'text-white'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Bottom overlay: user info + caption */}
+              <div className="absolute bottom-0 left-0 right-14 px-4 pb-4 bg-gradient-to-t from-black/60 via-black/20 to-transparent pt-16">
+                {!isAnon(photo) && photo.user && (
+                  <p className="text-white font-semibold text-sm drop-shadow-lg">
+                    {photo.user.first_name} {photo.user.last_name}
+                    {photo.user.class_number && photo.user.section_number && (
+                      <span className="font-normal text-white/70 ml-1.5 text-xs">
+                        {photo.user.class_number}/{photo.user.section_number}
+                      </span>
+                    )}
+                  </p>
                 )}
-                <img
-                  src={photo.image_url}
-                  alt={photo.caption || ''}
-                  className={`w-full h-full object-cover transition-opacity duration-300 ${loadedImages.has(photo.id) ? 'opacity-100' : 'opacity-0'}`}
-                  onLoad={() => setLoadedImages((prev) => new Set(prev).add(photo.id))}
-                />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  {likedPhotos[photo.id] && (
-                    <Heart className="w-5 h-5 fill-white text-white" />
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
+                {photo.caption && (
+                  <p className="text-white/90 text-sm mt-1 drop-shadow-lg line-clamp-2">
+                    {photo.caption}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Floating camera button */}
+      {/* Fixed upload button - bottom left */}
       <button
         onClick={() => setShowUpload(true)}
-        className="fixed bottom-20 right-4 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform animate-bounce-in"
+        className="fixed bottom-24 left-4 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform animate-bounce-in"
       >
         <Camera className="w-5 h-5" />
       </button>
