@@ -14,6 +14,14 @@ const slides = [
     accentAlt: '#6d28d9',
   },
   {
+    title: 'O školi',
+    subtitle: 'Tradicija i kvalitet',
+    description: 'Jedna od najprestižnijih gimnazija u Podgorici, Crna Gora. Bogata istorija, izvrsni profesori i generacije uspješnih učenika.',
+    illustration: 'school' as const,
+    accent: '#818cf8',
+    accentAlt: '#4f46e5',
+  },
+  {
     title: 'Dumbs',
     subtitle: 'Školska galerija',
     description: 'Dijeli slike iz školskog života! Moderacija sadržaja, anonimni mod i like sistem.',
@@ -39,16 +47,40 @@ const slides = [
   },
   {
     title: 'Lekcije',
-    subtitle: 'Materijali & kvizovi',
-    description: 'Predmeti, materijali za učenje i kvizovi. Pripremi se za svaki čas i test.',
+    subtitle: 'Materijali po predmetima',
+    description: 'Svi predmeti na jednom mjestu. Materijali organizovani po predmetima, spremni za učenje.',
     illustration: 'lectures' as const,
     accent: '#fbbf24',
     accentAlt: '#d97706',
   },
   {
+    title: 'Kvizovi',
+    subtitle: 'Testiraj znanje',
+    description: 'Poslije svake lekcije provjeri šta si naučio — flashcard kvizovi, bodovi i statistika.',
+    illustration: 'quizzes' as const,
+    accent: '#fb923c',
+    accentAlt: '#ea580c',
+  },
+  {
+    title: 'Raspored',
+    subtitle: 'Časovi & smjene',
+    description: 'Sedmični i dnevni pregled rasporeda. Uvijek znaj koji čas je sljedeći.',
+    illustration: 'schedule' as const,
+    accent: '#2dd4bf',
+    accentAlt: '#0d9488',
+  },
+  {
+    title: 'Moje Ocjene',
+    subtitle: 'Praćenje uspjeha',
+    description: 'Prati ocjene iz svih predmeta po trimestrima. Prosek, napredak i statistika na jednom mjestu.',
+    illustration: 'grades' as const,
+    accent: '#f87171',
+    accentAlt: '#dc2626',
+  },
+  {
     title: 'Tvoj Profil',
     subtitle: 'Personalizacija',
-    description: 'Biraj teme, prilagodi izgled, pogledaj svoju ulogu i statistiku. Portal po tvojoj mjeri.',
+    description: 'Biraj teme, prilagodi izgled, postavi avatar. Pridruži se zajednici!',
     illustration: 'profile' as const,
     accent: '#c084fc',
     accentAlt: '#7c3aed',
@@ -60,12 +92,10 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
     case 'logo':
       return (
         <div className="relative flex items-center justify-center w-full h-full">
-          {/* Outer ring */}
           <div
             className="absolute w-44 h-44 rounded-full animate-[spin_20s_linear_infinite]"
             style={{ border: `1px dashed ${accent}30` }}
           />
-          {/* Middle ring */}
           <div
             className="absolute w-36 h-36 rounded-full animate-[spin_15s_linear_infinite_reverse]"
             style={{ border: `1px solid ${accent}18` }}
@@ -73,7 +103,6 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full" style={{ background: accent }} />
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 rounded-full" style={{ background: accentAlt, opacity: 0.6 }} />
           </div>
-          {/* Logo block */}
           <div
             className="w-28 h-28 rounded-3xl flex items-center justify-center animate-pulse-glow relative overflow-hidden"
             style={{ background: `linear-gradient(135deg, ${accent}, ${accentAlt})` }}
@@ -81,16 +110,49 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             <div className="absolute inset-0 bg-white/10" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 30%, 0 70%)' }} />
             <span className="text-5xl font-black text-white tracking-tight relative z-10">NR</span>
           </div>
-          {/* Floating accents */}
           <div className="absolute -top-2 right-6 w-4 h-4 rounded-full animate-float" style={{ background: `${accent}60`, animationDelay: '0.3s' }} />
           <div className="absolute bottom-4 left-4 w-3 h-3 rounded-md rotate-45 animate-float" style={{ background: `${accentAlt}50`, animationDelay: '1s' }} />
+        </div>
+      )
+
+    case 'school':
+      return (
+        <div className="relative flex items-center justify-center w-full h-full">
+          {/* School building */}
+          <div className="relative">
+            <div
+              className="w-40 h-28 rounded-2xl flex flex-col items-center justify-center gap-1 animate-slide-up"
+              style={{ background: `linear-gradient(145deg, ${accent}20, ${accent}08)`, border: `1.5px solid ${accent}30` }}
+            >
+              <span className="text-5xl">🏫</span>
+              <span className="text-[10px] font-bold tracking-wider" style={{ color: `${accent}bb` }}>EST. 1921</span>
+            </div>
+            {/* Diploma */}
+            <div className="absolute -top-3 -right-4 animate-scale-in" style={{ animationDelay: '0.3s' }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${accentAlt}20`, border: `1px solid ${accentAlt}35` }}>
+                <span className="text-xl">🎓</span>
+              </div>
+            </div>
+            {/* Book */}
+            <div className="absolute -bottom-3 -left-4 animate-scale-in" style={{ animationDelay: '0.5s' }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${accent}20`, border: `1px solid ${accent}35` }}>
+                <span className="text-xl">📚</span>
+              </div>
+            </div>
+            {/* Star */}
+            <div className="absolute -top-3 -left-2 animate-float" style={{ animationDelay: '0.2s' }}>
+              <span className="text-lg">⭐</span>
+            </div>
+            <div className="absolute -bottom-2 -right-2 animate-float" style={{ animationDelay: '0.8s' }}>
+              <span className="text-lg">🇲🇪</span>
+            </div>
+          </div>
         </div>
       )
 
     case 'photos':
       return (
         <div className="relative flex items-center justify-center w-full h-full">
-          {/* Stacked photo cards */}
           <div className="relative w-56 h-36">
             {[
               { rotate: '-12deg', x: '-10px', delay: '0s', emoji: '📸', label: 'Slika' },
@@ -114,7 +176,6 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
               </div>
             ))}
           </div>
-          {/* Shield icon for moderation */}
           <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-xl flex items-center justify-center animate-scale-in" style={{ background: `${accentAlt}25`, border: `1px solid ${accentAlt}40`, animationDelay: '0.6s' }}>
             <span className="text-lg">🛡️</span>
           </div>
@@ -161,13 +222,12 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
     case 'calendar':
       return (
         <div className="w-60">
-          {/* Mini calendar header */}
           <div className="text-center mb-2">
             <span className="text-xs font-semibold" style={{ color: accent }}>Mart 2026</span>
           </div>
           <div className="grid grid-cols-7 gap-1">
-            {['P', 'U', 'S', 'Č', 'P', 'S', 'N'].map((d) => (
-              <div key={d} className="w-7 h-5 flex items-center justify-center text-[9px] text-muted-foreground/50 font-medium">{d}</div>
+            {['P', 'U', 'S', 'Č', 'P', 'S', 'N'].map((d, i) => (
+              <div key={`${d}-${i}`} className="w-7 h-5 flex items-center justify-center text-[9px] text-muted-foreground/50 font-medium">{d}</div>
             ))}
             {Array.from({ length: 28 }, (_, i) => {
               const day = i + 1
@@ -192,7 +252,6 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
               )
             })}
           </div>
-          {/* Legend */}
           <div className="flex justify-center gap-3 mt-2.5">
             {[['#ef4444', 'Test'], ['#f59e0b', 'Ispit'], ['#3b82f6', 'Event']].map(([c, l]) => (
               <div key={l} className="flex items-center gap-1">
@@ -206,54 +265,190 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
 
     case 'lectures':
       return (
-        <div className="flex flex-col gap-2.5 w-56">
+        <div className="grid grid-cols-3 gap-2 w-64">
           {[
-            { emoji: '🔢', name: 'Matematika', progress: 75 },
-            { emoji: '⚛️', name: 'Fizika', progress: 60 },
-            { emoji: '🏛️', name: 'Istorija', progress: 45 },
+            { emoji: '🔢', name: 'Matem.' },
+            { emoji: '⚛️', name: 'Fizika' },
+            { emoji: '🏛️', name: 'Istorija' },
+            { emoji: '🧬', name: 'Biolog.' },
+            { emoji: '🌍', name: 'Geograf.' },
+            { emoji: '🇬🇧', name: 'Engleski' },
+            { emoji: '💻', name: 'Inform.' },
+            { emoji: '🎨', name: 'Likovno' },
+            { emoji: '📖', name: 'Crnog.' },
           ].map((subj, i) => (
             <div
               key={subj.name}
-              className="rounded-2xl p-3 flex items-center gap-3 animate-slide-up"
+              className="rounded-xl p-2.5 flex flex-col items-center gap-1.5 animate-scale-in"
               style={{
-                background: `linear-gradient(135deg, ${accent}10, ${accent}05)`,
-                border: `1px solid ${accent}25`,
-                animationDelay: `${i * 0.15}s`,
+                background: `linear-gradient(145deg, ${accent}12, ${accent}06)`,
+                border: `1px solid ${accent}22`,
+                animationDelay: `${i * 0.06}s`,
               }}
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accent}20` }}>
-                <span className="text-xl">{subj.emoji}</span>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${accent}18` }}>
+                <span className="text-lg">{subj.emoji}</span>
               </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium" style={{ color: `${accent}dd` }}>{subj.name}</div>
-                <div className="h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ background: `${accent}15` }}>
-                  <div
-                    className="h-full rounded-full transition-all duration-1000"
-                    style={{ width: `${subj.progress}%`, background: `linear-gradient(90deg, ${accent}, ${accentAlt})` }}
-                  />
-                </div>
-              </div>
-              <span className="text-[10px] font-semibold" style={{ color: `${accent}90` }}>🧠</span>
+              <span className="text-[9px] font-medium" style={{ color: `${accent}bb` }}>{subj.name}</span>
             </div>
           ))}
+        </div>
+      )
+
+    case 'quizzes':
+      return (
+        <div className="relative flex flex-col items-center gap-3 w-60">
+          {/* Flashcard stack */}
+          <div className="relative w-52 h-28">
+            <div
+              className="absolute inset-0 rounded-2xl animate-slide-up flex flex-col items-center justify-center"
+              style={{
+                background: `linear-gradient(145deg, ${accent}15, ${accent}08)`,
+                border: `1.5px solid ${accent}30`,
+                transform: 'rotate(-4deg) translateY(4px)',
+                animationDelay: '0s',
+              }}
+            />
+            <div
+              className="absolute inset-0 rounded-2xl animate-slide-up flex flex-col items-center justify-center gap-1"
+              style={{
+                background: `linear-gradient(145deg, ${accent}20, ${accent}10)`,
+                border: `1.5px solid ${accent}40`,
+                animationDelay: '0.15s',
+              }}
+            >
+              <span className="text-2xl">🧠</span>
+              <span className="text-sm font-semibold" style={{ color: `${accent}dd` }}>Koliko je 2+2?</span>
+              <span className="text-[10px] mt-1 px-3 py-0.5 rounded-full" style={{ background: `${accentAlt}20`, color: `${accentAlt}cc` }}>
+                Tap za odgovor
+              </span>
+            </div>
+          </div>
+          {/* Score */}
+          <div className="flex gap-2 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            {['✅ 8', '❌ 2', '⭐ 80%'].map((s, i) => (
+              <span key={i} className="text-[10px] px-2 py-1 rounded-lg font-medium" style={{ background: `${accent}12`, color: `${accent}aa`, border: `1px solid ${accent}20` }}>
+                {s}
+              </span>
+            ))}
+          </div>
+        </div>
+      )
+
+    case 'schedule':
+      return (
+        <div className="w-60">
+          <div className="flex gap-1 mb-2 justify-center">
+            {['Pon', 'Uto', 'Sri', 'Čet', 'Pet'].map((d, i) => (
+              <div
+                key={d}
+                className="px-2 py-1 rounded-lg text-[9px] font-semibold animate-scale-in"
+                style={{
+                  background: i === 0 ? `${accent}25` : `${accent}08`,
+                  color: i === 0 ? accent : `${accent}60`,
+                  border: i === 0 ? `1px solid ${accent}40` : `1px solid ${accent}12`,
+                  animationDelay: `${i * 0.08}s`,
+                }}
+              >
+                {d}
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {[
+              { time: '08:00', name: 'Matematika', room: 'U1', emoji: '🔢' },
+              { time: '08:45', name: 'Fizika', room: 'U3', emoji: '⚛️' },
+              { time: '09:30', name: 'Engleski', room: 'U7', emoji: '🇬🇧' },
+              { time: '10:25', name: 'Istorija', room: 'U2', emoji: '🏛️' },
+            ].map((cls, i) => (
+              <div
+                key={cls.name}
+                className="rounded-xl p-2 flex items-center gap-2.5 animate-slide-up"
+                style={{
+                  background: `linear-gradient(135deg, ${accent}10, ${accent}05)`,
+                  border: `1px solid ${accent}20`,
+                  animationDelay: `${i * 0.12}s`,
+                }}
+              >
+                <span className="text-base">{cls.emoji}</span>
+                <div className="flex-1">
+                  <div className="text-[11px] font-medium" style={{ color: `${accent}cc` }}>{cls.name}</div>
+                  <div className="text-[9px] text-muted-foreground/50">{cls.time} · {cls.room}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+
+    case 'grades':
+      return (
+        <div className="w-56">
+          <div className="flex gap-1.5 mb-2.5 justify-center">
+            {['I', 'II', 'III'].map((t, i) => (
+              <div
+                key={t}
+                className="px-3 py-1 rounded-lg text-[10px] font-bold animate-scale-in"
+                style={{
+                  background: i === 0 ? `${accent}25` : `${accent}08`,
+                  color: i === 0 ? accent : `${accent}50`,
+                  border: `1px solid ${i === 0 ? `${accent}40` : `${accent}15`}`,
+                  animationDelay: `${i * 0.1}s`,
+                }}
+              >
+                {t} Trim.
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {[
+              { name: 'Matematika', grade: 5, emoji: '🔢' },
+              { name: 'Fizika', grade: 4, emoji: '⚛️' },
+              { name: 'Engleski', grade: 5, emoji: '🇬🇧' },
+              { name: 'Istorija', grade: 3, emoji: '🏛️' },
+            ].map((subj, i) => (
+              <div
+                key={subj.name}
+                className="rounded-xl p-2 flex items-center gap-2.5 animate-slide-up"
+                style={{
+                  background: `linear-gradient(135deg, ${accent}10, ${accent}05)`,
+                  border: `1px solid ${accent}20`,
+                  animationDelay: `${i * 0.12}s`,
+                }}
+              >
+                <span className="text-base">{subj.emoji}</span>
+                <div className="flex-1">
+                  <div className="text-[11px] font-medium" style={{ color: `${accent}cc` }}>{subj.name}</div>
+                </div>
+                <div
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                  style={{ background: `${accent}20`, color: accent, border: `1px solid ${accent}35` }}
+                >
+                  {subj.grade}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 text-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
+            <span className="text-[10px] font-semibold px-3 py-1 rounded-full" style={{ background: `${accent}15`, color: accent, border: `1px solid ${accent}25` }}>
+              Prosek: 4.25
+            </span>
+          </div>
         </div>
       )
 
     case 'profile':
       return (
         <div className="relative flex items-center justify-center w-full h-full">
-          {/* Avatar */}
           <div
             className="w-24 h-24 rounded-full flex items-center justify-center animate-float relative"
             style={{ background: `linear-gradient(135deg, ${accent}30, ${accentAlt}20)`, border: `2px solid ${accent}50` }}
           >
             <span className="text-4xl">👤</span>
-            {/* Role badge */}
             <div className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${accent}30`, color: accent, border: `1px solid ${accent}40` }}>
               Učenik
             </div>
           </div>
-          {/* Theme orbs */}
           {['#a78bfa', '#f472b6', '#34d399', '#fbbf24', '#60a5fa'].map((c, i) => {
             const angle = (i * 72 - 90) * (Math.PI / 180)
             const x = Math.cos(angle) * 64
@@ -275,9 +470,8 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
               </div>
             )
           })}
-          {/* Stats */}
           <div className="absolute -bottom-6 flex gap-3">
-            {[['🎨', 'Teme'], ['⭐', 'Uloge'], ['📊', 'Stats']].map(([emoji, label], i) => (
+            {[['🎨', 'Teme'], ['⭐', 'Avatar'], ['📊', 'Stats']].map(([emoji, label], i) => (
               <div key={label} className="flex items-center gap-1 px-2 py-1 rounded-lg animate-fade-in text-[10px]" style={{ background: `${accent}12`, border: `1px solid ${accent}20`, color: `${accent}90`, animationDelay: `${0.5 + i * 0.1}s` }}>
                 <span>{emoji}</span>{label}
               </div>
@@ -295,24 +489,34 @@ export function SiteTour({ onClose }: { onClose: () => void }) {
   const [current, setCurrent] = useState(0)
   const [direction, setDirection] = useState<'in' | 'out'>('in')
   const [paused, setPaused] = useState(false)
+  const [textVisible, setTextVisible] = useState(false)
 
   const goTo = useCallback((index: number) => {
     if (index === current || index < 0 || index >= slides.length) return
     setDirection('out')
+    setTextVisible(false)
     setTimeout(() => {
       setCurrent(index)
       setDirection('in')
-    }, 300)
+      // Text animates in after slide transition completes
+      setTimeout(() => setTextVisible(true), 800)
+    }, 400)
   }, [current])
 
   const goNext = useCallback(() => {
     if (current < slides.length - 1) goTo(current + 1)
   }, [current, goTo])
 
-  // Auto-advance every 4s
+  // Show text on initial mount
+  useEffect(() => {
+    const timer = setTimeout(() => setTextVisible(true), 900)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Auto-advance every 6s
   useEffect(() => {
     if (paused || current >= slides.length - 1) return
-    const timer = setTimeout(goNext, 4000)
+    const timer = setTimeout(goNext, 6000)
     return () => clearTimeout(timer)
   }, [current, paused, goNext])
 
@@ -344,9 +548,9 @@ export function SiteTour({ onClose }: { onClose: () => void }) {
       onMouseDown={() => setPaused(true)}
       onMouseUp={() => setPaused(false)}
     >
-      {/* Animated background */}
+      {/* Animated background gradients */}
       <div
-        className="absolute inset-0 transition-all duration-700 ease-out"
+        className="absolute inset-0 transition-all duration-1000 ease-out"
         style={{
           background: `
             radial-gradient(ellipse 80% 50% at 50% 20%, ${slide.accent}12 0%, transparent 100%),
@@ -355,23 +559,57 @@ export function SiteTour({ onClose }: { onClose: () => void }) {
         }}
       />
 
-      {/* Floating particles */}
+      {/* Moving gradient blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 8 }, (_, i) => (
+        <div
+          className="absolute w-96 h-96 rounded-full tour-blob-1 opacity-[0.07]"
+          style={{ background: `radial-gradient(circle, ${slide.accent}, transparent 70%)`, left: '-10%', top: '-10%' }}
+        />
+        <div
+          className="absolute w-80 h-80 rounded-full tour-blob-2 opacity-[0.05]"
+          style={{ background: `radial-gradient(circle, ${slide.accentAlt}, transparent 70%)`, right: '-10%', bottom: '-5%' }}
+        />
+        <div
+          className="absolute w-64 h-64 rounded-full tour-blob-3 opacity-[0.04]"
+          style={{ background: `radial-gradient(circle, ${slide.accent}, transparent 70%)`, left: '40%', top: '50%' }}
+        />
+      </div>
+
+      {/* Floating particles - more of them */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 18 }, (_, i) => (
           <div
             key={i}
-            className="absolute rounded-full animate-float"
+            className={`absolute rounded-full ${i % 3 === 0 ? 'tour-particle-drift' : 'animate-float'}`}
             style={{
-              width: `${4 + (i % 3) * 3}px`,
-              height: `${4 + (i % 3) * 3}px`,
-              background: `${slide.accent}${15 + i * 4}`,
-              left: `${8 + i * 12}%`,
-              top: `${15 + (i % 4) * 20}%`,
-              animationDelay: `${i * 0.6}s`,
-              animationDuration: `${3 + (i % 3)}s`,
+              width: `${3 + (i % 4) * 2}px`,
+              height: `${3 + (i % 4) * 2}px`,
+              background: i % 2 === 0 ? `${slide.accent}${20 + i * 2}` : `${slide.accentAlt}${15 + i * 2}`,
+              left: `${3 + i * 5.5}%`,
+              top: `${8 + (i % 5) * 18}%`,
+              animationDelay: `${i * 0.4}s`,
+              animationDuration: `${4 + (i % 4)}s`,
+              borderRadius: i % 4 === 0 ? '2px' : '50%',
+              transform: i % 4 === 0 ? 'rotate(45deg)' : undefined,
             }}
           />
         ))}
+      </div>
+
+      {/* Animated geometric shapes */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute w-20 h-20 border rounded-full animate-[spin_25s_linear_infinite] opacity-[0.06]"
+          style={{ borderColor: slide.accent, top: '15%', right: '10%' }}
+        />
+        <div
+          className="absolute w-12 h-12 border rounded-lg animate-[spin_20s_linear_infinite_reverse] opacity-[0.05]"
+          style={{ borderColor: slide.accentAlt, bottom: '20%', left: '8%', transform: 'rotate(45deg)' }}
+        />
+        <div
+          className="absolute w-16 h-16 border rounded-full animate-[spin_30s_linear_infinite] opacity-[0.04]"
+          style={{ borderColor: slide.accent, top: '60%', right: '20%' }}
+        />
       </div>
 
       {/* Skip / top bar */}
@@ -398,27 +636,41 @@ export function SiteTour({ onClose }: { onClose: () => void }) {
             <Illustration type={slide.illustration} accent={slide.accent} accentAlt={slide.accentAlt} />
           </div>
 
-          {/* Subtitle chip */}
-          <div
-            className="px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase mb-3"
-            style={{ background: `${slide.accent}15`, color: slide.accent, border: `1px solid ${slide.accent}25` }}
-          >
-            {slide.subtitle}
+          {/* Text content - animated in after slide transition */}
+          <div className={`flex flex-col items-center transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            {/* Subtitle chip */}
+            <div
+              className="px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase mb-3"
+              style={{
+                background: `${slide.accent}15`,
+                color: slide.accent,
+                border: `1px solid ${slide.accent}25`,
+                transitionDelay: textVisible ? '0ms' : '0ms',
+              }}
+            >
+              {slide.subtitle}
+            </div>
+
+            {/* Title */}
+            <h2
+              className={`text-3xl font-bold mb-3 transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+              style={{ color: slide.accent, transitionDelay: textVisible ? '150ms' : '0ms' }}
+            >
+              {slide.title}
+            </h2>
+
+            {/* Description */}
+            <p
+              className={`text-muted-foreground text-[15px] leading-relaxed max-w-xs transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+              style={{ transitionDelay: textVisible ? '300ms' : '0ms' }}
+            >
+              {slide.description}
+            </p>
           </div>
-
-          {/* Title */}
-          <h2 className="text-3xl font-bold mb-3" style={{ color: slide.accent }}>
-            {slide.title}
-          </h2>
-
-          {/* Description */}
-          <p className="text-muted-foreground text-[15px] leading-relaxed max-w-xs">
-            {slide.description}
-          </p>
 
           {/* CTA on last slide */}
           {isLast && (
-            <div className="flex flex-col gap-3 w-full mt-8 animate-fade-in">
+            <div className={`flex flex-col gap-3 w-full mt-8 transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: textVisible ? '450ms' : '0ms' }}>
               <Link href="/register" onClick={onClose}>
                 <button
                   className="w-full py-3.5 rounded-2xl font-semibold text-white text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] animate-pulse-glow"
@@ -442,14 +694,14 @@ export function SiteTour({ onClose }: { onClose: () => void }) {
       {/* Bottom: progress dots + next button */}
       <div className="relative z-10 flex items-center justify-between px-8 pb-[max(env(safe-area-inset-bottom),2rem)]">
         {/* Progress dots */}
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           {slides.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
               className="h-2 rounded-full transition-all duration-500"
               style={{
-                width: i === current ? 28 : 8,
+                width: i === current ? 24 : 6,
                 background: i === current
                   ? slide.accent
                   : i < current
