@@ -30,8 +30,59 @@ export async function POST(request: Request) {
       const chatId = query.message.chat.id
       const messageId = query.message.message_id
 
-      const [action, photoId] = data.split('_')
+      const parts = data.split('_')
+      const action = parts[0]
       const supabase = getSupabaseAdmin()
+
+      // Handle student add/reject requests
+      if (action === 'addstudent') {
+        const [, firstName, lastName, classNum, sectionNum] = parts
+        await supabase.from('verified_students').insert({
+          first_name: firstName,
+          last_name: lastName,
+          class_number: parseInt(classNum),
+          section_number: parseInt(sectionNum),
+          email: `pending_${firstName.toLowerCase()}_${lastName.toLowerCase()}@temp.com`,
+        })
+
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            message_id: messageId,
+            text: query.message.text + `\n\n✅ DODAT u bazu!`,
+          }),
+        })
+
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callback_query_id: query.id, text: '✅ Učenik dodat!' }),
+        })
+        return NextResponse.json({ ok: true })
+      }
+
+      if (action === 'rejectstudent') {
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            message_id: messageId,
+            text: query.message.text + `\n\n❌ ODBIJENO`,
+          }),
+        })
+
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callback_query_id: query.id, text: '❌ Zahtjev odbijen.' }),
+        })
+        return NextResponse.json({ ok: true })
+      }
+
+      const photoId = parts[1]
 
       if (action === 'approve') {
         await supabase

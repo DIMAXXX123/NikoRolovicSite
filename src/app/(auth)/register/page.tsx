@@ -236,15 +236,36 @@ export default function RegisterPage() {
                   <Button
                     type="button"
                     className="w-full"
-                    onClick={() => {
-                      const msg = `Zahtjev za dodavanje na portal: ${reqIme.trim()} ${reqPrezime.trim()}, ${reqRazred}-${reqOdjeljenje}`
-                      window.open(`https://t.me/Dima_ivasch?text=${encodeURIComponent(msg)}`, '_blank')
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/request-join', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            firstName: reqIme.trim(),
+                            lastName: reqPrezime.trim(),
+                            classNumber: parseInt(reqRazred),
+                            sectionNumber: parseInt(reqOdjeljenje),
+                            fingerprint: navigator.userAgent,
+                          }),
+                        })
+                        const data = await res.json()
+                        if (data.ok) {
+                          setError('')
+                          setShowRequestForm(false)
+                          alert('Zahtjev poslat! Administrator će ga pregledati.')
+                        } else {
+                          alert(data.error || 'Greška')
+                        }
+                      } catch {
+                        alert('Greška pri slanju zahtjeva')
+                      }
                     }}
                     disabled={!reqIme.trim() || !reqPrezime.trim()}
                   >
-                    Pošalji
+                    Pošalji zahtjev
                   </Button>
-                  <p className="text-muted-foreground text-xs text-center">Tvoj zahtjev će biti pregledan od strane administratora.</p>
+                  <p className="text-muted-foreground text-xs text-center">Zahtjev se šalje administratoru. Maksimalno 2 pokušaja.</p>
                 </div>
               )}
             </div>
