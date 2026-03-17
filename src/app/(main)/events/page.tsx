@@ -11,7 +11,9 @@ const EVENT_TYPE_CONFIG: Record<string, { label: string; color: string; dotColor
   test: { label: 'Test', color: 'bg-blue-500/20 text-blue-400', dotColor: 'bg-blue-500' },
   ispit: { label: 'Ispit', color: 'bg-orange-500/20 text-orange-400', dotColor: 'bg-orange-500' },
   dogadjaj: { label: 'Događaj', color: 'bg-purple-500/20 text-purple-400', dotColor: 'bg-purple-500' },
-  drugo: { label: 'Drugo', color: 'bg-green-500/20 text-green-400', dotColor: 'bg-green-500' },
+  domaci: { label: 'Domaći zadatak', color: 'bg-green-500/20 text-green-400', dotColor: 'bg-green-500' },
+  pismeni: { label: 'Pismeni rad', color: 'bg-red-500/20 text-red-400', dotColor: 'bg-red-500' },
+  drugo: { label: 'Drugo', color: 'bg-slate-500/20 text-slate-400', dotColor: 'bg-slate-500' },
 }
 
 const DAY_NAMES = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned']

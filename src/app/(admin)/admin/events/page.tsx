@@ -14,6 +14,8 @@ const EVENT_TYPE_OPTIONS: { value: EventType; label: string }[] = [
   { value: 'test', label: 'Test' },
   { value: 'ispit', label: 'Ispit' },
   { value: 'dogadjaj', label: 'Događaj' },
+  { value: 'domaci', label: 'Domaći zadatak' },
+  { value: 'pismeni', label: 'Pismeni rad' },
   { value: 'drugo', label: 'Drugo' },
 ]
 
@@ -21,6 +23,8 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
   test: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
   ispit: 'bg-red-500/20 text-red-300 border-red-500/30',
   dogadjaj: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  domaci: 'bg-green-500/20 text-green-300 border-green-500/30',
+  pismeni: 'bg-red-500/20 text-red-300 border-red-500/30',
   drugo: 'bg-slate-500/20 text-slate-300 border-slate-500/30',
 }
 

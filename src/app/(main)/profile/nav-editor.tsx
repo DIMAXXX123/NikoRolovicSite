@@ -76,32 +76,33 @@ export function NavEditor({ onClose }: { onClose: () => void }) {
           {activeItems.map((item, i) => (
             <div
               key={item.id}
-              className="flex items-center gap-2 p-2 rounded-xl bg-muted/30 border border-border/20"
+              className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/30 border border-border/20 transition-all duration-200"
+              style={{ animationFillMode: 'both' }}
             >
               <GripVertical className="w-4 h-4 text-muted-foreground/40 flex-shrink-0" />
               <item.IconComponent className="w-5 h-5 text-primary flex-shrink-0" />
               <span className="text-sm font-medium flex-1">{item.label}</span>
-              <div className="flex items-center gap-0.5">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => moveUp(i)}
                   disabled={i === 0}
-                  className="p-1 rounded-lg hover:bg-muted disabled:opacity-20 transition-colors"
+                  className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-muted active:bg-muted/80 disabled:opacity-20 transition-all active:scale-90"
                 >
-                  <ChevronUp className="w-4 h-4" />
+                  <ChevronUp className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => moveDown(i)}
                   disabled={i === activeIds.length - 1}
-                  className="p-1 rounded-lg hover:bg-muted disabled:opacity-20 transition-colors"
+                  className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-muted active:bg-muted/80 disabled:opacity-20 transition-all active:scale-90"
                 >
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => remove(i)}
                   disabled={activeIds.length <= 1}
-                  className="p-1 rounded-lg hover:bg-destructive/20 text-destructive disabled:opacity-20 transition-colors ml-1"
+                  className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-destructive/20 active:bg-destructive/30 text-destructive disabled:opacity-20 transition-all active:scale-90"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -127,9 +128,9 @@ export function NavEditor({ onClose }: { onClose: () => void }) {
                   <button
                     onClick={() => add(item.id)}
                     disabled={disabled}
-                    className="p-1 rounded-lg hover:bg-primary/20 text-primary disabled:opacity-20 transition-colors"
+                    className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-primary/20 active:bg-primary/30 text-primary disabled:opacity-20 transition-all active:scale-90"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-5 h-5" />
                   </button>
                 </div>
               )

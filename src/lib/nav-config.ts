@@ -1,4 +1,4 @@
-import { Newspaper, Calendar, BookOpen, Camera, MoreHorizontal, School, Clock } from 'lucide-react'
+import { Newspaper, Calendar, BookOpen, Camera, MoreHorizontal, Clock } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface NavItem {
@@ -14,7 +14,6 @@ export const ALL_NAV_ITEMS: NavItem[] = [
   { id: 'events', href: '/events', label: 'Kalendar', icon: 'Calendar' },
   { id: 'lectures', href: '/lectures', label: 'Lekcije', icon: 'BookOpen' },
   { id: 'profile', href: '/profile', label: 'Još', icon: 'MoreHorizontal' },
-  { id: 'about', href: '/about', label: 'O školi', icon: 'School' },
   { id: 'schedule', href: '/schedule', label: 'Raspored', icon: 'Clock' },
 ]
 
@@ -26,12 +25,11 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Calendar,
   BookOpen,
   MoreHorizontal,
-  School,
   Clock,
 }
 
 export const NAV_CONFIG_KEY = 'nav_config'
-export const MAX_NAV_ITEMS = 7
+export const MAX_NAV_ITEMS = 5
 
 export function getNavConfig(): string[] {
   if (typeof window === 'undefined') return DEFAULT_NAV_IDS

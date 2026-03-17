@@ -28,7 +28,7 @@ export interface NewsItem {
   user_liked?: boolean
 }
 
-export type EventType = 'test' | 'ispit' | 'dogadjaj' | 'drugo'
+export type EventType = 'test' | 'ispit' | 'dogadjaj' | 'drugo' | 'domaci' | 'pismeni'
 
 export interface Event {
   id: string

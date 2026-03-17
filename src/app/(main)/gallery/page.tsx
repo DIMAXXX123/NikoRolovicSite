@@ -214,9 +214,9 @@ export default function GalleryPage() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 flex flex-col">
-        {[1, 2].map((i) => (
-          <div key={i} className="flex-1 bg-muted animate-shimmer" />
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="aspect-[3/4] rounded-2xl bg-muted animate-shimmer" />
         ))}
       </div>
     )
@@ -299,40 +299,35 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* Fullscreen snap-scroll photo feed */}
+      {/* Vertical photo feed */}
       {photos.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground animate-fade-in">
           <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>Još nema fotografija</p>
         </div>
       ) : (
-        <div
-          ref={feedRef}
-          className="fixed inset-0 overflow-y-scroll snap-y snap-mandatory"
-          style={{ scrollSnapType: 'y mandatory', WebkitOverflowScrolling: 'touch' }}
-        >
+        <div ref={feedRef} className="space-y-4 pb-24 animate-fade-in">
           {photos.map((photo) => (
             <div
               key={photo.id}
-              className="relative w-full snap-start snap-always"
-              style={{ height: 'calc(100dvh - 64px)' }}
+              className="relative rounded-2xl overflow-hidden bg-card border border-border/30"
               onClick={() => handleDoubleTap(photo.id)}
             >
               {/* Shimmer while loading */}
               {!loadedImages.has(photo.id) && (
-                <div className="absolute inset-0 bg-muted animate-shimmer" />
+                <div className="aspect-[3/4] bg-muted animate-shimmer" />
               )}
 
               {/* Photo */}
               <img
                 src={photo.image_url}
                 alt={photo.caption || ''}
-                className={`w-full h-full object-cover transition-opacity duration-500 ${loadedImages.has(photo.id) ? 'opacity-100' : 'opacity-0'}`}
+                className={`w-full aspect-[3/4] object-cover transition-opacity duration-500 ${loadedImages.has(photo.id) ? 'opacity-100' : 'opacity-0'} ${!loadedImages.has(photo.id) ? 'h-0' : ''}`}
                 onLoad={() => setLoadedImages((prev) => new Set(prev).add(photo.id))}
               />
 
               {/* Bottom gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/10 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
               {/* Double-tap heart animation */}
               {doubleTapHeart?.id === photo.id && (
@@ -344,14 +339,14 @@ export default function GalleryPage() {
                 </div>
               )}
 
-              {/* Like button on the right side */}
-              <div className="absolute right-4 bottom-28 flex flex-col items-center gap-1 z-10">
+              {/* Like button */}
+              <div className="absolute right-3 bottom-3 z-10">
                 <button
                   onClick={(e) => { e.stopPropagation(); toggleLike(photo.id) }}
                   className="p-2 transition-all active:scale-125"
                 >
                   <Heart
-                    className={`w-7 h-7 drop-shadow-lg transition-all ${
+                    className={`w-6 h-6 drop-shadow-lg transition-all ${
                       likedPhotos[photo.id]
                         ? 'fill-red-500 text-red-500'
                         : 'text-white'
@@ -360,34 +355,32 @@ export default function GalleryPage() {
                 </button>
               </div>
 
-              {/* User info at bottom - only for non-anonymous */}
+              {/* User info at bottom */}
               {!isAnon(photo) && photo.user && (
-                <div className="absolute bottom-4 left-4 right-16 z-10">
+                <div className="absolute bottom-3 left-3 right-14 z-10">
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-white text-base drop-shadow-lg">
+                    <p className="font-semibold text-white text-sm drop-shadow-lg">
                       {photo.user.first_name} {photo.user.last_name}
                     </p>
                     {photo.user.role && <RoleBadge role={photo.user.role} />}
                   </div>
-                  <p className="text-white/60 text-xs mt-0.5">
+                  <p className="text-white/60 text-[11px] mt-0.5">
                     {photo.user.class_number}-{photo.user.section_number}
                   </p>
                   {photo.caption && (
-                    <p className="text-white/80 text-sm mt-1.5 line-clamp-2">{photo.caption}</p>
+                    <p className="text-white/80 text-sm mt-1 line-clamp-2">{photo.caption}</p>
                   )}
                 </div>
               )}
 
-              {/* Anonymous: only show caption if any */}
+              {/* Anonymous: only show caption */}
               {isAnon(photo) && photo.caption && (
-                <div className="absolute bottom-4 left-4 right-16 z-10">
+                <div className="absolute bottom-3 left-3 right-14 z-10">
                   <p className="text-white/80 text-sm line-clamp-2">{photo.caption}</p>
                 </div>
               )}
             </div>
           ))}
-          {/* Spacer for bottom nav */}
-          <div className="h-16 snap-start" />
         </div>
       )}
 

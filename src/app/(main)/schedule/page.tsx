@@ -182,6 +182,61 @@ export default function SchedulePage() {
         </CardContent>
       </Card>
 
+      {/* Weekly overview grid */}
+      <Card className="border-border/30 bg-card/50 backdrop-blur overflow-hidden">
+        <CardContent className="p-0">
+          <div className="px-4 py-3 border-b border-border/20">
+            <h3 className="text-sm font-semibold">Sedmični pregled</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border/20">
+                  <th className="p-2 text-left text-muted-foreground font-medium w-8">#</th>
+                  {DAY_SHORT.map((d, di) => (
+                    <th
+                      key={d}
+                      onClick={() => setActiveDay(di)}
+                      className={`p-2 text-center font-medium cursor-pointer transition-colors ${
+                        activeDay === di ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {d}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {PERIODS.map((period) => (
+                  <tr key={period} className="border-b border-border/5">
+                    <td className="p-1.5 text-muted-foreground font-medium text-[11px]">{period}</td>
+                    {DAYS.map((_, di) => {
+                      const subj = schedule[cellKey(di, period)] || ''
+                      const color = getSubjectColor(subj)
+                      return (
+                        <td
+                          key={di}
+                          className={`p-1 cursor-pointer ${activeDay === di ? 'bg-primary/5' : ''}`}
+                          onClick={() => { setActiveDay(di); if (editing) startEdit(di, period) }}
+                        >
+                          {subj ? (
+                            <div className={`px-1.5 py-0.5 rounded text-center truncate border text-[10px] ${color}`}>
+                              {subj.length > 5 ? subj.slice(0, 5) + '.' : subj}
+                            </div>
+                          ) : (
+                            <div className="text-center text-muted-foreground/20">·</div>
+                          )}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Day tabs */}
       <div className="flex gap-1 overflow-x-auto pb-1">
         {DAY_SHORT.map((day, i) => (
@@ -265,49 +320,6 @@ export default function SchedulePage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Full week overview (compact) */}
-      <div>
-        <h3 className="text-sm font-semibold mb-2 text-muted-foreground">Sedmični pregled</h3>
-        <Card className="border-border/30 bg-card/50 backdrop-blur overflow-hidden">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-[10px]">
-                <thead>
-                  <tr className="border-b border-border/20">
-                    <th className="p-2 text-left text-muted-foreground font-medium w-8">#</th>
-                    {DAY_SHORT.map((d) => (
-                      <th key={d} className="p-2 text-center text-muted-foreground font-medium">{d}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {PERIODS.map((period) => (
-                    <tr key={period} className="border-b border-border/5">
-                      <td className="p-1.5 text-muted-foreground font-medium">{period}</td>
-                      {DAYS.map((_, di) => {
-                        const subj = schedule[cellKey(di, period)] || ''
-                        const color = getSubjectColor(subj)
-                        return (
-                          <td key={di} className="p-1">
-                            {subj ? (
-                              <div className={`px-1.5 py-0.5 rounded text-center truncate border ${color}`}>
-                                {subj.length > 5 ? subj.slice(0, 5) + '.' : subj}
-                              </div>
-                            ) : (
-                              <div className="text-center text-muted-foreground/20">·</div>
-                            )}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }
