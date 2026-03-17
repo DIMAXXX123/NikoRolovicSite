@@ -35,10 +35,15 @@ export default function AdminEventsPage() {
   const [description, setDescription] = useState('')
   const [eventDate, setEventDate] = useState('')
   const [eventTime, setEventTime] = useState('')
-  const [location, setLocation] = useState('')
   const [eventType, setEventType] = useState<EventType>('dogadjaj')
   const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const supabase = createClient()
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
 
   useEffect(() => { loadEvents() }, [])
 
@@ -51,32 +56,55 @@ export default function AdminEventsPage() {
     e.preventDefault()
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setLoading(false); return }
 
-    await supabase.from('events').insert({
+    const { data, error } = await supabase.from('events').insert({
       title, description: description || null,
       event_date: eventDate, event_time: eventTime || null,
-      location: location || null, author_id: user.id,
+      author_id: user.id,
       event_type: eventType,
-    })
+    }).select()
 
-    setTitle(''); setDescription(''); setEventDate(''); setEventTime(''); setLocation(''); setEventType('dogadjaj')
+    if (error) {
+      console.error('Create event error:', error)
+      showToast(`Greška pri kreiranju: ${error.message}`, 'error')
+      setLoading(false)
+      return
+    }
+
+    showToast('Događaj kreiran!')
+    setTitle(''); setDescription(''); setEventDate(''); setEventTime(''); setEventType('dogadjaj')
     setShowForm(false); setLoading(false); loadEvents()
   }
 
+  // NOTE: Delete requires RLS policy "Admins delete events" (role = 'admin').
+  // If moderators/creators also need delete access, add them to the RLS policy.
   async function deleteEvent(id: string) {
     if (!confirm('Obriši ovaj događaj?')) return
-    const { error } = await supabase.from('events').delete().eq('id', id)
+    const { data, error } = await supabase.from('events').delete().eq('id', id).select()
     if (error) {
       console.error('Delete event error:', error)
-      alert(`Greška pri brisanju: ${error.message}`)
+      showToast(`Greška pri brisanju: ${error.message}`, 'error')
       return
     }
+    if (!data || data.length === 0) {
+      console.error('Delete event: no rows deleted, check RLS policies')
+      showToast('Greška: nema dozvole za brisanje (RLS)', 'error')
+      return
+    }
+    showToast('Obrisano!')
     loadEvents()
   }
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {toast && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl text-sm font-medium shadow-lg animate-slide-down ${
+          toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        }`}>
+          {toast.message}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Kalendar</h1>
         <Button
@@ -133,7 +161,7 @@ export default function AdminEventsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-slate-200">Vrijeme</Label>
+                <Label className="text-slate-200">Vrijeme (opciono)</Label>
                 <Input
                   type="time"
                   value={eventTime}
@@ -141,15 +169,6 @@ export default function AdminEventsPage() {
                   className="rounded-xl bg-slate-800 border-slate-600 text-white focus:border-blue-500"
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-slate-200">Lokacija</Label>
-              <Input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="rounded-xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-blue-500"
-                placeholder="npr. Sala 101"
-              />
             </div>
             <Button
               type="submit"

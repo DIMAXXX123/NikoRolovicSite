@@ -394,3 +394,93 @@ html.font-large { font-size: 18px; }
     0 16px 48px -8px rgba(167, 139, 250, 0.2),
     0 6px 16px -4px rgba(0, 0, 0, 0.4);
 }
+
+/* ============================================
+   BUTTON & INTERACTION ANIMATIONS
+   ============================================ */
+
+/* Button press animation */
+.btn-press {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.btn-press:active {
+  transform: scale(0.93);
+}
+
+/* Card appear animation (intersection-observer friendly) */
+.animate-card-appear {
+  animation: cardAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Page load stagger (extends existing stagger with more children) */
+.animate-stagger > *:nth-child(11) { animation-delay: 0.28s; }
+.animate-stagger > *:nth-child(12) { animation-delay: 0.3s; }
+.animate-stagger > *:nth-child(13) { animation-delay: 0.32s; }
+.animate-stagger > *:nth-child(14) { animation-delay: 0.34s; }
+.animate-stagger > *:nth-child(15) { animation-delay: 0.36s; }
+
+/* Pop in animation for icons/badges */
+.animate-pop-in {
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Ripple press effect */
+.press-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.press-ripple:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: inherit;
+  animation: rippleFade 0.4s ease-out;
+}
+
+@keyframes rippleFade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Bounce in for FABs */
+.animate-bounce-in {
+  animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0.3s;
+}
+
+@keyframes bounceIn {
+  from {
+    opacity: 0;
+    transform: scale(0) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

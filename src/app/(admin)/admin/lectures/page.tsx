@@ -201,14 +201,31 @@ export default function AdminLecturesPage() {
     if (editorRef.current) editorRef.current.innerHTML = ''
   }
 
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  // NOTE: Delete requires a RLS policy for lectures DELETE.
+  // Currently the schema is MISSING a delete policy for lectures!
+  // Add: CREATE POLICY "Admins delete lectures" ON lectures FOR DELETE
+  //   USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'creator')));
   async function deleteLecture(id: string) {
     if (!confirm('Obriši ovu lekciju?')) return
-    const { error } = await supabase.from('lectures').delete().eq('id', id)
+    const { data, error } = await supabase.from('lectures').delete().eq('id', id).select()
     if (error) {
       console.error('Delete lecture error:', error)
-      alert(`Greška pri brisanju: ${error.message}`)
+      showToast(`Greška pri brisanju: ${error.message}`, 'error')
       return
     }
+    if (!data || data.length === 0) {
+      console.error('Delete lecture: no rows deleted, check RLS policies - DELETE policy may be missing!')
+      showToast('Greška: nema dozvole za brisanje (RLS policy nedostaje)', 'error')
+      return
+    }
+    showToast('Obrisano!')
     loadLectures()
   }
 
@@ -422,6 +439,13 @@ export default function AdminLecturesPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {toast && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl text-sm font-medium shadow-lg animate-slide-down ${
+          toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        }`}>
+          {toast.message}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Lekcije</h1>
         <Button

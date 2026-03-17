@@ -73,19 +73,40 @@ export default function AdminNewsPage() {
     setShowForm(false); setLoading(false); loadNews()
   }
 
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  // NOTE: Delete requires RLS policy "Admins/mods delete news" (role IN ('admin', 'moderator'))
   async function deleteNews(id: string) {
     if (!confirm('Obriši ovu novost?')) return
-    const { error } = await supabase.from('news').delete().eq('id', id)
+    const { data, error } = await supabase.from('news').delete().eq('id', id).select()
     if (error) {
       console.error('Delete news error:', error)
-      alert(`Greška pri brisanju: ${error.message}`)
+      showToast(`Greška pri brisanju: ${error.message}`, 'error')
       return
     }
+    if (!data || data.length === 0) {
+      console.error('Delete news: no rows deleted, check RLS policies')
+      showToast('Greška: nema dozvole za brisanje (RLS)', 'error')
+      return
+    }
+    showToast('Obrisano!')
     loadNews()
   }
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {toast && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl text-sm font-medium shadow-lg animate-slide-down ${
+          toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        }`}>
+          {toast.message}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Novosti</h1>
         <Button

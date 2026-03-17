@@ -144,31 +144,39 @@ export default function EventsPage() {
     return EVENT_TYPE_CONFIG[type]?.dotColor || 'bg-green-500'
   }
 
+  const [eventToast, setEventToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  function showEventToast(message: string, type: 'success' | 'error' = 'success') {
+    setEventToast({ message, type })
+    setTimeout(() => setEventToast(null), 3000)
+  }
+
   async function handleAddEvent() {
     if (!addingForDay || !newEvent.title.trim()) return
     const eventDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(addingForDay).padStart(2, '0')}`
 
-    const insertData: Record<string, unknown> = {
-      title: newEvent.title,
-      description: newEvent.description || null,
-      event_date: eventDate,
-      event_time: newEvent.event_time || null,
-      location: newEvent.location || null,
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { showEventToast('Niste prijavljeni', 'error'); return }
+
+    const { error } = await supabase
+      .from('events')
+      .insert({
+        title: newEvent.title,
+        description: newEvent.description || null,
+        event_date: eventDate,
+        event_time: newEvent.event_time || null,
+        author_id: user.id,
+        event_type: newEvent.event_type,
+      })
+      .select()
+
+    if (error) {
+      console.error('Create event error:', error)
+      showEventToast(`Greška: ${error.message}`, 'error')
+      return
     }
 
-    // Try adding event_type - gracefully handle if column doesn't exist
-    try {
-      const { error } = await supabase
-        .from('events')
-        .insert({ ...insertData, event_type: newEvent.event_type })
-      if (error && error.message?.includes('event_type')) {
-        // Column doesn't exist, insert without it
-        await supabase.from('events').insert(insertData)
-      }
-    } catch {
-      await supabase.from('events').insert(insertData)
-    }
-
+    showEventToast('Događaj dodat!')
     setShowAddEvent(false)
     setAddingForDay(null)
     setNewEvent({ title: '', description: '', event_time: '', location: '', event_type: 'test' })
@@ -328,11 +336,18 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {eventToast && (
+        <div className={`fixed top-16 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl text-sm font-medium shadow-lg animate-slide-down ${
+          eventToast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        }`}>
+          {eventToast.message}
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           <button
             onClick={() => setView('calendar')}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1 ${
+            className={`px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1 btn-press ${
               view === 'calendar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
             }`}
           >
@@ -340,7 +355,7 @@ export default function EventsPage() {
           </button>
           <button
             onClick={() => setView('list')}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1 ${
+            className={`px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1 btn-press ${
               view === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
             }`}
           >
@@ -353,13 +368,13 @@ export default function EventsPage() {
         <div className="space-y-3">
           {/* Month navigation */}
           <div className="flex items-center justify-between">
-            <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-muted transition-all active:scale-95">
+            <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-muted transition-all btn-press">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-lg font-semibold animate-fade-in">
               {MONTH_NAMES[currentMonth]} {currentYear}
             </h2>
-            <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-muted transition-all active:scale-95">
+            <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-muted transition-all btn-press">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -445,8 +460,8 @@ export default function EventsPage() {
               return (
                 <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur animate-slide-up card-hover overflow-hidden gradient-overlay glow-hover" style={{ animationDelay: `${index * 0.05}s` }}>
                   <CardContent className="p-0">
-                    <div className="flex">
-                      <div className={`flex-shrink-0 w-20 bg-gradient-to-br ${dayColors[index % dayColors.length]} flex flex-col items-center justify-center p-3`}>
+                    <div className="flex min-h-[5rem]">
+                      <div className={`flex-shrink-0 w-20 bg-gradient-to-br ${dayColors[index % dayColors.length]} flex flex-col items-center justify-center p-3 rounded-l-xl self-stretch`}>
                         <span className="text-2xl font-extrabold text-white leading-none">
                           {new Date(event.event_date + 'T00:00:00').getDate()}
                         </span>
