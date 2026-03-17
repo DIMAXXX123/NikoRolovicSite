@@ -147,8 +147,8 @@ export default function GalleryPage() {
 
       {/* Upload modal */}
       {showUpload && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
-          <div className="bg-card border border-border/50 rounded-2xl p-5 w-full max-w-sm space-y-4 animate-scale-in" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 bg-background flex items-end justify-center" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
+          <div className="bg-card w-full rounded-t-2xl p-5 space-y-4 animate-slide-up" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Nova fotografija</h2>
               <button onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }} className="p-1 rounded-full hover:bg-muted transition-colors">
@@ -280,7 +280,7 @@ export default function GalleryPage() {
       {/* Fixed upload button - bottom left */}
       <button
         onClick={() => setShowUpload(true)}
-        className="fixed bottom-24 left-4 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform"
+        className="fixed bottom-[5.5rem] left-4 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform"
       >
         <Camera className="w-6 h-6" />
       </button>
