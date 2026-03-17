@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { BottomNav } from '@/components/bottom-nav'
+import { ProfileGuard } from '@/components/profile-guard'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import { getNavConfig, ALL_NAV_ITEMS } from '@/lib/nav-config'
 
@@ -52,6 +53,7 @@ export default function MainLayout({
           <ThemeSwitcher />
         </div>
       </header>
+      <ProfileGuard />
       <main className="max-w-lg mx-auto px-4 pt-18">
         <div className="page-content-transition" style={{ opacity, transform: `translateY(${translateY}px)` }}>
           {children}
