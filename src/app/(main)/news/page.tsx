@@ -27,7 +27,7 @@ export default function NewsPage() {
 
     if (newsData) {
       const newsWithLikes = await Promise.all(
-        newsData.map(async (item) => {
+        newsData.map(async (item: any) => {
           const { count } = await supabase
             .from('news_likes')
             .select('*', { count: 'exact', head: true })
