@@ -8,10 +8,11 @@ interface LikeBurstProps {
   onDone: () => void
 }
 
-interface HeartParticle {
+interface ThumbParticle {
   id: number
   emoji: string
-  x: number
+  startX: number
+  startY: number
   size: number
   rotation: number
   duration: number
@@ -20,22 +21,23 @@ interface HeartParticle {
 }
 
 export function LikeBurst({ x, y, onDone }: LikeBurstProps) {
-  const [particles] = useState<HeartParticle[]>(() => {
-    const hearts = ['❤️', '💖', '💕', '💗', '💓', '♥️']
-    return Array.from({ length: 7 }, (_, i) => ({
+  const [particles] = useState<ThumbParticle[]>(() => {
+    const thumbs = ['👍', '👍', '👍', '👍', '👍', '👍', '👍']
+    return Array.from({ length: 10 }, (_, i) => ({
       id: i,
-      emoji: hearts[i % hearts.length],
-      x: (Math.random() - 0.5) * 80,
-      size: 20 + Math.random() * 24,
+      emoji: thumbs[i % thumbs.length],
+      startX: Math.random() * 100,
+      startY: 60 + Math.random() * 30,
+      size: 24 + Math.random() * 28,
       rotation: (Math.random() - 0.5) * 60,
-      duration: 1.0 + Math.random() * 0.8,
-      delay: Math.random() * 0.2,
-      drift: (Math.random() - 0.5) * 40,
+      duration: 1.2 + Math.random() * 1.0,
+      delay: Math.random() * 0.4,
+      drift: (Math.random() - 0.5) * 60,
     }))
   })
 
   useEffect(() => {
-    const t = setTimeout(onDone, 1800)
+    const t = setTimeout(onDone, 2200)
     return () => clearTimeout(t)
   }, [onDone])
 
@@ -46,8 +48,8 @@ export function LikeBurst({ x, y, onDone }: LikeBurstProps) {
           key={p.id}
           className="absolute"
           style={{
-            left: x + p.x,
-            top: y,
+            left: `${p.startX}%`,
+            bottom: `${p.startY - 60}%`,
             fontSize: p.size,
             animation: `likeBurstFloat ${p.duration}s ease-out ${p.delay}s both`,
             '--drift': `${p.drift}px`,
@@ -65,11 +67,11 @@ export function LikeBurst({ x, y, onDone }: LikeBurstProps) {
           }
           30% {
             opacity: 1;
-            transform: translateY(-80px) translateX(var(--drift)) rotate(var(--rotation)) scale(1);
+            transform: translateY(-120px) translateX(var(--drift)) rotate(var(--rotation)) scale(1);
           }
           100% {
             opacity: 0;
-            transform: translateY(-300px) translateX(var(--drift)) rotate(var(--rotation)) scale(0.6);
+            transform: translateY(-400px) translateX(var(--drift)) rotate(var(--rotation)) scale(0.6);
           }
         }
       `}</style>

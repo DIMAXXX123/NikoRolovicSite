@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { BookOpen, ChevronRight, ChevronLeft, Plus, X, Play, Brain, RotateCcw, Heart } from 'lucide-react'
+import { BookOpen, ChevronRight, ChevronLeft, Plus, X, Play, Brain, RotateCcw, ThumbsUp } from 'lucide-react'
 import { LikeBurst } from '@/components/like-burst'
 import type { Lecture, Profile } from '@/lib/types'
 
@@ -306,14 +306,14 @@ export default function LecturesPage() {
               onClick={(e) => toggleLike(selectedLecture.id, e)}
               className="flex items-center gap-1.5 transition-all duration-200 active:scale-110"
             >
-              <Heart
+              <ThumbsUp
                 className={`w-5 h-5 transition-all ${
                   likedLectures[selectedLecture.id]
-                    ? 'fill-red-500 text-red-500'
+                    ? 'fill-blue-500 text-blue-500'
                     : 'text-muted-foreground'
                 }`}
               />
-              <span className={`text-sm ${likedLectures[selectedLecture.id] ? 'text-red-500' : 'text-muted-foreground'}`}>
+              <span className={`text-sm ${likedLectures[selectedLecture.id] ? 'text-blue-500' : 'text-muted-foreground'}`}>
                 {likedLectures[selectedLecture.id] ? 1 : 0}
               </span>
             </button>
@@ -392,7 +392,7 @@ export default function LecturesPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {likedLectures[lecture.id] && (
-                      <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                      <ThumbsUp className="w-3.5 h-3.5 fill-blue-500 text-blue-500" />
                     )}
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </div>
@@ -409,7 +409,6 @@ export default function LecturesPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold gradient-text tracking-tight">Lekcije</h1>
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="h-28 rounded-2xl bg-muted animate-pulse" />
@@ -422,8 +421,6 @@ export default function LecturesPage() {
   // ========== SUBJECTS GRID VIEW ==========
   return (
     <div className="space-y-4 animate-fade-in">
-      <h1 className="text-3xl font-bold gradient-text tracking-tight">Lekcije</h1>
-
       {profile && (
         <Badge variant="secondary" className="text-xs">
           Tvoj razred: {profile.class_number}-{profile.section_number}

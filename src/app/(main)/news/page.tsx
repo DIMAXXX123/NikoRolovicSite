@@ -88,7 +88,6 @@ export default function NewsPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold gradient-text tracking-tight">Novosti</h1>
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-48 rounded-2xl bg-muted animate-pulse" />
         ))}
@@ -98,8 +97,6 @@ export default function NewsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <h1 className="text-3xl font-bold gradient-text tracking-tight">Novosti</h1>
-      
       {news.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground">
           <Newspaper className="w-12 h-12 mx-auto mb-3 opacity-30" />

@@ -62,7 +62,12 @@ export default function AdminEventsPage() {
 
   async function deleteEvent(id: string) {
     if (!confirm('Obriši ovaj događaj?')) return
-    await supabase.from('events').delete().eq('id', id)
+    const { error } = await supabase.from('events').delete().eq('id', id)
+    if (error) {
+      console.error('Delete event error:', error)
+      alert(`Greška pri brisanju: ${error.message}`)
+      return
+    }
     loadEvents()
   }
 

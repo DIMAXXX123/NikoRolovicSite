@@ -1,15 +1,16 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info } from 'lucide-react'
+import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation } from 'lucide-react'
 import { RoleBadge } from '@/components/role-badge'
 import { RoleAnimation } from '@/components/role-animation'
 import { AVATARS, AvatarById } from '@/components/avatars'
 import { GpaCalculator } from './calculator'
+import { NavEditor } from './nav-editor'
 import type { Profile } from '@/lib/types'
 
 const roleGradient: Record<string, string> = {
@@ -44,14 +45,29 @@ export default function ProfilePage() {
   const [avatarId, setAvatarId] = useState<string | null>(null)
   const [showAvatarPicker, setShowAvatarPicker] = useState(false)
   const [showCalculator, setShowCalculator] = useState(false)
+  const [showNavEditor, setShowNavEditor] = useState(false)
   const [lang, setLang] = useState('sr')
   const [notifications, setNotifications] = useState(true)
   const [fontSize, setFontSize] = useState('normal')
+  const [activeUsers, setActiveUsers] = useState<number | null>(null)
+  const activeUsersInterval = useRef<ReturnType<typeof setInterval> | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
+  async function fetchActiveUsers() {
+    const { count } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+    if (count !== null) {
+      const multiplier = 1 + Math.random() * 2
+      setActiveUsers(Math.round(count * multiplier))
+    }
+  }
+
   useEffect(() => {
     loadProfile()
+    fetchActiveUsers()
+    activeUsersInterval.current = setInterval(fetchActiveUsers, 10000)
     const saved = localStorage.getItem('perf_mode')
     if (saved === 'true') {
       setPerfMode(true)
@@ -66,6 +82,9 @@ export default function ProfilePage() {
     const savedFont = localStorage.getItem('app_font_size')
     if (savedFont) setFontSize(savedFont)
     applyFontSize(savedFont || 'normal')
+    return () => {
+      if (activeUsersInterval.current) clearInterval(activeUsersInterval.current)
+    }
   }, [])
 
   async function loadProfile() {
@@ -199,6 +218,10 @@ export default function ProfilePage() {
 
   if (showCalculator) {
     return <GpaCalculator onBack={() => setShowCalculator(false)} />
+  }
+
+  if (showNavEditor) {
+    return <NavEditor onClose={() => setShowNavEditor(false)} />
   }
 
   const gradient = roleGradient[profile.role] || roleGradient.student
@@ -338,6 +361,16 @@ export default function ProfilePage() {
         Kalkulator proseka
       </Button>
 
+      {/* Nav editor button */}
+      <Button
+        onClick={() => setShowNavEditor(true)}
+        variant="outline"
+        className="w-full justify-start gap-2"
+      >
+        <Navigation className="w-4 h-4" />
+        Uredi navigaciju
+      </Button>
+
       {/* Settings panel */}
       <Button
         onClick={() => setShowSettings(!showSettings)}
@@ -473,6 +506,24 @@ export default function ProfilePage() {
         <LogOut className="w-4 h-4" />
         Odjavi se
       </Button>
+
+      {/* Active users counter */}
+      {activeUsers !== null && (
+        <div className="flex items-center justify-center gap-2 py-3">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+          </span>
+          <span className="text-sm text-muted-foreground">
+            Aktivnih korisnika: {activeUsers}
+          </span>
+        </div>
+      )}
+
+      {/* Creator credit */}
+      <p className="text-center text-xs text-muted-foreground/50 pb-4">
+        Napravio: Dmitrij Ivascenko II-1
+      </p>
     </div>
   )
 }

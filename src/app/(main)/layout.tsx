@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { BottomNav } from '@/components/bottom-nav'
 import { ThemeSwitcher } from '@/components/theme-switcher'
+import { getNavConfig, ALL_NAV_ITEMS } from '@/lib/nav-config'
 
 export default function MainLayout({
   children,
@@ -11,6 +12,7 @@ export default function MainLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [opacity, setOpacity] = useState(1)
   const prevPath = useRef(pathname)
 
@@ -34,12 +36,19 @@ export default function MainLayout({
       {/* Fixed glassmorphism header */}
       <header className="fixed top-0 left-0 right-0 z-50 glass-header">
         <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              const ids = getNavConfig()
+              const first = ALL_NAV_ITEMS.find(item => item.id === ids[0])
+              if (first) router.push(first.href)
+            }}
+            className="flex items-center gap-3 active:scale-95 transition-transform"
+          >
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--theme-primary, #a78bfa)' }}>
               <span className="text-xs font-bold text-white">NR</span>
             </div>
             <span className="font-semibold text-sm gradient-text">Niko Rolović</span>
-          </div>
+          </button>
           <ThemeSwitcher />
         </div>
       </header>

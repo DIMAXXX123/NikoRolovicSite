@@ -75,7 +75,12 @@ export default function AdminNewsPage() {
 
   async function deleteNews(id: string) {
     if (!confirm('Obriši ovu novost?')) return
-    await supabase.from('news').delete().eq('id', id)
+    const { error } = await supabase.from('news').delete().eq('id', id)
+    if (error) {
+      console.error('Delete news error:', error)
+      alert(`Greška pri brisanju: ${error.message}`)
+      return
+    }
     loadNews()
   }
 

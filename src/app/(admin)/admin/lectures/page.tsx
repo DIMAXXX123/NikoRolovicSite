@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Plus, Trash2, X, Bold, Italic, Heading, List, Link2, FunctionSquare,
-  ImagePlus, Eye, Edit3, BookOpen, ChevronRight, FlipVertical
+  ImagePlus, Eye, Edit3, BookOpen, ChevronRight, FlipVertical, ArrowLeft
 } from 'lucide-react'
 import type { Lecture } from '@/lib/types'
 
@@ -40,10 +40,18 @@ export default function AdminLecturesPage() {
   const [newAnswer, setNewAnswer] = useState('')
 
   const editorRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
   useEffect(() => { loadLectures() }, [])
+
+  // Restore editor content when switching from preview back to edit
+  useEffect(() => {
+    if (!preview && editorRef.current && contentRef.current) {
+      editorRef.current.innerHTML = contentRef.current
+    }
+  }, [preview])
 
   async function loadLectures() {
     const { data } = await supabase.from('lectures').select('*').order('created_at', { ascending: false })
@@ -58,7 +66,9 @@ export default function AdminLecturesPage() {
 
   function syncEditor() {
     if (editorRef.current) {
-      setEditorHtml(editorRef.current.innerHTML)
+      const html = editorRef.current.innerHTML
+      setEditorHtml(html)
+      contentRef.current = html
     }
   }
 
@@ -88,7 +98,7 @@ export default function AdminLecturesPage() {
   function handleFormula() {
     const formula = prompt('Unesi formulu:')
     if (formula && editorRef.current) {
-      const html = `<span class="inline-block px-2 py-1 mx-1 rounded bg-blue-500/20 font-mono text-blue-300 text-sm" contenteditable="false">${formula}</span>&nbsp;`
+      const html = `<span class="inline-block px-2 py-1 mx-1 rounded bg-blue-500/20 font-mono text-blue-600 text-sm" contenteditable="false">${formula}</span>&nbsp;`
       execCommand('insertHTML', html)
     }
   }
@@ -123,20 +133,24 @@ export default function AdminLecturesPage() {
 
   async function createLecture(e: React.FormEvent) {
     e.preventDefault()
-    if (!editorHtml.trim()) { alert('Sadržaj lekcije je obavezan'); return }
+    const content = contentRef.current || editorHtml
+    if (!content.trim()) { alert('Sadržaj lekcije je obavezan'); return }
     setLoading(true)
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setLoading(false); return }
+    if (!user) { alert('Niste prijavljeni'); setLoading(false); return }
 
     const { data, error } = await supabase.from('lectures').insert({
-      title, subject, content: editorHtml,
+      title,
+      subject,
+      content,
       class_number: parseInt(classNumber),
       author_id: user.id,
     }).select().single()
 
     if (error || !data) {
-      alert('Greška pri kreiranju lekcije')
+      console.error('Lecture create error:', error)
+      alert(`Greška pri kreiranju lekcije: ${error?.message || 'Nepoznata greška'}`)
       setLoading(false)
       return
     }
@@ -181,7 +195,7 @@ export default function AdminLecturesPage() {
 
   function resetForm() {
     setTitle(''); setSubject(SUBJECTS[0]); setClassNumber('1')
-    setEditorHtml(''); setShowForm(false); setShowQuizStep(false)
+    setEditorHtml(''); contentRef.current = ''; setShowForm(false); setShowQuizStep(false)
     setSavedLectureId(null); setFlashcards([]); setNewQuestion(''); setNewAnswer('')
     setPreview(false); setLoading(false)
     if (editorRef.current) editorRef.current.innerHTML = ''
@@ -189,13 +203,16 @@ export default function AdminLecturesPage() {
 
   async function deleteLecture(id: string) {
     if (!confirm('Obriši ovu lekciju?')) return
-    await supabase.from('lectures').delete().eq('id', id)
+    const { error } = await supabase.from('lectures').delete().eq('id', id)
+    if (error) {
+      console.error('Delete lecture error:', error)
+      alert(`Greška pri brisanju: ${error.message}`)
+      return
+    }
     loadLectures()
   }
 
-  const selectClass = "flex h-11 w-full rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
-
-  const toolbarBtnClass = "p-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
+  const toolbarBtnClass = "p-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-colors active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
 
   // Quiz step UI
   if (showQuizStep) {
@@ -277,134 +294,144 @@ export default function AdminLecturesPage() {
     )
   }
 
+  // ========== FULLSCREEN EDITOR ==========
+  if (showForm) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#f8f9fa] flex flex-col">
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
+          <button
+            onClick={() => { resetForm() }}
+            className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm font-medium">Nazad</span>
+          </button>
+          <h2 className="text-sm font-semibold text-gray-800">Nova lekcija</h2>
+          <button
+            onClick={() => setPreview(!preview)}
+            className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            {preview ? <Edit3 className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {preview ? 'Uredi' : 'Pregled'}
+          </button>
+        </div>
+
+        {/* Form fields */}
+        <div className="px-4 py-3 bg-white border-b border-gray-100 space-y-3">
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            className="rounded-xl bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 h-11"
+            placeholder="Naslov lekcije"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <select
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="flex h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+            >
+              {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select
+              value={classNumber}
+              onChange={(e) => setClassNumber(e.target.value)}
+              className="flex h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+            >
+              {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}. razred</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Toolbar */}
+        {!preview && (
+          <div className="flex gap-1.5 px-4 py-2 bg-white border-b border-gray-100 overflow-x-auto">
+            <button type="button" onClick={handleBold} className={toolbarBtnClass} title="Bold">
+              <Bold className="w-4 h-4" />
+            </button>
+            <button type="button" onClick={handleItalic} className={toolbarBtnClass} title="Italic">
+              <Italic className="w-4 h-4" />
+            </button>
+            <button type="button" onClick={handleHeading} className={toolbarBtnClass} title="Naslov">
+              <Heading className="w-4 h-4" />
+            </button>
+            <button type="button" onClick={handleList} className={toolbarBtnClass} title="Lista">
+              <List className="w-4 h-4" />
+            </button>
+            <button type="button" onClick={handleLink} className={toolbarBtnClass} title="Link">
+              <Link2 className="w-4 h-4" />
+            </button>
+            <button type="button" onClick={handleFormula} className={toolbarBtnClass} title="Formula">
+              <FunctionSquare className="w-4 h-4" />
+            </button>
+            <button type="button" onClick={handleImageUpload} className={toolbarBtnClass} title="Slika">
+              <ImagePlus className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Editor / Preview area */}
+        <div className="flex-1 overflow-y-auto">
+          {!preview ? (
+            <div
+              ref={editorRef}
+              contentEditable
+              onInput={syncEditor}
+              onBlur={syncEditor}
+              className="min-h-full px-4 py-4 text-base text-gray-900 focus:outline-none leading-relaxed prose prose-sm max-w-none [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-gray-900 [&_h2]:mt-4 [&_h2]:mb-2 [&_a]:text-blue-600 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_img]:rounded-xl [&_img]:my-3"
+              data-placeholder="Piši sadržaj lekcije ovdje..."
+              suppressContentEditableWarning
+              style={{ minHeight: '300px' }}
+            />
+          ) : (
+            <div className="px-4 py-4">
+              {editorHtml ? (
+                <div
+                  className="prose prose-sm max-w-none text-gray-900 [&_h2]:text-xl [&_h2]:font-bold [&_a]:text-blue-600 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_img]:rounded-xl [&_img]:my-3"
+                  dangerouslySetInnerHTML={{ __html: editorHtml }}
+                />
+              ) : (
+                <p className="text-gray-400 italic">Nema sadržaja za pregled</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={onImageSelected}
+        />
+
+        {/* Bottom publish button */}
+        <div className="px-4 py-3 bg-white border-t border-gray-200 safe-area-bottom">
+          <Button
+            onClick={(e) => createLecture(e as any)}
+            disabled={loading || !title.trim()}
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl h-12 text-base font-medium"
+          >
+            {loading ? 'Objavljuje se...' : 'Objavi lekciju'}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Lekcije</h1>
         <Button
           size="sm"
-          onClick={() => { setShowForm(!showForm); setPreview(false) }}
+          onClick={() => { setShowForm(true); setPreview(false) }}
           className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl"
         >
-          {showForm ? <X className="w-4 h-4" /> : <><Plus className="w-4 h-4 mr-1" />Nova</>}
+          <Plus className="w-4 h-4 mr-1" />Nova
         </Button>
       </div>
-
-      {showForm && (
-        <div className="rounded-xl bg-[#1e293b] border border-blue-500/30 p-4 animate-slide-up">
-          <form onSubmit={createLecture} className="space-y-3">
-            <div className="space-y-2">
-              <Label className="text-slate-200">Naslov</Label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                className="rounded-xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-blue-500"
-                placeholder="Naslov lekcije"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="text-slate-200">Predmet</Label>
-                <select value={subject} onChange={(e) => setSubject(e.target.value)} className={selectClass}>
-                  {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-slate-200">Razred</Label>
-                <select value={classNumber} onChange={(e) => setClassNumber(e.target.value)} className={selectClass}>
-                  {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}. razred</option>)}
-                </select>
-              </div>
-            </div>
-
-            {/* Rich Text Editor */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-slate-200">Sadržaj lekcije</Label>
-                <button
-                  type="button"
-                  onClick={() => setPreview(!preview)}
-                  className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
-                >
-                  {preview ? <Edit3 className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                  {preview ? 'Uredi' : 'Pregled'}
-                </button>
-              </div>
-
-              {!preview && (
-                <>
-                  {/* Toolbar - scrollable on mobile */}
-                  <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
-                    <button type="button" onClick={handleBold} className={toolbarBtnClass} title="Bold">
-                      <Bold className="w-4 h-4" />
-                    </button>
-                    <button type="button" onClick={handleItalic} className={toolbarBtnClass} title="Italic">
-                      <Italic className="w-4 h-4" />
-                    </button>
-                    <button type="button" onClick={handleHeading} className={toolbarBtnClass} title="Naslov">
-                      <Heading className="w-4 h-4" />
-                    </button>
-                    <button type="button" onClick={handleList} className={toolbarBtnClass} title="Lista">
-                      <List className="w-4 h-4" />
-                    </button>
-                    <button type="button" onClick={handleLink} className={toolbarBtnClass} title="Link">
-                      <Link2 className="w-4 h-4" />
-                    </button>
-                    <button type="button" onClick={handleFormula} className={toolbarBtnClass} title="Formula">
-                      <FunctionSquare className="w-4 h-4" />
-                    </button>
-                    <button type="button" onClick={handleImageUpload} className={toolbarBtnClass} title="Slika">
-                      <ImagePlus className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Editor area */}
-                  <div
-                    ref={editorRef}
-                    contentEditable
-                    onInput={syncEditor}
-                    onBlur={syncEditor}
-                    className="min-h-[200px] w-full rounded-xl border border-slate-600 bg-slate-800 px-4 py-3 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors prose prose-invert prose-sm max-w-none [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-blue-300 [&_h2]:mt-3 [&_h2]:mb-1 [&_a]:text-blue-400 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_img]:rounded-xl [&_img]:my-2"
-                    data-placeholder="Piši sadržaj lekcije ovdje..."
-                    suppressContentEditableWarning
-                  />
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={onImageSelected}
-                  />
-                </>
-              )}
-
-              {preview && (
-                <div className="min-h-[200px] w-full rounded-xl border border-slate-600 bg-slate-900/50 px-4 py-3 text-sm text-white">
-                  {editorHtml ? (
-                    <div
-                      className="prose prose-invert prose-sm max-w-none [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-blue-300 [&_a]:text-blue-400 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_img]:rounded-xl [&_img]:my-2"
-                      dangerouslySetInnerHTML={{ __html: editorHtml }}
-                    />
-                  ) : (
-                    <p className="text-slate-500 italic">Nema sadržaja za pregled</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl"
-            >
-              {loading ? 'Objavljuje se...' : 'Objavi lekciju'}
-            </Button>
-          </form>
-        </div>
-      )}
 
       {lectures.length === 0 ? (
         <div className="text-center py-20 text-slate-500">

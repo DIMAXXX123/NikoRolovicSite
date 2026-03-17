@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Camera, Plus, X, Send } from 'lucide-react'
+import { Camera, Plus, X, Send, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { RoleBadge } from '@/components/role-badge'
@@ -19,7 +19,11 @@ export default function GalleryPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
+  const [likedPhotos, setLikedPhotos] = useState<Record<string, boolean>>({})
+  const [doubleTapHeart, setDoubleTapHeart] = useState<{ id: string; key: number } | null>(null)
+  const lastTapRef = useRef<{ id: string; time: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const feedRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
   const showToast = useCallback((message: string) => {
@@ -29,6 +33,8 @@ export default function GalleryPage() {
 
   useEffect(() => {
     loadPhotos()
+    const savedLikes = localStorage.getItem('photo_likes')
+    if (savedLikes) setLikedPhotos(JSON.parse(savedLikes))
 
     // Realtime subscription for new approved photos
     const channel = supabase
@@ -39,13 +45,11 @@ export default function GalleryPage() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         async (payload: any) => {
           const newPhoto = payload.new as Photo
-          // Fetch user profile for the new photo
           const { data: profile } = await supabase
             .from('profiles')
             .select('first_name, last_name, class_number, section_number, role')
             .eq('id', newPhoto.user_id)
             .single()
-
           const photoWithUser = { ...newPhoto, user: profile || undefined }
           setPhotos((prev) => [photoWithUser, ...prev])
         }
@@ -56,10 +60,8 @@ export default function GalleryPage() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         async (payload: any) => {
           const updated = payload.new as Photo
-          // Only add if it was just approved (not already in list)
           setPhotos((prev) => {
             if (prev.some((p) => p.id === updated.id)) return prev
-            // Fetch user info and prepend
             supabase
               .from('profiles')
               .select('first_name, last_name, class_number, section_number, role')
@@ -102,6 +104,35 @@ export default function GalleryPage() {
     }
   }
 
+  function handleDoubleTap(photoId: string) {
+    const now = Date.now()
+    const last = lastTapRef.current
+    if (last && last.id === photoId && now - last.time < 300) {
+      // Double tap detected
+      if (!likedPhotos[photoId]) {
+        const updated = { ...likedPhotos, [photoId]: true }
+        setLikedPhotos(updated)
+        localStorage.setItem('photo_likes', JSON.stringify(updated))
+      }
+      setDoubleTapHeart({ id: photoId, key: now })
+      setTimeout(() => setDoubleTapHeart(null), 1000)
+      lastTapRef.current = null
+    } else {
+      lastTapRef.current = { id: photoId, time: now }
+    }
+  }
+
+  function toggleLike(photoId: string) {
+    const updated = { ...likedPhotos }
+    if (updated[photoId]) {
+      delete updated[photoId]
+    } else {
+      updated[photoId] = true
+    }
+    setLikedPhotos(updated)
+    localStorage.setItem('photo_likes', JSON.stringify(updated))
+  }
+
   async function handleUpload() {
     if (!selectedFile) return
     setUploading(true)
@@ -133,14 +164,12 @@ export default function GalleryPage() {
       status: 'pending',
     }
 
-    // Add anonymous flag if supported
     if (anonymous) {
       insertData.anonymous = true
     }
 
     const { data: photoData, error: insertError } = await supabase.from('photos').insert(insertData).select('id').single()
 
-    // If anonymous column doesn't exist, retry without it
     if (insertError && anonymous) {
       await supabase.from('photos').insert({
         image_url: publicUrl,
@@ -150,14 +179,12 @@ export default function GalleryPage() {
       }).select('id').single()
     }
 
-    // Get user name for notification
     const { data: profile } = await supabase
       .from('profiles')
       .select('first_name, last_name')
       .eq('id', user.id)
       .single()
 
-    // Notify admins via Telegram
     const pid = photoData?.id
     if (pid) {
       try {
@@ -187,27 +214,24 @@ export default function GalleryPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold gradient-text">Dumbs</h1>
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="aspect-[3/4] rounded-2xl bg-muted animate-shimmer" />
+      <div className="fixed inset-0 flex flex-col">
+        {[1, 2].map((i) => (
+          <div key={i} className="flex-1 bg-muted animate-shimmer" />
         ))}
       </div>
     )
   }
 
+  const isAnon = (photo: Photo) => (photo as Photo & { anonymous?: boolean }).anonymous
+
   return (
-    <div className="space-y-4 animate-fade-in">
+    <>
       {/* Toast notification */}
       {toast && (
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium shadow-lg animate-slide-down">
           {toast}
         </div>
       )}
-
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold gradient-text">Dumbs</h1>
-      </div>
 
       {/* Upload modal */}
       {showUpload && (
@@ -249,7 +273,6 @@ export default function GalleryPage() {
               className="bg-background/50"
             />
 
-            {/* Anonymous toggle */}
             <label className="flex items-center gap-3 cursor-pointer select-none">
               <div
                 className={`relative w-10 h-5 rounded-full transition-colors ${anonymous ? 'bg-primary' : 'bg-muted'}`}
@@ -276,47 +299,95 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* TikTok-style photo feed */}
+      {/* Fullscreen snap-scroll photo feed */}
       {photos.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
+        <div className="text-center py-20 text-muted-foreground animate-fade-in">
           <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>Još nema fotografija</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {photos.map((photo, index) => (
-            <div key={photo.id} className="relative rounded-2xl overflow-hidden animate-slide-up card-hover" style={{ animationDelay: `${index * 0.05}s` }}>
-              {/* Shimmer skeleton while image loads */}
+        <div
+          ref={feedRef}
+          className="fixed inset-0 overflow-y-scroll snap-y snap-mandatory"
+          style={{ scrollSnapType: 'y mandatory', WebkitOverflowScrolling: 'touch' }}
+        >
+          {photos.map((photo) => (
+            <div
+              key={photo.id}
+              className="relative w-full snap-start snap-always"
+              style={{ height: 'calc(100dvh - 64px)' }}
+              onClick={() => handleDoubleTap(photo.id)}
+            >
+              {/* Shimmer while loading */}
               {!loadedImages.has(photo.id) && (
-                <div className="absolute inset-0 bg-muted animate-shimmer rounded-2xl" />
+                <div className="absolute inset-0 bg-muted animate-shimmer" />
               )}
+
+              {/* Photo */}
               <img
                 src={photo.image_url}
                 alt={photo.caption || ''}
-                className={`w-full aspect-[3/4] object-cover transition-opacity duration-300 ${loadedImages.has(photo.id) ? 'opacity-100' : 'opacity-0'}`}
+                className={`w-full h-full object-cover transition-opacity duration-500 ${loadedImages.has(photo.id) ? 'opacity-100' : 'opacity-0'}`}
                 onLoad={() => setLoadedImages((prev) => new Set(prev).add(photo.id))}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-white text-sm">
-                    {(photo as Photo & { anonymous?: boolean }).anonymous
-                      ? 'Anonim'
-                      : `${photo.user?.first_name} ${photo.user?.last_name}`}
-                  </p>
-                  {!(photo as Photo & { anonymous?: boolean }).anonymous && photo.user?.role && <RoleBadge role={photo.user.role} />}
+
+              {/* Bottom gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/10 pointer-events-none" />
+
+              {/* Double-tap heart animation */}
+              {doubleTapHeart?.id === photo.id && (
+                <div key={doubleTapHeart.key} className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                  <Heart
+                    className="w-24 h-24 text-white fill-white drop-shadow-lg"
+                    style={{ animation: 'doubleTapHeart 1s ease-out forwards' }}
+                  />
                 </div>
-                {!(photo as Photo & { anonymous?: boolean }).anonymous && (
-                  <p className="text-white/60 text-xs">
-                    {photo.user?.class_number}-{photo.user?.section_number}
-                  </p>
-                )}
-                {photo.caption && (
-                  <p className="text-white/80 text-sm mt-1">{photo.caption}</p>
-                )}
+              )}
+
+              {/* Like button on the right side */}
+              <div className="absolute right-4 bottom-28 flex flex-col items-center gap-1 z-10">
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleLike(photo.id) }}
+                  className="p-2 transition-all active:scale-125"
+                >
+                  <Heart
+                    className={`w-7 h-7 drop-shadow-lg transition-all ${
+                      likedPhotos[photo.id]
+                        ? 'fill-red-500 text-red-500'
+                        : 'text-white'
+                    }`}
+                  />
+                </button>
               </div>
+
+              {/* User info at bottom - only for non-anonymous */}
+              {!isAnon(photo) && photo.user && (
+                <div className="absolute bottom-4 left-4 right-16 z-10">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-white text-base drop-shadow-lg">
+                      {photo.user.first_name} {photo.user.last_name}
+                    </p>
+                    {photo.user.role && <RoleBadge role={photo.user.role} />}
+                  </div>
+                  <p className="text-white/60 text-xs mt-0.5">
+                    {photo.user.class_number}-{photo.user.section_number}
+                  </p>
+                  {photo.caption && (
+                    <p className="text-white/80 text-sm mt-1.5 line-clamp-2">{photo.caption}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Anonymous: only show caption if any */}
+              {isAnon(photo) && photo.caption && (
+                <div className="absolute bottom-4 left-4 right-16 z-10">
+                  <p className="text-white/80 text-sm line-clamp-2">{photo.caption}</p>
+                </div>
+              )}
             </div>
           ))}
+          {/* Spacer for bottom nav */}
+          <div className="h-16 snap-start" />
         </div>
       )}
 
@@ -327,6 +398,16 @@ export default function GalleryPage() {
       >
         <Plus className="w-7 h-7" />
       </button>
-    </div>
+
+      <style>{`
+        @keyframes doubleTapHeart {
+          0% { opacity: 0; transform: scale(0); }
+          15% { opacity: 1; transform: scale(1.2); }
+          30% { transform: scale(0.95); }
+          45% { transform: scale(1.05); opacity: 1; }
+          100% { opacity: 0; transform: scale(1); }
+        }
+      `}</style>
+    </>
   )
 }

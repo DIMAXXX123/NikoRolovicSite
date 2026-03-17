@@ -184,7 +184,6 @@ export default function EventsPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold gradient-text tracking-tight">Kalendar</h1>
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-28 rounded-2xl bg-muted animate-pulse" />
         ))}
@@ -328,7 +327,6 @@ export default function EventsPage() {
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold gradient-text tracking-tight">Kalendar</h1>
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           <button
             onClick={() => setView('calendar')}
