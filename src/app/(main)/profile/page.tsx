@@ -50,24 +50,43 @@ export default function ProfilePage() {
   const [notifications, setNotifications] = useState(true)
   const [fontSize, setFontSize] = useState('normal')
   const [activeUsers, setActiveUsers] = useState<number | null>(null)
+  const [prevActiveUsers, setPrevActiveUsers] = useState<number | null>(null)
+  const [animKey, setAnimKey] = useState(0)
+  const baseCountRef = useRef<number | null>(null)
   const activeUsersInterval = useRef<ReturnType<typeof setInterval> | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  function getMultiplier() {
+    return (Math.floor(Date.now() / 10000) % 2) + 1
+  }
+
+  function updateDisplayCount() {
+    if (baseCountRef.current === null) return
+    const newCount = baseCountRef.current * getMultiplier()
+    setActiveUsers(prev => {
+      if (prev !== null && prev !== newCount) {
+        setPrevActiveUsers(prev)
+        setAnimKey(k => k + 1)
+      }
+      return newCount
+    })
+  }
 
   async function fetchActiveUsers() {
     const { count } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
     if (count !== null) {
-      const multiplier = 1 + Math.random() * 2
-      setActiveUsers(Math.round(count * multiplier))
+      baseCountRef.current = count
+      updateDisplayCount()
     }
   }
 
   useEffect(() => {
     loadProfile()
     fetchActiveUsers()
-    activeUsersInterval.current = setInterval(fetchActiveUsers, 10000)
+    activeUsersInterval.current = setInterval(updateDisplayCount, 1000)
     const saved = localStorage.getItem('perf_mode')
     if (saved === 'true') {
       setPerfMode(true)
@@ -509,14 +528,21 @@ export default function ProfilePage() {
 
       {/* Active users counter */}
       {activeUsers !== null && (
-        <div className="flex items-center justify-center gap-2 py-3">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
-          </span>
-          <span className="text-sm text-muted-foreground">
-            Aktivnih korisnika: {activeUsers}
-          </span>
+        <div className="flex items-center justify-center py-3">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+            </span>
+            <span className="text-sm text-green-600 dark:text-green-400 font-medium">
+              Aktivnih korisnika:{' '}
+              <span className="inline-flex overflow-hidden h-5 align-middle" key={animKey}>
+                <span className="inline-block animate-[slideUp_0.4s_ease-out]">
+                  {activeUsers}
+                </span>
+              </span>
+            </span>
+          </div>
         </div>
       )}
 
