@@ -54,6 +54,18 @@ interface FlashCard {
 }
 
 function generateFlashcards(lecture: Lecture): FlashCard[] {
+  // First check for admin-created quiz data
+  const quizMatch = lecture.content.match(/QUIZ_DATA:(.*?):QUIZ_DATA/)
+  if (quizMatch) {
+    try {
+      const parsed = JSON.parse(quizMatch[1])
+      if (parsed.flashcards && parsed.flashcards.length > 0) {
+        return parsed.flashcards
+      }
+    } catch {}
+  }
+
+  // Auto-generate from content
   const lines = lecture.content.split('\n').filter(l => l.trim().length > 20)
   const cards: FlashCard[] = []
 
