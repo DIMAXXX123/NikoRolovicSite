@@ -329,6 +329,9 @@ export default function GalleryPage() {
                         : 'text-white/80'
                     }`}
                   />
+                  <span className="text-white/90 text-xs font-medium mt-1">
+                    {likedPhotos[photo.id] ? 1 : 0}
+                  </span>
                 </button>
               </div>
 
