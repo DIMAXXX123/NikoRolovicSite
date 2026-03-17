@@ -323,11 +323,12 @@ export default function GalleryPage() {
                   className="active:scale-125 transition-transform"
                 >
                   <Heart
-                    className={`w-7 h-7 drop-shadow-lg transition-all ${
+                    className={`w-7 h-7 transition-all ${
                       likedPhotos[photo.id]
                         ? 'fill-red-500 text-red-500'
                         : 'text-white'
                     }`}
+                    style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))' }}
                   />
                 </button>
               </div>
