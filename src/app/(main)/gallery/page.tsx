@@ -22,9 +22,9 @@ export default function GalleryPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const lastTapRef = useRef<Record<string, number>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const feedEndRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
+  // Load photos + user + likes on mount
   useEffect(() => {
     loadPhotos()
     loadCurrentUser()
@@ -32,14 +32,47 @@ export default function GalleryPage() {
     if (saved) setLikedPhotos(JSON.parse(saved))
   }, [])
 
-  // Auto-scroll to bottom (newest photos) on load
+  // Realtime subscription — new approved photos appear at top
   useEffect(() => {
-    if (!loading && photos.length > 0) {
-      setTimeout(() => {
-        feedEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }, 100)
+    const channel = supabase
+      .channel('gallery-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'photos', filter: 'status=eq.approved' },
+        async (payload: any) => {
+          const newPhoto = payload.new as Photo
+          // Fetch user profile for the new photo
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, class_number, section_number, role')
+            .eq('id', newPhoto.user_id)
+            .single()
+          const photoWithUser = { ...newPhoto, user: profile || undefined } as any
+          setPhotos((prev) => [photoWithUser, ...prev])
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'photos' },
+        async (payload: any) => {
+          const updated = payload.new as Photo
+          if (updated.status === 'approved') {
+            // Photo just got approved — add to top if not already there
+            setPhotos((prev) => {
+              if (prev.some((p) => p.id === updated.id)) return prev
+              return [updated, ...prev]
+            })
+            // Reload to get full data with user
+            loadPhotos()
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
     }
-  }, [loading])
+  }, [])
 
   async function loadCurrentUser() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -72,7 +105,6 @@ export default function GalleryPage() {
     const now = Date.now()
     const lastTap = lastTapRef.current[photoId] || 0
     if (now - lastTap < 300) {
-      // Double tap detected
       toggleLike(photoId)
       setHeartAnimId(photoId)
       setTimeout(() => setHeartAnimId(null), 1000)
@@ -159,10 +191,6 @@ export default function GalleryPage() {
     return photo.anonymous === true
   }
 
-  function isOwnPhoto(photo: Photo) {
-    return currentUserId != null && photo.user_id === currentUserId
-  }
-
   function formatTime(dateStr: string) {
     const d = new Date(dateStr)
     return d.toLocaleTimeString('sr-Latn', { hour: '2-digit', minute: '2-digit' })
@@ -173,30 +201,12 @@ export default function GalleryPage() {
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
-
     if (d.toDateString() === today.toDateString()) return 'Danas'
     if (d.toDateString() === yesterday.toDateString()) return 'Juče'
     return d.toLocaleDateString('sr-Latn', { day: 'numeric', month: 'short' })
   }
 
-  // Group photos by date
-  function groupByDate(photos: (Photo & { user?: Profile })[]) {
-    const groups: { date: string; photos: (Photo & { user?: Profile })[] }[] = []
-    const reversed = [...photos].reverse() // oldest first for chat feel
-
-    for (const photo of reversed) {
-      const dateKey = new Date(photo.created_at).toDateString()
-      const last = groups[groups.length - 1]
-      if (last && last.date === dateKey) {
-        last.photos.push(photo)
-      } else {
-        groups.push({ date: dateKey, photos: [photo] })
-      }
-    }
-    return groups
-  }
-
-  // Sender colors (Telegram-style rotating colors for different users)
+  // Sender colors
   const senderColors = [
     'text-purple-400', 'text-emerald-400', 'text-sky-400', 'text-amber-400',
     'text-rose-400', 'text-teal-400', 'text-indigo-400', 'text-orange-400',
@@ -211,13 +221,27 @@ export default function GalleryPage() {
     return senderColors[Math.abs(hash) % senderColors.length]
   }
 
+  // Group photos by date (newest first — photos already sorted desc)
+  function groupByDate(photos: (Photo & { user?: Profile })[]) {
+    const groups: { date: string; photos: (Photo & { user?: Profile })[] }[] = []
+    for (const photo of photos) {
+      const dateKey = new Date(photo.created_at).toDateString()
+      const last = groups[groups.length - 1]
+      if (last && last.date === dateKey) {
+        last.photos.push(photo)
+      } else {
+        groups.push({ date: dateKey, photos: [photo] })
+      }
+    }
+    return groups
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col gap-3 p-4 pt-2">
         {[1, 2, 3].map((i) => (
           <div key={i} className="mx-auto max-w-[85%]">
-            <div className="rounded-2xl rounded-br-sm p-2.5 space-y-2"
-                 style={{ background: 'rgba(255,255,255,0.04)' }}>
+            <div className="rounded-2xl p-2.5 space-y-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
               <div className="h-3 w-20 rounded-full bg-muted animate-shimmer" />
               <div className={`rounded-xl bg-muted animate-shimmer ${i === 1 ? 'w-56 h-64' : i === 2 ? 'w-48 h-52' : 'w-60 h-72'}`} />
               <div className="h-2.5 w-10 rounded-full bg-muted animate-shimmer ml-auto" />
@@ -301,8 +325,8 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* Chat-style photo feed */}
-      <div className="px-3 py-2 space-y-1 pb-36">
+      {/* Photo feed — newest on top, scroll down for older */}
+      <div className="px-3 py-2 space-y-1 pb-24">
         {photos.length === 0 ? (
           <div className="h-[60vh] flex flex-col items-center justify-center text-muted-foreground">
             <Camera className="w-12 h-12 mb-3 opacity-30" />
@@ -319,15 +343,14 @@ export default function GalleryPage() {
                 </span>
               </div>
 
-              {/* Photos in this date group */}
+              {/* Photos */}
               <div className="space-y-2">
                 {group.photos.map((photo) => {
-                  const own = isOwnPhoto(photo)
                   const anon = isAnon(photo)
 
                   return (
                     <div key={photo.id} className="mx-auto max-w-[85%] animate-fade-in">
-                      <div className="relative rounded-2xl rounded-br-sm bg-card/80 p-2">
+                      <div className="relative rounded-2xl bg-card/80 p-2">
                         {/* Sender name */}
                         {!anon && photo.user && (
                           <p className={`${getSenderColor(photo.user_id)} text-xs font-medium px-1 pb-1 flex items-center gap-1.5`}>
@@ -339,7 +362,7 @@ export default function GalleryPage() {
                                 photo.user.role === 'moderator' ? 'bg-blue-500/20 text-blue-400' :
                                 'bg-green-500/20 text-green-400'
                               }`}>
-                                {photo.user.role === 'creator' ? '👑 Creator' : 
+                                {photo.user.role === 'creator' ? '👑 Creator' :
                                  photo.user.role === 'admin' ? 'Admin' :
                                  photo.user.role === 'moderator' ? 'Mod' : photo.user.role}
                               </span>
@@ -347,7 +370,7 @@ export default function GalleryPage() {
                           </p>
                         )}
 
-                        {/* Photo with double-tap */}
+                        {/* Photo with double-tap like */}
                         <div
                           className="relative select-none"
                           onTouchEnd={() => handleDoubleTap(photo.id)}
@@ -360,7 +383,6 @@ export default function GalleryPage() {
                             draggable={false}
                           />
 
-                          {/* Heart animation overlay */}
                           {heartAnimId === photo.id && (
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                               <Heart
@@ -378,7 +400,7 @@ export default function GalleryPage() {
                           </p>
                         )}
 
-                        {/* Timestamp & like indicator - bottom right */}
+                        {/* Time + like */}
                         <div className="flex items-center justify-end gap-1.5 px-1 pt-1">
                           {likedPhotos[photo.id] && (
                             <Heart className="w-3 h-3 fill-red-500 text-red-500" />
@@ -395,13 +417,13 @@ export default function GalleryPage() {
             </div>
           ))
         )}
-        <div ref={feedEndRef} />
       </div>
 
-      {/* Fixed floating upload button - bottom right, always visible */}
+      {/* CAMERA BUTTON — fixed to viewport bottom-right, ALWAYS visible while scrolling */}
       <button
         onClick={() => setShowUpload(true)}
-        className="fixed bottom-24 right-4 z-[60] w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform"
+        style={{ position: 'fixed', bottom: '6rem', right: '1rem', zIndex: 9999 }}
+        className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform"
       >
         <Camera className="w-6 h-6" />
       </button>
