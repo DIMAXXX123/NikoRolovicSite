@@ -182,8 +182,7 @@ export default function RegisterPage() {
               {error.includes('Nismo te pronašli') && !showRequestForm && (
                 <Button
                   type="button"
-                  variant="outline"
-                  className="w-full"
+                  className="w-full h-12 text-base font-bold bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:shadow-[0_0_50px_rgba(245,158,11,0.7)] transition-all animate-pulse border border-amber-400/40"
                   onClick={() => {
                     setShowRequestForm(true)
                     setReqIme(firstName)
@@ -223,7 +222,7 @@ export default function RegisterPage() {
                   </div>
                   <Button
                     type="button"
-                    className="w-full"
+                    className="w-full h-12 text-base font-bold bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-[0_0_30px_rgba(245,158,11,0.4)] hover:shadow-[0_0_50px_rgba(245,158,11,0.6)] transition-all border border-amber-400/40"
                     onClick={async () => {
                       try {
                         const res = await fetch('/api/request-join', {
@@ -258,7 +257,7 @@ export default function RegisterPage() {
               )}
             </div>
           )}
-          <Button type="submit" className="w-full h-14 text-lg font-bold bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)] transition-shadow" disabled={loading}>
+          <Button type="submit" className="w-full h-14 text-lg font-bold bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-400 hover:to-violet-500 shadow-[0_0_40px_rgba(139,92,246,0.5)] hover:shadow-[0_0_60px_rgba(139,92,246,0.7)] transition-all border border-purple-400/30 text-white tracking-wide" disabled={loading}>
             {loading ? 'Registracija...' : 'REGISTRUJ SE'}
           </Button>
         </form>
