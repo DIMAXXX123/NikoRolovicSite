@@ -688,24 +688,14 @@ export default function LecturesPage() {
           </div>
         )}
 
-        {/* Navigation buttons */}
-        <div className="pt-4 border-t border-border/30 space-y-3">
-          <div className="flex gap-2">
-            <button
-              onClick={() => navigateLecture('prev')}
-              disabled={currentLectureIndex <= 0}
-              className="flex-1 py-3 rounded-xl border border-border/30 text-sm font-medium flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-muted/50"
-            >
-              <ChevronLeft className="w-4 h-4" /> Prethodna tema
-            </button>
-            <button
-              onClick={() => navigateLecture('next')}
-              disabled={currentLectureIndex >= lectures.length - 1}
-              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 text-white text-sm font-medium flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              Sljedeća tema <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+        {/* Quiz button */}
+        <div className="pt-4 border-t border-border/30">
+          <button
+            onClick={() => handleQuiz(selectedLecture)}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 text-white text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)]"
+          >
+            <Brain className="w-5 h-5" /> Provjeri znanje
+          </button>
         </div>
       </div>
     )

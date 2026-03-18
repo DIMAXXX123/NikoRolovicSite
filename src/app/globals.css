@@ -549,3 +549,10 @@ html.font-large { font-size: 18px; }
 .animate-heart-pop {
   animation: heartPop 0.5s ease-out forwards;
 }
+
+/* Smooth color transitions for ALL interactive elements */
+button, a, [role="button"], .card-hover, input, select {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
