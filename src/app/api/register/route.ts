@@ -32,11 +32,29 @@ export async function POST(req: NextRequest) {
       .eq('section_number', sectionNumber)
       .single()
 
+    let verifiedId = verified?.id
+
     if (verifyError || !verified) {
-      return NextResponse.json({ error: 'Nismo te pronašli u bazi učenika. Proveri podatke.' }, { status: 404 })
+      // BETA MODE: auto-add student to verified_students
+      const { data: newStudent, error: insertErr } = await admin
+        .from('verified_students')
+        .insert({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          class_number: classNumber,
+          section_number: sectionNumber,
+          used: false,
+        })
+        .select('id')
+        .single()
+
+      if (insertErr || !newStudent) {
+        return NextResponse.json({ error: 'Greška pri registraciji. Pokušaj ponovo.' }, { status: 500 })
+      }
+      verifiedId = newStudent.id
     }
 
-    if (verified.used) {
+    if (verified?.used) {
       return NextResponse.json({ error: 'Ovaj učenik je već registrovan.' }, { status: 409 })
     }
 
@@ -68,7 +86,7 @@ export async function POST(req: NextRequest) {
     await admin
       .from('verified_students')
       .update({ used: true })
-      .eq('id', verified.id)
+      .eq('id', verifiedId)
 
     // Create profile
     await admin.from('profiles').insert({
