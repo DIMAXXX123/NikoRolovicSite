@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Clock, Edit3, Check, X } from 'lucide-react'
@@ -70,11 +71,28 @@ export default function SchedulePage() {
   const [editValue, setEditValue] = useState('')
   const [activeDay, setActiveDay] = useState(0)
 
+  const supabase = createClient()
+
   useEffect(() => {
-    // Try to load class/section from profile in localStorage or default
     const today = new Date().getDay()
-    // Monday=1 -> index 0, ... Friday=5 -> index 4
     setActiveDay(today >= 1 && today <= 5 ? today - 1 : 0)
+    
+    // Load user's class from profile
+    async function loadProfile() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('class_number, section_number')
+          .eq('id', user.id)
+          .single()
+        if (profile) {
+          setClassNum(profile.class_number)
+          setSectionNum(profile.section_number)
+        }
+      }
+    }
+    loadProfile()
   }, [])
 
   const loadSchedule = useCallback(() => {
