@@ -32,31 +32,15 @@ export async function POST(req: NextRequest) {
       .eq('section_number', sectionNumber)
       .single()
 
-    let verifiedId = verified?.id
-
     if (verifyError || !verified) {
-      // BETA MODE: auto-add student to verified_students
-      const { data: newStudent, error: insertErr } = await admin
-        .from('verified_students')
-        .insert({
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          class_number: classNumber,
-          section_number: sectionNumber,
-          used: false,
-        })
-        .select('id')
-        .single()
-
-      if (insertErr || !newStudent) {
-        return NextResponse.json({ error: 'Greška pri registraciji. Pokušaj ponovo.' }, { status: 500 })
-      }
-      verifiedId = newStudent.id
+      return NextResponse.json({ error: 'Nismo te pronašli u bazi učenika. Proveri podatke.' }, { status: 404 })
     }
 
-    if (verified?.used) {
+    if (verified.used) {
       return NextResponse.json({ error: 'Ovaj učenik je već registrovan.' }, { status: 409 })
     }
+
+    const verifiedId = verified.id
 
     // Create user via admin — email auto-confirmed, no OTP needed
     const { data: authData, error: authError } = await admin.auth.admin.createUser({

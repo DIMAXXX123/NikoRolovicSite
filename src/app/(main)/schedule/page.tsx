@@ -73,11 +73,11 @@ const DEFAULT_SCHEDULES: Record<string, ScheduleData> = {
   },
   // II razred
   'schedule_2_1': {
-    '0-1': 'Matematika', '0-2': 'Engleski', '0-3': 'Hemija', '0-4': 'Fizičko', '0-5': 'CSBH', '0-6': 'Biologija',
-    '1-1': 'Fizika', '1-2': 'Istorija', '1-3': 'Matematika', '1-4': 'Engleski', '1-5': 'Geografija', '1-6': 'Likovno',
-    '2-1': 'CSBH', '2-2': 'Hemija', '2-3': 'Biologija', '2-4': 'Matematika', '2-5': 'Fizika', '2-6': 'Engleski',
-    '3-1': 'Istorija', '3-2': 'Geografija', '3-3': 'Engleski', '3-4': 'CSBH', '3-5': 'Matematika', '3-6': 'Hemija',
-    '4-1': 'Fizičko', '4-2': 'Likovno', '4-3': 'Fizika', '4-4': 'Biologija', '4-5': 'Istorija',
+    '0-1': 'Matematika', '0-2': 'Engleski', '0-3': 'Likovno', '0-4': 'Geografija', '0-5': 'Italijanski', '0-6': 'Psihologija',
+    '1-1': 'Hemija', '1-2': 'Geografija', '1-3': 'Engleski', '1-4': 'Istorija', '1-5': 'Fizičko', '1-6': 'Italijanski',
+    '2-1': 'Fizika', '2-2': 'Hemija', '2-3': 'Istorija', '2-4': 'Biologija', '2-5': 'CSBH', '2-6': 'CSBH', '2-7': 'ČOZ',
+    '3-1': 'Fizičko', '3-2': 'Matematika', '3-3': 'Matematika', '3-4': 'Psihologija', '3-5': 'CSBH', '3-6': 'Izborni', '3-7': 'Fizika',
+    '4-1': 'Izborni', '4-2': 'Izborni', '4-3': 'Engleski', '4-4': 'Matematika', '4-5': 'Biologija', '4-6': 'CSBH',
   },
   'schedule_2_2': {
     '0-1': 'Engleski', '0-2': 'Fizika', '0-3': 'CSBH', '0-4': 'Matematika', '0-5': 'Hemija', '0-6': 'Biologija',
