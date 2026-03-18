@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -30,16 +30,16 @@ const roleBorderGlow: Record<string, string> = {
 }
 
 const roleLabel: Record<string, string> = {
-  student: 'Učenik',
+  student: 'UÄenik',
   moderator: 'Moderator',
   admin: 'Administrator',
   creator: 'Kreator',
 }
 
 const QUICK_ACCESS_PAGES = [
-  { id: 'about', href: '/about', label: 'O školi', icon: School, color: 'from-emerald-500 to-teal-600' },
+  { id: 'about', href: '/about', label: 'O Å¡koli', icon: School, color: 'from-emerald-500 to-teal-600' },
   { id: 'schedule', href: '/schedule', label: 'Raspored', icon: Clock, color: 'from-blue-500 to-cyan-600' },
-  { id: 'teachers', href: '/teachers', label: 'Status nastavnika', icon: Users, color: 'from-teal-500 to-cyan-600' },
+  { id: 'teachers', href: '/teachers', label: 'Status profesora', icon: Users, color: 'from-teal-500 to-cyan-600' },
   { id: 'grades', href: '/grades', label: 'Moje ocjene', icon: GraduationCap, color: 'from-purple-500 to-violet-600' },
 ]
 
@@ -375,7 +375,7 @@ export default function ProfilePage() {
             <span>{roleLabel[profile.role] || profile.role}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Član od</span>
+            <span className="text-muted-foreground">ÄŒlan od</span>
             <span>{new Date(profile.created_at).toLocaleDateString('sr-Latn')}</span>
           </div>
 
@@ -403,7 +403,7 @@ export default function ProfilePage() {
             className="w-full flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground pt-1 transition-colors"
           >
             {showStats ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {showStats ? 'Sakrij' : 'Prikaži više'}
+            {showStats ? 'Sakrij' : 'PrikaÅ¾i viÅ¡e'}
           </button>
         </CardContent>
       </Card>
@@ -438,7 +438,7 @@ export default function ProfilePage() {
         className="w-full justify-start gap-2"
       >
         <Settings className="w-4 h-4" />
-        Podešavanja
+        PodeÅ¡avanja
       </Button>
 
       {showSettings && (
@@ -450,7 +450,7 @@ export default function ProfilePage() {
                 <Zap className="w-4 h-4 text-yellow-400" />
                 <div>
                   <p className="text-sm font-medium">Performance Mode</p>
-                  <p className="text-xs text-muted-foreground">Isključi animacije</p>
+                  <p className="text-xs text-muted-foreground">IskljuÄi animacije</p>
                 </div>
               </div>
               <button
@@ -483,7 +483,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-green-400" />
                 <div>
-                  <p className="text-sm font-medium">Obavještenja</p>
+                  <p className="text-sm font-medium">ObavjeÅ¡tenja</p>
                   <p className="text-xs text-muted-foreground">Push notifikacije</p>
                 </div>
               </div>
@@ -500,7 +500,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <Type className="w-4 h-4 text-orange-400" />
                 <div>
-                  <p className="text-sm font-medium">Veličina fonta</p>
+                  <p className="text-sm font-medium">VeliÄina fonta</p>
                   <p className="text-xs text-muted-foreground">Prilagodi tekst</p>
                 </div>
               </div>
@@ -517,7 +517,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <Trash2 className="w-4 h-4 text-red-400" />
                 <div>
-                  <p className="text-sm font-medium">Obriši keš</p>
+                  <p className="text-sm font-medium">ObriÅ¡i keÅ¡</p>
                   <p className="text-xs text-muted-foreground">Resetuj lokalne podatke</p>
                 </div>
               </div>
@@ -525,7 +525,7 @@ export default function ProfilePage() {
                 onClick={clearCache}
                 className="px-3 py-1 rounded-lg bg-destructive/10 text-destructive text-xs font-medium transition-all active:scale-95"
               >
-                Obriši
+                ObriÅ¡i
               </button>
             </div>
 
@@ -536,10 +536,10 @@ export default function ProfilePage() {
                 <p className="text-sm font-medium">O aplikaciji</p>
               </div>
               <p className="text-xs text-muted-foreground">
-                Niko Rolović Portal v1.0.0
+                Niko RoloviÄ‡ Portal v1.0.0
               </p>
               <p className="text-xs text-muted-foreground">
-                Gimnazija &quot;Niko Rolović&quot; · Bar, Crna Gora
+                Gimnazija &quot;Niko RoloviÄ‡&quot; Â· Bar, Crna Gora
               </p>
             </div>
           </CardContent>
@@ -576,7 +576,7 @@ export default function ProfilePage() {
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
             </span>
             <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-              Registrovanih učenika:{' '}
+              Registrovanih uÄenika:{' '}
               <span className="inline-flex overflow-hidden h-5 align-middle" key={animKey}>
                 <span className="inline-block animate-[slideUp_0.4s_ease-out]">
                   {activeUsers}
