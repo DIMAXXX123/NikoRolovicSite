@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight } from 'lucide-react'
+import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users } from 'lucide-react'
 import { RoleBadge } from '@/components/role-badge'
 import { RoleAnimation } from '@/components/role-animation'
 import { AVATARS, AvatarById } from '@/components/avatars'
@@ -39,6 +39,7 @@ const roleLabel: Record<string, string> = {
 const QUICK_ACCESS_PAGES = [
   { id: 'about', href: '/about', label: 'O školi', icon: School, color: 'from-emerald-500 to-teal-600' },
   { id: 'schedule', href: '/schedule', label: 'Raspored', icon: Clock, color: 'from-blue-500 to-cyan-600' },
+  { id: 'teachers', href: '/teachers', label: 'Status nastavnika', icon: Users, color: 'from-teal-500 to-cyan-600' },
   { id: 'grades', href: '/grades', label: 'Moje ocjene', icon: GraduationCap, color: 'from-purple-500 to-violet-600' },
 ]
 
