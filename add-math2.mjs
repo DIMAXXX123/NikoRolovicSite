@@ -962,6 +962,176 @@ ${important('Geometrijski, sistem linearne i kvadratne jednačine predstavlja pr
 QUIZ_DATA:[{"question":"Sistem y=x, x²+y²=8 ima rješenja:","options":["(2,2) i (−2,−2)","(2,2)","(4,4)","Nema rješenja"],"correct":0},{"question":"Ako x+y=6 i xy=8, rješenja su:","options":["(2,4) i (4,2)","(3,3)","(1,8) i (8,1)","(6,8)"],"correct":0},{"question":"Koliko rješenja može imati sistem prave i parabole?","options":["0, 1 ili 2","Uvijek 2","Uvijek 1","Beskonačno"],"correct":0},{"question":"Za simetrične sisteme koristimo:","options":["Vietove formule","Crammerovo pravilo","Matrični metod","Grafički metod"],"correct":0},{"question":"x²+y²=(x+y)²−...","options":["2xy","xy","x²y²","(xy)²"],"correct":0}]:QUIZ_DATA`
   },
   {
+    title: 'Logaritamska funkcija',
+    video_url: 'https://www.youtube.com/watch?v=0G_wE5MyJL4',
+    content: `<h1>Logaritamska funkcija</h1>
+
+${backRef('Eksponencijalna funkcija')}
+${backRef('Inverzna funkcija')}
+
+<p>Logaritamska funkcija je <strong>inverzna funkcija eksponencijalne funkcije</strong>. Ona odgovara na pitanje: "Na koji stepen treba podići osnovu a da bismo dobili x?"</p>
+
+<h2>Definicija logaritma</h2>
+
+${formula('log<sub>a</sub>(x) = y &nbsp;&nbsp;⟺&nbsp;&nbsp; a<sup>y</sup> = x')}
+
+<p>Čita se: "logaritam od x po osnovi a je y"</p>
+
+${important('Uslovi: a > 0, a ≠ 1 (osnova), x > 0 (argument logaritma mora biti pozitivan!)')}
+
+<h2>Osobine logaritamske funkcije</h2>
+
+<ul>
+<li><strong>Domen:</strong> D = (0, +∞)</li>
+<li><strong>Kodomen:</strong> ℝ</li>
+<li><strong>Prolazi kroz (1, 0)</strong> jer log<sub>a</sub>(1) = 0</li>
+<li><strong>Ima jednu nultačku</strong> x = 1</li>
+<li>y-osa (x = 0) je <strong>vertikalna asimptota</strong></li>
+</ul>
+
+<h2>Pravila za logaritme</h2>
+
+${formula('log<sub>a</sub>(xy) = log<sub>a</sub>(x) + log<sub>a</sub>(y)')}
+${formula('log<sub>a</sub>(x/y) = log<sub>a</sub>(x) − log<sub>a</sub>(y)')}
+${formula('log<sub>a</sub>(x<sup>n</sup>) = n · log<sub>a</sub>(x)')}
+${formula('log<sub>a</sub>(a) = 1, &nbsp;&nbsp;log<sub>a</sub>(1) = 0')}
+
+${example('Primjer 1: Izračunaj', `
+<p>a) log₂(8) = ? → 2ʸ = 8 → y = <strong>3</strong></p>
+<p>b) log₃(1/9) = ? → 3ʸ = 1/9 = 3⁻² → y = <strong>−2</strong></p>
+<p>c) log₅(25) = log₅(5²) = 2·log₅(5) = 2·1 = <strong>2</strong></p>
+`)}
+
+${example('Primjer 2: Pojednostavi log₂(16) − log₂(2)', `
+<p>= log₂(16/2) = log₂(8) = log₂(2³) = 3</p>
+`)}
+
+<h2>Specijalni logaritmi</h2>
+
+${formula('lg(x) = log₁₀(x) &nbsp;&nbsp;(dekadski logaritam)')}
+${formula('ln(x) = log<sub>e</sub>(x) &nbsp;&nbsp;(prirodni logaritam, e ≈ 2.718)')}
+
+QUIZ_DATA:[{"question":"log₂(32) = ?","options":["5","2","32","10"],"correct":0},{"question":"log₃(1) = ?","options":["0","1","3","Nije definisan"],"correct":0},{"question":"Domen logaritamske funkcije je:","options":["(0, +∞)","ℝ","[0, +∞)","(1, +∞)"],"correct":0},{"question":"log(x·y) = ?","options":["log(x) + log(y)","log(x) · log(y)","x·log(y)","log(x) − log(y)"],"correct":0},{"question":"Vertikalna asimptota log₂(x) je:","options":["x = 0","y = 0","x = 1","y = 1"],"correct":0}]:QUIZ_DATA`
+  },
+  {
+    title: 'Logaritamske jednačine',
+    video_url: 'https://www.youtube.com/watch?v=OLnfVyfXJL4',
+    content: `<h1>Logaritamske jednačine</h1>
+
+${backRef('Logaritamska funkcija')}
+
+<p>Logaritamska jednačina je jednačina u kojoj se nepoznata nalazi u <strong>argumentu logaritma</strong>. Ključ rješavanja: koristiti pravila logaritama i svojstvo injektivnosti.</p>
+
+<h2>Osnovno pravilo</h2>
+
+${formula('log<sub>a</sub>(f(x)) = log<sub>a</sub>(g(x)) &nbsp;&nbsp;⟹&nbsp;&nbsp; f(x) = g(x)')}
+
+${important('PAŽNJA na domen! Uvijek: f(x) > 0 i g(x) > 0. Svako rješenje mora zadovoljiti ove uslove.')}
+
+${example('Primjer 1: Riješi log₃(x) = 2', `
+<p>Po definiciji: 3² = x</p>
+<p>x = <strong>9</strong></p>
+<p>Provjera: log₃(9) = log₃(3²) = 2 ✓</p>
+`)}
+
+${example('Primjer 2: Riješi log₂(x+3) = 3', `
+<p>2³ = x + 3</p>
+<p>8 = x + 3</p>
+<p>x = <strong>5</strong></p>
+<p>Provjera domena: x+3 = 8 > 0 ✓</p>
+`)}
+
+<h2>Jednačine sa više logaritama</h2>
+
+${example('Primjer 3: log₂(x) + log₂(x−2) = 3', `
+<p>Uslov domena: x > 0 i x−2 > 0 → x > 2</p>
+<p>log₂(x·(x−2)) = 3</p>
+<p>x(x−2) = 2³ = 8</p>
+<p>x² − 2x − 8 = 0</p>
+<p>(x−4)(x+2) = 0</p>
+<p>x = 4 ili x = −2</p>
+<p>Ali x > 2, pa samo <strong>x = 4</strong></p>
+`)}
+
+<h2>Promjena baze</h2>
+
+${formula('log<sub>a</sub>(x) = log<sub>b</sub>(x) / log<sub>b</sub>(a)')}
+
+${example('Primjer 4: log₄(x) = 1/2', `
+<p>4^(1/2) = x</p>
+<p>√4 = x</p>
+<p>x = <strong>2</strong></p>
+`)}
+
+${hint('Kada su osnove različite, pretvori sve na istu osnovu ili koristi formulu za promjenu baze.')}
+
+QUIZ_DATA:[{"question":"Riješi: log₂(x) = 4","options":["x = 16","x = 8","x = 4","x = 2"],"correct":0},{"question":"log₃(x−1) = 2 → x = ?","options":["10","9","8","3"],"correct":0},{"question":"Uslov za log(x) je:","options":["x > 0","x ≥ 0","x ≠ 0","x ∈ ℝ"],"correct":0},{"question":"log₂(8) + log₂(2) = ?","options":["4","3","5","6"],"correct":0},{"question":"Ako log₅(x) = 0, onda x = ?","options":["1","0","5","−1"],"correct":0}]:QUIZ_DATA`
+  },
+  {
+    title: 'Logaritamske jednačine – utvrđivanje',
+    video_url: 'https://www.youtube.com/watch?v=LL9-YBJ9UYs',
+    content: `<h1>Logaritamske jednačine — utvrđivanje i napredne tehnike</h1>
+
+${backRef('Logaritamske jednačine')}
+${backRef('Eksponencijalne jednačine')}
+
+<p>U ovoj završnoj lekciji ćemo <strong>spojiti sve naučeno</strong> o logaritmima i eksponentima. Riješićemo složenije jednačine koje kombinuju eksponencijalne i logaritamske funkcije.</p>
+
+<h2>Veza eksponenta i logaritma</h2>
+
+${formula('a<sup>log<sub>a</sub>(x)</sup> = x &nbsp;&nbsp;(osnovna veza)')}
+${formula('log<sub>a</sub>(a<sup>x</sup>) = x')}
+
+${example('Primjer 1: Riješi 2^(log₂(x²−1)) = 8', `
+<p>Lijeva strana: 2^(log₂(x²−1)) = x² − 1</p>
+<p>x² − 1 = 8</p>
+<p>x² = 9</p>
+<p>x = ±3</p>
+<p>Provjera domena: x²−1 > 0 → |x| > 1</p>
+<p>Oba rješenja zadovoljavaju: <strong>x = −3 ili x = 3</strong></p>
+`)}
+
+<h2>Eksponencijalne jednačine sa logaritmima</h2>
+
+${example('Primjer 2: Riješi 3ˣ = 7', `
+<p>Logaritmujemo obje strane (npr. sa log₁₀):</p>
+<p>log(3ˣ) = log(7)</p>
+<p>x·log(3) = log(7)</p>
+<p>x = log(7)/log(3) = <strong>≈1.77</strong></p>
+`)}
+
+<h2>Sistemi sa logaritmima</h2>
+
+${example('Primjer 3: Sistem', `
+<p>log₂(x) + log₂(y) = 3</p>
+<p>x − y = 4</p>
+<p>Prva: log₂(xy) = 3 → xy = 8</p>
+<p>Iz druge: x = y + 4</p>
+<p>Uvrsti: (y+4)·y = 8</p>
+<p>y² + 4y − 8 = 0</p>
+<p>y = −2 ± 2√3</p>
+<p>Samo y = −2 + 2√3 > 0 valja</p>
+<p>x = 2 + 2√3</p>
+`)}
+
+<h2>Nejednačine sa logaritmima</h2>
+
+${important('Za a > 1: log<sub>a</sub>(x) > log<sub>a</sub>(y) ⟹ x > y (isti smjer). Za 0 < a < 1: log<sub>a</sub>(x) > log<sub>a</sub>(y) ⟹ x < y (obrnut smjer)!')}
+
+${example('Primjer 4: Riješi log₂(x−1) > 2', `
+<p>log₂(x−1) > log₂(2²) = log₂(4)</p>
+<p>Osnova 2 > 1, pa:</p>
+<p>x − 1 > 4</p>
+<p>x > 5</p>
+<p>Uslov: x − 1 > 0 → x > 1 ✓</p>
+<p>Rješenje: <strong>x ∈ (5, +∞)</strong></p>
+`)}
+
+${hint('Završna poruka: Stepeni, korijeni, eksponenti i logaritmi su osnova za diferencijalnu i integralnu analizu. Sve što si naučio/la ovdje koristićeš u višoj matematici!')}
+
+QUIZ_DATA:[{"question":"2^(log₂(5)) = ?","options":["5","2","10","25"],"correct":0},{"question":"Riješi: 5ˣ = 3 (koristi logaritme)","options":["x = log(3)/log(5)","x = 3/5","x = log(5)/log(3)","x = 5/3"],"correct":0},{"question":"log₃(x) < 2 znači:","options":["0 < x < 9","x < 9","x > 9","1 < x < 9"],"correct":0},{"question":"log₀.₅(x) > log₀.₅(3) znači:","options":["x < 3 (za x > 0)","x > 3","x = 3","x < 0"],"correct":0},{"question":"Sistem log(x)+log(y)=2, x+y=11 ima xy=?","options":["100","10","110","11"],"correct":0},{"question":"Čestitamo! Završio/la si svih 30 lekcija! Šta dalje?","options":["Vježbaj zadatke i pripremi se za test!","Ponovi sve od početka","Preskoči matematiku","Odustani"],"correct":0}]:QUIZ_DATA`
+  },
+  {
     title: 'Grafik funkcije kvadratne funkcije (y=ax²+bx+c)',
     video_url: 'https://www.youtube.com/watch?v=IH7Ywp0m3Qg',
     content: `<h1>Grafik kvadratne funkcije y = ax² + bx + c</h1>
