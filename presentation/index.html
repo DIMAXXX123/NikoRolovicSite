@@ -1,0 +1,1995 @@
+<!doctype html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digitalna Transformacija — Gimnazija "Niko Rolović"</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================
+       ROOT THEME — matching NikoRolovicSite
+       ============================================ */
+    :root {
+      --r-background-color: #09090b;
+      --r-main-color: #e4e4e7;
+      --r-heading-color: #fafafa;
+      --r-link-color: #a78bfa;
+      --r-link-color-hover: #c4b5fd;
+      --r-selection-background-color: #7c3aed;
+      --r-selection-color: #fff;
+      --purple: #a78bfa;
+      --violet: #7c3aed;
+      --deep-violet: #6d28d9;
+      --card-bg: #18181b;
+      --card-border: #27272a;
+      --muted: #a1a1aa;
+      --bg: #09090b;
+    }
+
+    .reveal {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .reveal h1 { font-size: 2.6em; }
+    .reveal h2 { font-size: 1.8em; }
+    .reveal h3 { font-size: 1.3em; }
+
+    /* ============================================
+       ANIMATED GRADIENT BACKGROUND
+       ============================================ */
+    .reveal .backgrounds {
+      background: var(--bg);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: 
+        radial-gradient(ellipse at 20% 50%, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(109, 40, 217, 0.04) 0%, transparent 50%);
+      animation: bgDrift 20s ease-in-out infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    @keyframes bgDrift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(-2%, 1%) rotate(1deg); }
+      50% { transform: translate(1%, -2%) rotate(-1deg); }
+      75% { transform: translate(-1%, -1%) rotate(0.5deg); }
+    }
+
+    /* Dot pattern overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.04;
+      background-image: radial-gradient(circle, #a78bfa 1px, transparent 1px);
+      background-size: 32px 32px;
+      animation: dotsDrift 60s linear infinite;
+    }
+
+    @keyframes dotsDrift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-32px, -32px); }
+    }
+
+    /* ============================================
+       GRADIENT TEXT
+       ============================================ */
+    .gradient-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #a78bfa 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 3s ease-in-out infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% center; }
+      50% { background-position: 200% center; }
+    }
+
+    .gradient-text-warm {
+      background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 40%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ============================================
+       GLOW EFFECTS
+       ============================================ */
+    .glow {
+      text-shadow: 0 0 40px rgba(167, 139, 250, 0.4), 0 0 80px rgba(167, 139, 250, 0.15);
+    }
+
+    .glow-box {
+      box-shadow: 0 0 30px -5px rgba(167, 139, 250, 0.3), 0 0 60px -10px rgba(124, 58, 237, 0.15);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px -5px rgba(167, 139, 250, 0.3); }
+      50% { box-shadow: 0 0 40px -5px rgba(167, 139, 250, 0.5); }
+    }
+
+    .pulse-glow {
+      animation: pulseGlow 2.5s ease-in-out infinite;
+    }
+
+    /* ============================================
+       DARK CARDS
+       ============================================ */
+    .dark-card {
+      background: rgba(24, 24, 27, 0.8);
+      border: 1px solid rgba(39, 39, 42, 0.8);
+      border-radius: 16px;
+      padding: 2em;
+      backdrop-filter: blur(10px);
+    }
+
+    .dark-card-sm {
+      background: rgba(24, 24, 27, 0.8);
+      border: 1px solid rgba(39, 39, 42, 0.8);
+      border-radius: 12px;
+      padding: 1.2em;
+    }
+
+    .glass-card {
+      background: rgba(10, 10, 15, 0.7);
+      backdrop-filter: blur(40px) saturate(200%);
+      border: 1px solid rgba(167, 139, 250, 0.12);
+      border-radius: 16px;
+      padding: 2em;
+    }
+
+    /* ============================================
+       CUSTOM FRAGMENTS
+       ============================================ */
+    .fragment.blur-in {
+      filter: blur(8px);
+      opacity: 0;
+      transition: all 0.6s ease-out;
+    }
+    .fragment.blur-in.visible {
+      filter: blur(0);
+      opacity: 1;
+    }
+
+    .fragment.scale-in {
+      transform: scale(0.5);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .fragment.scale-in.visible {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .fragment.slide-right {
+      transform: translateX(-40px);
+      opacity: 0;
+      transition: all 0.5s ease-out;
+    }
+    .fragment.slide-right.visible {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .fragment.slide-left {
+      transform: translateX(40px);
+      opacity: 0;
+      transition: all 0.5s ease-out;
+    }
+    .fragment.slide-left.visible {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .fragment.flip-in {
+      transform: perspective(600px) rotateY(90deg);
+      opacity: 0;
+      transition: all 0.6s ease-out;
+    }
+    .fragment.flip-in.visible {
+      transform: perspective(600px) rotateY(0deg);
+      opacity: 1;
+    }
+
+    /* ============================================
+       FLOATING ANIMATION
+       ============================================ */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    .float { animation: float 3s ease-in-out infinite; }
+    .float-slow { animation: float 5s ease-in-out infinite; }
+    .float-delay { animation: float 3s ease-in-out 1s infinite; }
+
+    @keyframes floatRotate {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(3deg); }
+    }
+    .float-rotate { animation: floatRotate 4s ease-in-out infinite; }
+
+    /* ============================================
+       TYPING EFFECT
+       ============================================ */
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes blink {
+      0%, 50% { border-color: #a78bfa; }
+      51%, 100% { border-color: transparent; }
+    }
+    .typing-text {
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 3px solid #a78bfa;
+      width: 0;
+      animation: typing 2.5s steps(40) 0.5s forwards, blink 0.8s step-end infinite;
+      display: inline-block;
+    }
+
+    /* ============================================
+       COUNTER ANIMATION (via JS)
+       ============================================ */
+    .counter {
+      font-size: 4em;
+      font-weight: 900;
+      color: #a78bfa;
+      line-height: 1;
+    }
+
+    .counter-sm {
+      font-size: 2.5em;
+      font-weight: 800;
+      color: #a78bfa;
+    }
+
+    /* ============================================
+       SCREENSHOT PLACEHOLDER
+       ============================================ */
+    .screenshot-placeholder {
+      background: linear-gradient(135deg, #18181b 0%, #1a1a2e 100%);
+      border: 2px dashed rgba(167, 139, 250, 0.3);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #a1a1aa;
+      font-size: 0.75em;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screenshot-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.03) 0%, transparent 50%, rgba(124, 58, 237, 0.02) 100%);
+    }
+
+    .phone-frame {
+      width: 220px;
+      height: 440px;
+      border: 3px solid #27272a;
+      border-radius: 28px;
+      position: relative;
+      overflow: hidden;
+      background: #09090b;
+    }
+
+    .phone-frame .phone-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 24px;
+      background: #09090b;
+      border-radius: 0 0 16px 16px;
+      z-index: 10;
+    }
+
+    .phone-frame .phone-screen {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 1.5em 1em;
+      text-align: center;
+    }
+
+    /* ============================================
+       ICON STYLES
+       ============================================ */
+    .icon-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5em;
+      margin: 0.3em;
+    }
+
+    .icon-circle-lg {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+    }
+
+    .icon-purple {
+      background: rgba(167, 139, 250, 0.15);
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      color: #a78bfa;
+    }
+
+    .icon-violet {
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: #8b5cf6;
+    }
+
+    .icon-green {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #22c55e;
+    }
+
+    .icon-blue {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      color: #3b82f6;
+    }
+
+    .icon-amber {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      color: #f59e0b;
+    }
+
+    .icon-red {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #ef4444;
+    }
+
+    /* ============================================
+       FEATURE GRID
+       ============================================ */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1em;
+      text-align: left;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .feature-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1em;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .feature-item {
+      background: rgba(24, 24, 27, 0.6);
+      border: 1px solid rgba(39, 39, 42, 0.6);
+      border-radius: 12px;
+      padding: 1.2em;
+      transition: all 0.3s ease;
+    }
+
+    .feature-item:hover {
+      border-color: rgba(167, 139, 250, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .feature-item h4 {
+      font-size: 0.9em;
+      color: #a78bfa;
+      margin: 0.4em 0;
+    }
+
+    .feature-item p {
+      font-size: 0.65em;
+      color: #a1a1aa;
+      margin: 0;
+    }
+
+    /* ============================================
+       PROGRESS BAR CUSTOM
+       ============================================ */
+    .reveal .progress {
+      height: 4px;
+      background: rgba(167, 139, 250, 0.1);
+    }
+
+    .reveal .progress span {
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+
+    /* ============================================
+       CONTROLS STYLE
+       ============================================ */
+    .reveal .controls {
+      color: #a78bfa;
+    }
+
+    /* ============================================
+       BADGE / TAG
+       ============================================ */
+    .badge {
+      display: inline-block;
+      padding: 0.25em 0.75em;
+      border-radius: 9999px;
+      font-size: 0.6em;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-purple {
+      background: rgba(167, 139, 250, 0.15);
+      color: #a78bfa;
+      border: 1px solid rgba(167, 139, 250, 0.25);
+    }
+
+    .badge-green {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .badge-blue {
+      background: rgba(59, 130, 246, 0.15);
+      color: #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    /* ============================================
+       TIMELINE
+       ============================================ */
+    .timeline {
+      position: relative;
+      text-align: left;
+      max-width: 600px;
+      margin: 0 auto;
+      padding-left: 2em;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, #7c3aed, #a78bfa, transparent);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding: 0.8em 0 0.8em 1.5em;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -2em;
+      top: 1.2em;
+      width: 12px;
+      height: 12px;
+      background: #a78bfa;
+      border-radius: 50%;
+      border: 2px solid #09090b;
+      transform: translateX(calc(2em - 7px));
+    }
+
+    /* ============================================
+       SECTION DIVIDER
+       ============================================ */
+    .section-divider {
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      border-radius: 2px;
+      margin: 0.5em auto;
+    }
+
+    /* ============================================
+       STAT ROW
+       ============================================ */
+    .stat-row {
+      display: flex;
+      justify-content: center;
+      gap: 2em;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.8em;
+      font-weight: 900;
+      color: #a78bfa;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.7em;
+      color: #a1a1aa;
+      margin-top: 0.3em;
+    }
+
+    /* ============================================
+       SHIELD ANIMATION (security)
+       ============================================ */
+    @keyframes shieldPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.3)); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.5)); }
+    }
+    .shield-pulse { animation: shieldPulse 2s ease-in-out infinite; }
+
+    /* ============================================
+       ROLE HIERARCHY
+       ============================================ */
+    .role-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6em;
+      background: rgba(24, 24, 27, 0.8);
+      border: 1px solid rgba(39, 39, 42, 0.8);
+      border-radius: 12px;
+      padding: 0.8em 1.2em;
+      margin: 0.3em;
+    }
+
+    .role-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* ============================================
+       ORBITING ELEMENTS
+       ============================================ */
+    @keyframes orbit {
+      from { transform: rotate(0deg) translateX(120px) rotate(0deg); }
+      to { transform: rotate(360deg) translateX(120px) rotate(-360deg); }
+    }
+
+    .orbit-container {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      margin: 0 auto;
+    }
+
+    .orbit-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .orbit-item {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-top: -20px;
+      margin-left: -20px;
+      animation: orbit 8s linear infinite;
+    }
+
+    .orbit-item:nth-child(2) { animation-delay: -2s; }
+    .orbit-item:nth-child(3) { animation-delay: -4s; }
+    .orbit-item:nth-child(4) { animation-delay: -6s; }
+
+    /* ============================================
+       REVEAL OVERRIDES
+       ============================================ */
+    .reveal .slide-number {
+      color: #a1a1aa;
+      background: rgba(24, 24, 27, 0.8);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px 0 0 0;
+    }
+
+    /* ============================================
+       ADMIN BLUE THEME OVERRIDE
+       ============================================ */
+    .admin-slide {
+      background: linear-gradient(135deg, #0c1220 0%, #0f172a 50%, #0c1220 100%) !important;
+    }
+
+    .admin-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(71, 85, 105, 0.4);
+      border-radius: 12px;
+      padding: 1.2em;
+    }
+
+    /* ============================================
+       MISC UTILITY
+       ============================================ */
+    .text-muted { color: #a1a1aa; }
+    .text-purple { color: #a78bfa; }
+    .text-violet { color: #8b5cf6; }
+    .text-green { color: #22c55e; }
+    .text-blue { color: #3b82f6; }
+    .text-amber { color: #f59e0b; }
+    .text-red { color: #ef4444; }
+    .text-sm { font-size: 0.65em; }
+    .text-xs { font-size: 0.55em; }
+    .text-lg { font-size: 1.2em; }
+    .mt-1 { margin-top: 0.5em; }
+    .mt-2 { margin-top: 1em; }
+    .mb-1 { margin-bottom: 0.5em; }
+    .mb-2 { margin-bottom: 1em; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .text-left { text-align: left; }
+    .text-center { text-align: center; }
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .gap-1 { gap: 0.5em; }
+    .gap-2 { gap: 1em; }
+    .inline-block { display: inline-block; }
+    .w-full { width: 100%; }
+
+    /* Heart animation for Dumbs */
+    @keyframes heartBeat {
+      0% { transform: scale(1); }
+      15% { transform: scale(1.3); }
+      30% { transform: scale(1); }
+      45% { transform: scale(1.15); }
+      60% { transform: scale(1); }
+    }
+    .heart-beat { animation: heartBeat 1.2s ease-in-out infinite; }
+
+    /* Slide-in from bottom */
+    @keyframes slideInUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .slide-in-up { animation: slideInUp 0.6s ease-out both; }
+
+    /* Spinning loader for security */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spin { animation: spin 3s linear infinite; }
+    .spin-slow { animation: spin 8s linear infinite; }
+
+    /* Underline gradient */
+    .gradient-underline {
+      position: relative;
+      display: inline-block;
+    }
+    .gradient-underline::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      border-radius: 2px;
+    }
+
+    /* Stagger children on slide enter */
+    .stagger-in > * {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .reveal .present .stagger-in > * {
+      animation: slideInUp 0.5s ease-out both;
+    }
+    .reveal .present .stagger-in > *:nth-child(1) { animation-delay: 0.1s; }
+    .reveal .present .stagger-in > *:nth-child(2) { animation-delay: 0.2s; }
+    .reveal .present .stagger-in > *:nth-child(3) { animation-delay: 0.3s; }
+    .reveal .present .stagger-in > *:nth-child(4) { animation-delay: 0.4s; }
+    .reveal .present .stagger-in > *:nth-child(5) { animation-delay: 0.5s; }
+    .reveal .present .stagger-in > *:nth-child(6) { animation-delay: 0.6s; }
+    .reveal .present .stagger-in > *:nth-child(7) { animation-delay: 0.7s; }
+    .reveal .present .stagger-in > *:nth-child(8) { animation-delay: 0.8s; }
+
+    /* Lock icon animation */
+    @keyframes lockClick {
+      0%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-3px) rotate(-5deg); }
+      60% { transform: translateY(-3px) rotate(5deg); }
+    }
+    .lock-anim { animation: lockClick 2s ease-in-out infinite; }
+
+    /* Telegram blue */
+    .bg-telegram {
+      background: rgba(36, 161, 222, 0.15);
+      border: 1px solid rgba(36, 161, 222, 0.3);
+    }
+
+    /* Theme circle preview */
+    .theme-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: inline-block;
+      margin: 0 0.3em;
+      border: 2px solid rgba(255,255,255,0.1);
+      transition: transform 0.3s ease;
+    }
+    .theme-dot:hover { transform: scale(1.2); }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ============================================
+           OPENING SECTION
+           ============================================ -->
+
+      <!-- SLIDE 1: Title — small logo -->
+      <section data-auto-animate data-auto-animate-easing="cubic-bezier(0.68, -0.15, 0.27, 1.15)" data-background-color="#09090b">
+        <div data-id="logo-icon" class="icon-circle-lg icon-purple float" style="font-size: 2.5em; margin-bottom: 0.3em;">🎓</div>
+        <h1 data-id="main-title" style="font-size: 1em; opacity: 0.6; color: #a1a1aa;">Gimnazija "Niko Rolović"</h1>
+      </section>
+
+      <!-- SLIDE 2: Title — full reveal -->
+      <section data-auto-animate data-auto-animate-easing="cubic-bezier(0.68, -0.15, 0.27, 1.15)" data-background-color="#09090b">
+        <div data-id="logo-icon" class="icon-circle-lg icon-purple" style="font-size: 1.5em; margin-bottom: 0.2em;">🎓</div>
+        <h1 data-id="main-title" class="gradient-text" style="font-size: 2em; line-height: 1.2; margin-bottom: 0.2em;">
+          Digitalna Transformacija<br>Gimnazije "Niko Rolović"
+        </h1>
+        <div class="section-divider" style="margin: 0.6em auto;"></div>
+        <p class="fragment fade-up text-muted" style="font-size: 0.7em;">
+          Studentski portal za modernu školu
+        </p>
+        <p class="fragment fade-up" style="font-size: 0.55em; color: #52525b; margin-top: 1em;">
+          Podgorica, Crna Gora • 2025/2026
+        </p>
+      </section>
+
+      <!-- SLIDE 3: Vision Statement -->
+      <section data-transition="slide" data-background-color="#09090b">
+        <h2 class="glow" style="margin-bottom: 0.1em;">🌐 Vizija</h2>
+        <div class="section-divider"></div>
+        <div class="dark-card mt-2" style="max-width: 700px; margin: 1em auto; text-align: left;">
+          <p class="fragment blur-in" style="font-size: 0.8em; line-height: 1.6;">
+            <span class="text-purple" style="font-size: 1.2em;">„</span>
+            Moderna škola zahtijeva moderne alate. U dobu kada učenici odrastaju sa pametnim telefonima, 
+            digitalna platforma nije luksuz — to je <span class="gradient-text-warm" style="font-weight: 700;">neophodnost</span>.
+            <span class="text-purple" style="font-size: 1.2em;">„</span>
+          </p>
+          <p class="fragment fade-up text-muted text-sm mt-2">
+            Jedna platforma. Sve na jednom mjestu. Pristupačno svima.
+          </p>
+        </div>
+      </section>
+
+      <!-- SLIDE 4: Overview -->
+      <section data-transition="convex" data-background-color="#09090b">
+        <h2 style="margin-bottom: 0.2em;">Šta nudi platforma?</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="feature-grid-3">
+          <div class="feature-item fragment scale-in">
+            <div style="font-size: 2em;">📰</div>
+            <h4>Novosti</h4>
+            <p>Školska obavještenja i vijesti</p>
+          </div>
+          <div class="feature-item fragment scale-in">
+            <div style="font-size: 2em;">📚</div>
+            <h4>Lekcije</h4>
+            <p>Predavanja i kvizovi</p>
+          </div>
+          <div class="feature-item fragment scale-in">
+            <div style="font-size: 2em;">📅</div>
+            <h4>Kalendar</h4>
+            <p>Testovi, ispiti, zadaci</p>
+          </div>
+          <div class="feature-item fragment scale-in">
+            <div style="font-size: 2em;">📊</div>
+            <h4>Ocjene</h4>
+            <p>Praćenje uspjeha</p>
+          </div>
+          <div class="feature-item fragment scale-in">
+            <div style="font-size: 2em;">👤</div>
+            <h4>Profili</h4>
+            <p>Uloge i personalizacija</p>
+          </div>
+          <div class="feature-item fragment scale-in">
+            <div style="font-size: 2em;">📸</div>
+            <h4>Galerija</h4>
+            <p>Dijeljenje fotografija</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================
+           REGISTRATION & SECURITY
+           ============================================ -->
+
+      <!-- SLIDE 5: Registration — Section Title -->
+      <section data-auto-animate data-background-color="#09090b">
+        <div data-id="sec-icon" style="font-size: 4em;" class="float">🔐</div>
+        <h2 data-id="sec-title" class="gradient-text mt-1">Registracija & Sigurnost</h2>
+        <p data-id="sec-sub" class="text-muted text-sm">Samo verifikovani učenici mogu pristupiti</p>
+      </section>
+
+      <!-- SLIDE 6: Registration Flow -->
+      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
+        <div data-id="sec-icon" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">🔐</div>
+        <h2 data-id="sec-title" style="font-size: 1.3em; text-align: left; margin-left: 0.5em;">Tok Registracije</h2>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em; margin-top: 1.5em;">
+          <div class="phone-frame fragment slide-right pulse-glow">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">📝</div>
+              <div style="font-size: 0.7em; color: #a78bfa; font-weight: 600;">Registracija</div>
+              <div style="font-size: 0.5em; color: #71717a; margin-top: 0.3em;">Ime • Razred • Email • Lozinka</div>
+            </div>
+          </div>
+          <div style="text-align: left; max-width: 380px;">
+            <div class="fragment fade-up" style="margin-bottom: 0.8em;">
+              <span class="badge badge-purple">1</span>
+              <span style="font-size: 0.7em; margin-left: 0.5em;">Unos imena i prezimena</span>
+            </div>
+            <div class="fragment fade-up" style="margin-bottom: 0.8em;">
+              <span class="badge badge-purple">2</span>
+              <span style="font-size: 0.7em; margin-left: 0.5em;">Izbor razreda i odjeljenja</span>
+            </div>
+            <div class="fragment fade-up" style="margin-bottom: 0.8em;">
+              <span class="badge badge-purple">3</span>
+              <span style="font-size: 0.7em; margin-left: 0.5em;">Email adresa</span>
+            </div>
+            <div class="fragment fade-up" style="margin-bottom: 0.8em;">
+              <span class="badge badge-purple">4</span>
+              <span style="font-size: 0.7em; margin-left: 0.5em;">Kreiranje sigurne lozinke</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 7: Verified Database -->
+      <section data-transition="slide" data-background-color="#09090b">
+        <h2 style="margin-bottom: 0.1em;">✅ Verifikovana Baza Učenika</h2>
+        <div class="section-divider"></div>
+        <div class="dark-card mt-2" style="max-width: 650px; margin: 1em auto;">
+          <div class="stat-row">
+            <div class="stat-item fragment scale-in">
+              <div class="counter" data-count="83">0</div>
+              <div class="stat-label">verifikovanih učenika</div>
+            </div>
+            <div class="stat-item fragment scale-in">
+              <div class="counter-sm" data-count="4" style="color: #8b5cf6;">0</div>
+              <div class="stat-label">razreda</div>
+            </div>
+            <div class="stat-item fragment scale-in">
+              <div class="counter-sm" data-count="6" style="color: #c4b5fd;">0</div>
+              <div class="stat-label">odjeljenja</div>
+            </div>
+          </div>
+          <p class="fragment fade-up text-muted text-sm mt-2" style="text-align: center;">
+            Samo učenici čije se ime nalazi u bazi podataka mogu kreirati nalog.
+            <br>Nema anonimnih korisnika — potpuna kontrola.
+          </p>
+        </div>
+      </section>
+
+      <!-- SLIDE 8: Two-Factor Auth -->
+      <section data-transition="fade" data-background-color="#09090b">
+        <h2>📧 Email Verifikacija</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; justify-content: center; gap: 1.5em; align-items: stretch;">
+          <div class="glass-card fragment blur-in" style="max-width: 260px; text-align: center;">
+            <div style="font-size: 2.5em;" class="lock-anim">🔒</div>
+            <h4 class="text-purple mt-1" style="font-size: 0.8em;">Korak 1</h4>
+            <p class="text-sm text-muted">Registracija sa školskim podacima</p>
+          </div>
+          <div class="glass-card fragment blur-in" style="max-width: 260px; text-align: center;">
+            <div style="font-size: 2.5em;" class="float-delay">✉️</div>
+            <h4 class="text-purple mt-1" style="font-size: 0.8em;">Korak 2</h4>
+            <p class="text-sm text-muted">Verifikacioni email sa kodom</p>
+          </div>
+          <div class="glass-card fragment blur-in" style="max-width: 260px; text-align: center;">
+            <div style="font-size: 2.5em;" class="shield-pulse">🛡️</div>
+            <h4 class="text-green mt-1" style="font-size: 0.8em;">Verifikovano</h4>
+            <p class="text-sm text-muted">Pristup odobren — siguran nalog</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 9: Login Screen -->
+      <section data-transition="slide" data-background-color="#09090b">
+        <h2 style="margin-bottom: 0.1em;">Prijavljivanje</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div class="phone-frame fragment slide-right pulse-glow">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">🔑</div>
+              <div style="font-size: 0.7em; color: #a78bfa; font-weight: 600;">Prijava</div>
+              <div style="font-size: 0.5em; color: #71717a; margin-top: 0.3em;">Email • Lozinka</div>
+            </div>
+          </div>
+          <div style="text-align: left; max-width: 350px;">
+            <p class="fragment fade-up text-sm">✨ Čist, minimalistički dizajn</p>
+            <p class="fragment fade-up text-sm">⚡ Brza autentikacija</p>
+            <p class="fragment fade-up text-sm">🔒 Enkripcija na svakom koraku</p>
+            <p class="fragment fade-up text-sm">📱 Optimizovano za mobilne uređaje</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 10: Data Protection -->
+      <section data-transition="zoom" data-background-color="#09090b">
+        <h2>🛡️ Zaštita Podataka</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="feature-grid" style="max-width: 700px;">
+          <div class="feature-item fragment flip-in">
+            <div style="font-size: 1.5em;">🔐</div>
+            <h4>Enkriptovane Lozinke</h4>
+            <p>bcrypt hashing — nemoguće dekriptovati</p>
+          </div>
+          <div class="feature-item fragment flip-in">
+            <div style="font-size: 1.5em;">🏛️</div>
+            <h4>RLS Politike</h4>
+            <p>Row Level Security — svaki korisnik vidi samo svoje podatke</p>
+          </div>
+          <div class="feature-item fragment flip-in">
+            <div style="font-size: 1.5em;">🔗</div>
+            <h4>Siguran API</h4>
+            <p>HTTPS, JWT tokeni, zaštićeni endpointi</p>
+          </div>
+          <div class="feature-item fragment flip-in">
+            <div style="font-size: 1.5em;">🇪🇺</div>
+            <h4>GDPR Kompatibilno</h4>
+            <p>Europski standardi zaštite podataka</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================
+           MAIN FEATURES
+           ============================================ -->
+
+      <!-- SLIDE 11: Features Section Title -->
+      <section data-auto-animate data-background-color="#09090b">
+        <div data-id="feat-icon" style="font-size: 4em;" class="float-rotate">⚡</div>
+        <h2 data-id="feat-title" class="gradient-text mt-1">Funkcionalnosti</h2>
+        <p data-id="feat-sub" class="text-muted text-sm">Sve što učeniku treba — na jednom mjestu</p>
+      </section>
+
+      <!-- SLIDE 12: News Feed -->
+      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
+        <div data-id="feat-icon" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">⚡</div>
+        <h2 data-id="feat-title" style="font-size: 1.4em;">📰 Novosti</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div class="phone-frame fragment slide-right pulse-glow">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">📰</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">News Feed</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">Obavještenja • Slike • Lajkovi</div>
+            </div>
+          </div>
+          <div style="text-align: left; max-width: 350px;">
+            <p class="fragment fade-up text-sm">📣 Školska obavještenja u realnom vremenu</p>
+            <p class="fragment fade-up text-sm">🖼️ Podrška za slike i bogate objave</p>
+            <p class="fragment fade-up text-sm">❤️ Like sistem za interakciju</p>
+            <p class="fragment fade-up text-sm">📌 Sortiranje po datumu i važnosti</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 13: Lectures — Subject Selection -->
+      <section data-transition="slide" data-background-color="#09090b">
+        <h2>📚 Lekcije — Izbor Predmeta</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div style="text-align: left; max-width: 350px;">
+            <p class="fragment fade-up text-sm">📐 Matematika, Fizika, Hemija...</p>
+            <p class="fragment fade-up text-sm">🌍 Istorija, Geografija, Jezici...</p>
+            <p class="fragment fade-up text-sm">🔍 Pretraživanje predmeta</p>
+            <p class="fragment fade-up text-sm">📊 Pregled broja lekcija po predmetu</p>
+          </div>
+          <div class="phone-frame fragment slide-left pulse-glow">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">📚</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">Predmeti</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">Izaberite predmet</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 14: Lecture View -->
+      <section data-transition="fade" data-background-color="#09090b">
+        <h2>📖 Pregled Lekcije</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div class="phone-frame fragment slide-right glow-box">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">📖</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">Lekcija</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">Formatirani tekst • Slike</div>
+            </div>
+          </div>
+          <div style="text-align: left; max-width: 350px;">
+            <p class="fragment fade-up text-sm">📝 Rich text sa formatiranjem</p>
+            <p class="fragment fade-up text-sm">🖼️ Embedded slike i dijagrami</p>
+            <p class="fragment fade-up text-sm">📐 Matematičke formule</p>
+            <p class="fragment fade-up text-sm">🧪 Kreator: nastavnik ili admin</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 15: Quizzes -->
+      <section data-transition="convex" data-background-color="#09090b">
+        <h2>🧠 Kvizovi</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="dark-card" style="max-width: 650px; margin: 1em auto;">
+          <p class="fragment fade-up text-sm" style="text-align: center; margin-bottom: 1em;">
+            Provjerite znanje nakon svake lekcije!
+          </p>
+          <div style="display: flex; justify-content: center; gap: 1.5em; flex-wrap: wrap;">
+            <div class="feature-item fragment scale-in" style="flex: 1; min-width: 160px;">
+              <div style="font-size: 1.5em;">✅</div>
+              <h4>Višestruki izbor</h4>
+              <p>Odaberite tačan odgovor</p>
+            </div>
+            <div class="feature-item fragment scale-in" style="flex: 1; min-width: 160px;">
+              <div style="font-size: 1.5em;">📊</div>
+              <h4>Rezultati</h4>
+              <p>Trenutni feedback</p>
+            </div>
+            <div class="feature-item fragment scale-in" style="flex: 1; min-width: 160px;">
+              <div style="font-size: 1.5em;">🔄</div>
+              <h4>Ponovi</h4>
+              <p>Ponavljajte do savršenstva</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 16: Future Quiz Types -->
+      <section data-transition="slide" data-background-color="#09090b">
+        <h2>🚀 Budući Tipovi Kvizova</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; justify-content: center; gap: 1.5em; flex-wrap: wrap; max-width: 800px; margin: 0 auto;">
+          <div class="glass-card fragment blur-in" style="flex: 1; min-width: 200px; text-align: center;">
+            <div style="font-size: 2.5em;">👍👎</div>
+            <h4 class="text-purple mt-1" style="font-size: 0.8em;">Da / Ne</h4>
+            <p class="text-sm text-muted">Brza provjera — tačno ili netačno</p>
+          </div>
+          <div class="glass-card fragment blur-in" style="flex: 1; min-width: 200px; text-align: center;">
+            <div style="font-size: 2.5em;">🎯</div>
+            <h4 class="text-purple mt-1" style="font-size: 0.8em;">Pogodi</h4>
+            <p class="text-sm text-muted">Unesite tačan odgovor</p>
+          </div>
+          <div class="glass-card fragment blur-in" style="flex: 1; min-width: 200px; text-align: center;">
+            <div style="font-size: 2.5em;">🔢</div>
+            <h4 class="text-purple mt-1" style="font-size: 0.8em;">Multiple Choice</h4>
+            <p class="text-sm text-muted">Više tačnih odgovora</p>
+          </div>
+        </div>
+        <p class="fragment fade-up text-muted text-xs mt-2" style="text-align: center;">
+          <span class="badge badge-green">Uskoro</span> Planirano za naredne verzije
+        </p>
+      </section>
+
+      <!-- SLIDE 17: Calendar -->
+      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
+        <h2 data-id="cal-title">📅 Kalendar</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div class="phone-frame fragment slide-right pulse-glow">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">📅</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">Kalendar</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">Događaji po tipu</div>
+            </div>
+          </div>
+          <div style="text-align: left;">
+            <div class="fragment fade-up" style="margin-bottom: 0.6em;">
+              <span class="icon-circle icon-red" style="width: 36px; height: 36px; font-size: 0.8em;">📝</span>
+              <span class="text-sm" style="margin-left: 0.5em;">Test / Ispit</span>
+            </div>
+            <div class="fragment fade-up" style="margin-bottom: 0.6em;">
+              <span class="icon-circle icon-blue" style="width: 36px; height: 36px; font-size: 0.8em;">✍️</span>
+              <span class="text-sm" style="margin-left: 0.5em;">Pismeni zadatak</span>
+            </div>
+            <div class="fragment fade-up" style="margin-bottom: 0.6em;">
+              <span class="icon-circle icon-amber" style="width: 36px; height: 36px; font-size: 0.8em;">🏠</span>
+              <span class="text-sm" style="margin-left: 0.5em;">Domaći zadatak</span>
+            </div>
+            <div class="fragment fade-up" style="margin-bottom: 0.6em;">
+              <span class="icon-circle icon-purple" style="width: 36px; height: 36px; font-size: 0.8em;">📌</span>
+              <span class="text-sm" style="margin-left: 0.5em;">Drugo</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 18: Event List View -->
+      <section data-auto-animate data-transition="fade" data-background-color="#09090b">
+        <h2 data-id="cal-title" style="font-size: 1.4em;">📋 Lista Događaja</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="dark-card" style="max-width: 550px; margin: 0 auto; text-align: left;">
+          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
+            <span style="color: #ef4444;">●</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Matematika — Test</div>
+              <div class="text-xs text-muted">Ponedeljak, 24. mart</div>
+            </div>
+          </div>
+          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
+            <span style="color: #3b82f6;">●</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Fizika — Pismeni</div>
+              <div class="text-xs text-muted">Srijeda, 26. mart</div>
+            </div>
+          </div>
+          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
+            <span style="color: #f59e0b;">●</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Engleski — Domaći</div>
+              <div class="text-xs text-muted">Petak, 28. mart</div>
+            </div>
+          </div>
+          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0;">
+            <span style="color: #a78bfa;">●</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Izlet — Cetinje</div>
+              <div class="text-xs text-muted">Subota, 29. mart</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 19: Weekly Schedule -->
+      <section data-transition="slide" data-background-color="#09090b">
+        <h2>🗓️ Sedmični Raspored</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div class="phone-frame fragment slide-right pulse-glow">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">🗓️</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">Raspored</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">Pon — Pet</div>
+            </div>
+          </div>
+          <div style="text-align: left; max-width: 350px;">
+            <p class="fragment fade-up text-sm">📱 Pregled po danima u sedmici</p>
+            <p class="fragment fade-up text-sm">⏰ Tačna vremena za svaki čas</p>
+            <p class="fragment fade-up text-sm">🎨 Kategorisano bojama po predmetu</p>
+            <p class="fragment fade-up text-sm">👆 Tap na dan za detaljni pregled</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 20: Daily Schedule -->
+      <section data-transition="fade" data-background-color="#09090b">
+        <h2>📋 Dnevni Raspored</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div style="text-align: left; max-width: 350px;">
+            <p class="fragment fade-up text-sm">🕐 Čas po čas — tačan pregled dana</p>
+            <p class="fragment fade-up text-sm">📍 Učionica / kabinet info</p>
+            <p class="fragment fade-up text-sm">👨‍🏫 Ime profesora</p>
+            <p class="fragment fade-up text-sm">📝 Napomene za svaki čas</p>
+          </div>
+          <div class="phone-frame fragment slide-left glow-box">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">📋</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">Ponedeljak</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">7 časova</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 21: My Grades -->
+      <section data-auto-animate data-transition="convex" data-background-color="#09090b">
+        <h2 data-id="grades-title">📊 Moje Ocjene</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="dark-card" style="max-width: 700px; margin: 0 auto;">
+          <p class="fragment fade-up text-sm mb-2" style="text-align: center;">
+            Praćenje uspjeha kroz cijelu školsku godinu — 4 tromjesečja
+          </p>
+          <div style="display: flex; justify-content: center; gap: 1em; flex-wrap: wrap;">
+            <div class="feature-item fragment scale-in" style="min-width: 130px; text-align: center;">
+              <div style="font-size: 1.3em;">📝</div>
+              <h4 style="font-size: 0.7em;">Test</h4>
+            </div>
+            <div class="feature-item fragment scale-in" style="min-width: 130px; text-align: center;">
+              <div style="font-size: 1.3em;">✍️</div>
+              <h4 style="font-size: 0.7em;">Pismeni</h4>
+            </div>
+            <div class="feature-item fragment scale-in" style="min-width: 130px; text-align: center;">
+              <div style="font-size: 1.3em;">🗣️</div>
+              <h4 style="font-size: 0.7em;">Usmeni</h4>
+            </div>
+            <div class="feature-item fragment scale-in" style="min-width: 130px; text-align: center;">
+              <div style="font-size: 1.3em;">🏆</div>
+              <h4 style="font-size: 0.7em;">Zaključna</h4>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 22: GPA Calculator -->
+      <section data-auto-animate data-transition="fade" data-background-color="#09090b">
+        <h2 data-id="grades-title" style="font-size: 1.4em;">🧮 Kalkulator Prosjeka</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div class="phone-frame fragment slide-right pulse-glow">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2.5em; margin-bottom: 0.2em;">🧮</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">Prosjek: 4.52</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">Automatski izračun</div>
+            </div>
+          </div>
+          <div style="text-align: left; max-width: 350px;">
+            <p class="fragment fade-up text-sm">📊 Automatski prosjek po predmetu</p>
+            <p class="fragment fade-up text-sm">📈 Ukupan prosek svih predmeta</p>
+            <p class="fragment fade-up text-sm">📉 Vizuelni prikaz napretka</p>
+            <p class="fragment fade-up text-sm">🎯 Cilj: planiraj bolji prosjek</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 23: Profile -->
+      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
+        <div data-id="profile-emoji" style="font-size: 4em;" class="float">👤</div>
+        <h2 data-id="profile-title" class="gradient-text mt-1">Profil Učenika</h2>
+        <div class="section-divider"></div>
+      </section>
+
+      <!-- SLIDE 24: Profile Details -->
+      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
+        <div data-id="profile-emoji" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">👤</div>
+        <h2 data-id="profile-title" style="font-size: 1.4em;">Profil — Detalji</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div class="phone-frame fragment slide-right pulse-glow">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">🧑‍🎓</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">Dmitrij I.</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">2-1 • Creator</div>
+            </div>
+          </div>
+          <div style="text-align: left; max-width: 350px;">
+            <p class="fragment fade-up text-sm">🖼️ Prilagodljiv avatar</p>
+            <p class="fragment fade-up text-sm">📛 Ime, razred, odjeljenje</p>
+            <p class="fragment fade-up text-sm">🏅 Bedževi uloga (role badges)</p>
+            <p class="fragment fade-up text-sm">✨ Animirani UI elementi</p>
+            <p class="fragment fade-up text-sm">📊 Statistika aktivnosti</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 25: Profile Animations -->
+      <section data-transition="fade" data-background-color="#09090b">
+        <h2>✨ Animacije Profila</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="dark-card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+          <p class="fragment blur-in text-sm mb-2">Svaki profil ima premium animacije</p>
+          <div style="display: flex; justify-content: center; gap: 1.5em; margin: 1em 0;">
+            <div class="fragment scale-in">
+              <div class="icon-circle icon-purple float" style="font-size: 1.2em;">🧑‍🎓</div>
+              <div class="text-xs text-muted mt-1">Float</div>
+            </div>
+            <div class="fragment scale-in">
+              <div class="icon-circle icon-violet pulse-glow" style="font-size: 1.2em;">🏅</div>
+              <div class="text-xs text-muted mt-1">Glow</div>
+            </div>
+            <div class="fragment scale-in">
+              <div class="icon-circle icon-green float-rotate" style="font-size: 1.2em;">⭐</div>
+              <div class="text-xs text-muted mt-1">Rotate</div>
+            </div>
+            <div class="fragment scale-in">
+              <div class="icon-circle icon-blue heart-beat" style="font-size: 1.2em;">💜</div>
+              <div class="text-xs text-muted mt-1">Pulse</div>
+            </div>
+          </div>
+          <p class="fragment fade-up text-xs text-muted">
+            Stilski dizajn inspirisan modernim aplikacijama
+          </p>
+        </div>
+      </section>
+
+      <!-- SLIDE 26: Roles System -->
+      <section data-transition="convex" data-background-color="#09090b">
+        <h2>👥 Sistem Uloga</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.8em;">
+          <div class="role-card fragment slide-right" style="border-color: rgba(239, 68, 68, 0.3);">
+            <span class="role-dot" style="background: #ef4444;"></span>
+            <span class="text-sm" style="font-weight: 600;">Creator</span>
+            <span class="text-xs text-muted">— Kreator platforme, pun pristup</span>
+          </div>
+          <div class="role-card fragment slide-right" style="border-color: rgba(167, 139, 250, 0.3);">
+            <span class="role-dot" style="background: #a78bfa;"></span>
+            <span class="text-sm" style="font-weight: 600;">Admin</span>
+            <span class="text-xs text-muted">— Upravljanje sadržajem i korisnicima</span>
+          </div>
+          <div class="role-card fragment slide-right" style="border-color: rgba(59, 130, 246, 0.3);">
+            <span class="role-dot" style="background: #3b82f6;"></span>
+            <span class="text-sm" style="font-weight: 600;">Moderator</span>
+            <span class="text-xs text-muted">— Moderacija sadržaja i komentara</span>
+          </div>
+          <div class="role-card fragment slide-right" style="border-color: rgba(34, 197, 94, 0.3);">
+            <span class="role-dot" style="background: #22c55e;"></span>
+            <span class="text-sm" style="font-weight: 600;">Student</span>
+            <span class="text-xs text-muted">— Osnovni pristup svim funkcijama</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 27: Navigation Customization -->
+      <section data-transition="slide" data-background-color="#09090b">
+        <h2>🧭 Prilagodljiva Navigacija</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="dark-card" style="max-width: 600px; margin: 0 auto;">
+          <p class="fragment fade-up text-sm mb-2" style="text-align: center;">
+            Svaki učenik bira koje tabove želi vidjeti
+          </p>
+          <div style="display: flex; justify-content: center; gap: 1em; flex-wrap: wrap; margin: 1em 0;">
+            <div class="fragment scale-in" style="background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 10px; padding: 0.5em 1em;">
+              <span style="font-size: 1.2em;">📰</span>
+              <span class="text-xs" style="margin-left: 0.3em;">Novosti</span>
+            </div>
+            <div class="fragment scale-in" style="background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 10px; padding: 0.5em 1em;">
+              <span style="font-size: 1.2em;">📅</span>
+              <span class="text-xs" style="margin-left: 0.3em;">Kalendar</span>
+            </div>
+            <div class="fragment scale-in" style="background: rgba(39, 39, 42, 0.8); border: 1px solid rgba(39, 39, 42, 0.8); border-radius: 10px; padding: 0.5em 1em; opacity: 0.5;">
+              <span style="font-size: 1.2em;">📚</span>
+              <span class="text-xs" style="margin-left: 0.3em;">Lekcije</span>
+            </div>
+            <div class="fragment scale-in" style="background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 10px; padding: 0.5em 1em;">
+              <span style="font-size: 1.2em;">📸</span>
+              <span class="text-xs" style="margin-left: 0.3em;">Galerija</span>
+            </div>
+            <div class="fragment scale-in" style="background: rgba(39, 39, 42, 0.8); border: 1px solid rgba(39, 39, 42, 0.8); border-radius: 10px; padding: 0.5em 1em; opacity: 0.5;">
+              <span style="font-size: 1.2em;">📊</span>
+              <span class="text-xs" style="margin-left: 0.3em;">Ocjene</span>
+            </div>
+          </div>
+          <p class="fragment fade-up text-xs text-muted" style="text-align: center;">
+            Upalite ili ugasite — vaš portal, vaša pravila
+          </p>
+        </div>
+      </section>
+
+      <!-- SLIDE 28: Settings & Themes -->
+      <section data-transition="zoom" data-background-color="#09090b">
+        <h2>⚙️ Podešavanja</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div class="phone-frame fragment slide-right pulse-glow">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">⚙️</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">Podešavanja</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">Tema • Font • Jezik</div>
+            </div>
+          </div>
+          <div style="text-align: left; max-width: 380px;">
+            <div class="fragment fade-up mb-1">
+              <h4 class="text-purple text-sm">🎨 6 Tema</h4>
+              <div style="margin-top: 0.3em;">
+                <span class="theme-dot" style="background: linear-gradient(135deg, #09090b, #18181b);"></span>
+                <span class="theme-dot" style="background: linear-gradient(135deg, #0f172a, #1e293b);"></span>
+                <span class="theme-dot" style="background: linear-gradient(135deg, #1a1a2e, #16213e);"></span>
+                <span class="theme-dot" style="background: linear-gradient(135deg, #064e3b, #065f46);"></span>
+                <span class="theme-dot" style="background: linear-gradient(135deg, #4c0519, #881337);"></span>
+                <span class="theme-dot" style="background: linear-gradient(135deg, #fafaf9, #d6d3d1);"></span>
+              </div>
+            </div>
+            <p class="fragment fade-up text-sm">🔤 Veličina fonta — Mali / Normalan / Veliki</p>
+            <p class="fragment fade-up text-sm">🌐 Jezik — Srpski / English</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 29: School Info Panel -->
+      <section data-transition="fade" data-background-color="#09090b">
+        <h2>🏫 Info o Školi</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="dark-card" style="max-width: 600px; margin: 0 auto;">
+          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
+            <span style="font-size: 1.3em;">🏫</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Gimnazija "Niko Rolović"</div>
+              <div class="text-xs text-muted">Podgorica, Crna Gora</div>
+            </div>
+          </div>
+          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
+            <span style="font-size: 1.3em;">📞</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Kontakt informacije</div>
+              <div class="text-xs text-muted">Telefon, email, adresa</div>
+            </div>
+          </div>
+          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
+            <span style="font-size: 1.3em;">🕐</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Radno vrijeme</div>
+              <div class="text-xs text-muted">Smjene i raspored zvona</div>
+            </div>
+          </div>
+          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0;">
+            <span style="font-size: 1.3em;">🔗</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Korisni linkovi</div>
+              <div class="text-xs text-muted">Sajt škole, dokumenti, socijalne mreže</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================
+           ADMIN PANEL
+           ============================================ -->
+
+      <!-- SLIDE 30: Admin Section Title -->
+      <section data-auto-animate data-background-color="#0c1220">
+        <div data-id="admin-icon" style="font-size: 4em;" class="float">🛠️</div>
+        <h2 data-id="admin-title" class="gradient-text mt-1">Admin Panel</h2>
+        <p data-id="admin-sub" class="text-muted text-sm">Potpuna kontrola nad platformom</p>
+      </section>
+
+      <!-- SLIDE 31: Admin Overview -->
+      <section data-auto-animate data-transition="slide" data-background-color="#0c1220">
+        <div data-id="admin-icon" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">🛠️</div>
+        <h2 data-id="admin-title" style="font-size: 1.4em;">Admin — Pregled</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="feature-grid" style="max-width: 700px;">
+          <div class="admin-card fragment blur-in">
+            <div style="font-size: 1.5em;">📰</div>
+            <h4 class="text-purple" style="font-size: 0.8em;">Novosti</h4>
+            <p class="text-xs text-muted">Kreiranje i uređivanje vijesti</p>
+          </div>
+          <div class="admin-card fragment blur-in">
+            <div style="font-size: 1.5em;">📅</div>
+            <h4 class="text-purple" style="font-size: 0.8em;">Kalendar</h4>
+            <p class="text-xs text-muted">Upravljanje događajima</p>
+          </div>
+          <div class="admin-card fragment blur-in">
+            <div style="font-size: 1.5em;">📚</div>
+            <h4 class="text-purple" style="font-size: 0.8em;">Lekcije</h4>
+            <p class="text-xs text-muted">Rich text editor</p>
+          </div>
+          <div class="admin-card fragment blur-in">
+            <div style="font-size: 1.5em;">👥</div>
+            <h4 class="text-purple" style="font-size: 0.8em;">Učenici</h4>
+            <p class="text-xs text-muted">Upravljanje i pretraga</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 32: News Management -->
+      <section data-transition="slide" data-background-color="#0c1220">
+        <h2 style="font-size: 1.4em;">📰 Upravljanje Novostima</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="admin-card" style="max-width: 600px; margin: 0 auto; text-align: left;">
+          <p class="fragment fade-up text-sm">✏️ Kreiranje novih objava sa naslovom i opisom</p>
+          <p class="fragment fade-up text-sm">🖼️ Dodavanje slika u objave</p>
+          <p class="fragment fade-up text-sm">📌 Pinovanje važnih obavještenja</p>
+          <p class="fragment fade-up text-sm">🗑️ Brisanje i uređivanje postojećih vijesti</p>
+          <p class="fragment fade-up text-sm">📊 Pregled statistike lajkova</p>
+        </div>
+      </section>
+
+      <!-- SLIDE 33: Calendar Management -->
+      <section data-transition="fade" data-background-color="#0c1220">
+        <h2 style="font-size: 1.4em;">📅 Upravljanje Kalendarom</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="admin-card" style="max-width: 600px; margin: 0 auto; text-align: left;">
+          <p class="fragment fade-up text-sm">📝 Dodavanje testova, ispita, domaćih</p>
+          <p class="fragment fade-up text-sm">🎯 Izbor tipa: test / pismeni / domaći / drugo</p>
+          <p class="fragment fade-up text-sm">📆 Izbor datuma i razreda</p>
+          <p class="fragment fade-up text-sm">✏️ Uređivanje i brisanje događaja</p>
+          <p class="fragment fade-up text-sm">🔔 Automatske notifikacije učenicima</p>
+        </div>
+      </section>
+
+      <!-- SLIDE 34: Lecture Editor -->
+      <section data-transition="slide" data-background-color="#0c1220">
+        <h2 style="font-size: 1.4em;">📝 Editor Lekcija</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div class="phone-frame fragment slide-right" style="border-color: rgba(71, 85, 105, 0.5);">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder" style="background: linear-gradient(135deg, #0f172a, #1e293b);">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">📝</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">Rich Editor</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">Bold • Italic • Lists</div>
+            </div>
+          </div>
+          <div style="text-align: left; max-width: 350px;">
+            <p class="fragment fade-up text-sm">🖊️ Rich text editor — kao Word</p>
+            <p class="fragment fade-up text-sm">📋 Bold, italic, liste, naslovi</p>
+            <p class="fragment fade-up text-sm">🖼️ Umetanje slika</p>
+            <p class="fragment fade-up text-sm">👁️ Preview prije objavljivanja</p>
+            <p class="fragment fade-up text-sm">🎯 Izbor predmeta i razreda</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 35: Student Management -->
+      <section data-transition="fade" data-background-color="#0c1220">
+        <h2 style="font-size: 1.4em;">👥 Upravljanje Učenicima</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="admin-card" style="max-width: 650px; margin: 0 auto;">
+          <div class="stat-row mb-2">
+            <div class="stat-item fragment scale-in">
+              <div class="counter-sm" data-count="83" style="font-size: 2em;">0</div>
+              <div class="stat-label">Aktivnih učenika</div>
+            </div>
+          </div>
+          <p class="fragment fade-up text-sm">🔍 Pretraga po imenu, razredu, emailu</p>
+          <p class="fragment fade-up text-sm">📋 Lista svih registrovanih korisnika</p>
+          <p class="fragment fade-up text-sm">🏷️ Filtriranje po razredu i odjeljenju</p>
+        </div>
+      </section>
+
+      <!-- SLIDE 36: Role Management -->
+      <section data-transition="slide" data-background-color="#0c1220">
+        <h2 style="font-size: 1.4em;">🔑 Upravljanje Ulogama</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="admin-card" style="max-width: 600px; margin: 0 auto;">
+          <p class="fragment fade-up text-sm mb-1" style="text-align: center;">
+            Dodijelite ili promijenite ulogu bilo kom korisniku
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 0.6em; align-items: center;">
+            <div class="fragment slide-right" style="display: flex; align-items: center; gap: 0.6em; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 0.5em 1.2em; width: 280px;">
+              <span class="role-dot" style="background: #ef4444;"></span>
+              <span class="text-sm">Creator</span>
+              <span class="text-xs text-muted" style="margin-left: auto;">1 korisnik</span>
+            </div>
+            <div class="fragment slide-right" style="display: flex; align-items: center; gap: 0.6em; background: rgba(167, 139, 250, 0.08); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 10px; padding: 0.5em 1.2em; width: 280px;">
+              <span class="role-dot" style="background: #a78bfa;"></span>
+              <span class="text-sm">Admin</span>
+              <span class="text-xs text-muted" style="margin-left: auto;">Neograničeno</span>
+            </div>
+            <div class="fragment slide-right" style="display: flex; align-items: center; gap: 0.6em; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 10px; padding: 0.5em 1.2em; width: 280px;">
+              <span class="role-dot" style="background: #3b82f6;"></span>
+              <span class="text-sm">Moderator</span>
+              <span class="text-xs text-muted" style="margin-left: auto;">Neograničeno</span>
+            </div>
+            <div class="fragment slide-right" style="display: flex; align-items: center; gap: 0.6em; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 10px; padding: 0.5em 1.2em; width: 280px;">
+              <span class="role-dot" style="background: #22c55e;"></span>
+              <span class="text-sm">Student</span>
+              <span class="text-xs text-muted" style="margin-left: auto;">Svi korisnici</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================
+           PHOTO GALLERY (DUMBS)
+           ============================================ -->
+
+      <!-- SLIDE 37: Dumbs Section Title -->
+      <section data-auto-animate data-background-color="#09090b">
+        <div data-id="dumbs-icon" style="font-size: 4em;" class="float-rotate">📸</div>
+        <h2 data-id="dumbs-title" class="gradient-text mt-1">Dumbs — Foto Galerija</h2>
+        <p data-id="dumbs-sub" class="text-muted text-sm">Dijelite trenutke sa cijelom školom</p>
+      </section>
+
+      <!-- SLIDE 38: Photo Sharing -->
+      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
+        <div data-id="dumbs-icon" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">📸</div>
+        <h2 data-id="dumbs-title" style="font-size: 1.4em;">Dijeljenje Fotografija</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
+          <div class="phone-frame fragment slide-right pulse-glow">
+            <div class="phone-notch"></div>
+            <div class="phone-screen screenshot-placeholder">
+              <div style="font-size: 2em; margin-bottom: 0.3em;">📸</div>
+              <div style="font-size: 0.65em; color: #a78bfa; font-weight: 600;">Dumbs</div>
+              <div style="font-size: 0.45em; color: #71717a; margin-top: 0.3em;">Feed fotografija</div>
+            </div>
+          </div>
+          <div style="text-align: left; max-width: 350px;">
+            <p class="fragment fade-up text-sm">📷 Učenici dijele slike iz školskog života</p>
+            <p class="fragment fade-up text-sm">❤️ Interakcija — lajkovi i komentari</p>
+            <p class="fragment fade-up text-sm">🖼️ Galerija sa moderacijom</p>
+            <p class="fragment fade-up text-sm">🔒 Samo verifikovani učenici mogu postavljati</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 39: Telegram Moderation -->
+      <section data-transition="convex" data-background-color="#09090b">
+        <h2>🤖 Moderacija putem Telegrama</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="dark-card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+          <p class="fragment fade-up text-sm mb-2">
+            Svaka fotografija prolazi moderaciju prije objavljivanja
+          </p>
+          <div class="fragment scale-in" style="background: rgba(36, 161, 222, 0.08); border: 1px solid rgba(36, 161, 222, 0.25); border-radius: 16px; padding: 1.5em; max-width: 350px; margin: 0 auto;">
+            <div style="font-size: 1.5em; margin-bottom: 0.5em;">🤖💬</div>
+            <div class="text-sm" style="font-weight: 600; color: #3b82f6;">Telegram Bot</div>
+            <div class="text-xs text-muted mt-1" style="line-height: 1.5;">
+              "Novi zahtjev za objavljivanje fotografije od učenika Marko P."
+            </div>
+            <div style="display: flex; justify-content: center; gap: 1em; margin-top: 1em;">
+              <div style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.4); border-radius: 8px; padding: 0.4em 1.2em; font-size: 0.7em; color: #22c55e; font-weight: 600;">
+                ✅ Da
+              </div>
+              <div style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 0.4em 1.2em; font-size: 0.7em; color: #ef4444; font-weight: 600;">
+                ❌ Ne
+              </div>
+            </div>
+          </div>
+          <p class="fragment fade-up text-xs text-muted mt-2">
+            Admin odobrava ili odbija jednim klikom — brzo, sigurno, efikasno
+          </p>
+        </div>
+      </section>
+
+      <!-- SLIDE 40: Double-tap to Like -->
+      <section data-transition="zoom" data-background-color="#09090b">
+        <h2>💜 Double-Tap to Like</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="dark-card" style="max-width: 500px; margin: 0 auto; text-align: center;">
+          <div class="fragment scale-in">
+            <div style="font-size: 5em;" class="heart-beat">💜</div>
+          </div>
+          <p class="fragment fade-up text-sm mt-1">
+            Dupli tap na fotografiju — kao Instagram
+          </p>
+          <p class="fragment fade-up text-xs text-muted">
+            Animirano srce sa premium efektima
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================
+           BENEFITS & CLOSING
+           ============================================ -->
+
+      <!-- SLIDE 41: Benefits Section Title -->
+      <section data-auto-animate data-background-color="#09090b">
+        <div data-id="ben-icon" style="font-size: 4em;" class="float">🏆</div>
+        <h2 data-id="ben-title" class="gradient-text mt-1">Prednosti</h2>
+        <p data-id="ben-sub" class="text-muted text-sm">Zašto je ovo važno</p>
+      </section>
+
+      <!-- SLIDE 42: Benefits for Students -->
+      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
+        <div data-id="ben-icon" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">🏆</div>
+        <h2 data-id="ben-title" style="font-size: 1.4em;">🎓 Za Učenike</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="feature-grid" style="max-width: 700px;">
+          <div class="feature-item fragment slide-right">
+            <div style="font-size: 1.5em;">📱</div>
+            <h4>Sve na jednom mjestu</h4>
+            <p>Raspored, ocjene, novosti, lekcije — jedan portal</p>
+          </div>
+          <div class="feature-item fragment slide-left">
+            <div style="font-size: 1.5em;">✨</div>
+            <h4>Moderan dizajn</h4>
+            <p>UX na nivou premium aplikacija</p>
+          </div>
+          <div class="feature-item fragment slide-right">
+            <div style="font-size: 1.5em;">🤝</div>
+            <h4>Zajednica</h4>
+            <p>Dijeljenje fotografija i interakcija</p>
+          </div>
+          <div class="feature-item fragment slide-left">
+            <div style="font-size: 1.5em;">📊</div>
+            <h4>Praćenje uspjeha</h4>
+            <p>Ocjene i prosjek uvijek dostupni</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 43: Benefits for Teachers -->
+      <section data-transition="fade" data-background-color="#09090b">
+        <h2 style="font-size: 1.4em;">👨‍🏫 Za Nastavnike</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="feature-grid" style="max-width: 700px;">
+          <div class="feature-item fragment blur-in">
+            <div style="font-size: 1.5em;">📣</div>
+            <h4>Obavještenja</h4>
+            <p>Brza distribucija informacija svim učenicima</p>
+          </div>
+          <div class="feature-item fragment blur-in">
+            <div style="font-size: 1.5em;">📚</div>
+            <h4>Dijeljenje lekcija</h4>
+            <p>Rich text — formatiranje, slike, formule</p>
+          </div>
+          <div class="feature-item fragment blur-in">
+            <div style="font-size: 1.5em;">🧠</div>
+            <h4>Kvizovi</h4>
+            <p>Automatski feedback za učenike</p>
+          </div>
+          <div class="feature-item fragment blur-in">
+            <div style="font-size: 1.5em;">📅</div>
+            <h4>Organizacija</h4>
+            <p>Kalendar testova i zadataka</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 44: Benefits for Administration -->
+      <section data-transition="slide" data-background-color="#09090b">
+        <h2 style="font-size: 1.4em;">🏛️ Za Upravu</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="dark-card" style="max-width: 650px; margin: 0 auto;">
+          <div class="fragment fade-up" style="display: flex; align-items: flex-start; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
+            <span style="font-size: 1.3em;">👁️</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Potpuni nadzor</div>
+              <div class="text-xs text-muted">Pregled svih korisnika, sadržaja i aktivnosti</div>
+            </div>
+          </div>
+          <div class="fragment fade-up" style="display: flex; align-items: flex-start; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
+            <span style="font-size: 1.3em;">📊</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Analitika</div>
+              <div class="text-xs text-muted">Statistike korišćenja, aktivnih korisnika, popularnosti</div>
+            </div>
+          </div>
+          <div class="fragment fade-up" style="display: flex; align-items: flex-start; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
+            <span style="font-size: 1.3em;">🛡️</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Moderacija</div>
+              <div class="text-xs text-muted">Kontrola sadržaja, Telegram bot za odobrenja</div>
+            </div>
+          </div>
+          <div class="fragment fade-up" style="display: flex; align-items: flex-start; gap: 0.8em; padding: 0.6em 0;">
+            <span style="font-size: 1.3em;">🏆</span>
+            <div>
+              <div class="text-sm" style="font-weight: 600;">Pionirski korak</div>
+              <div class="text-xs text-muted">Jedna od prvih škola u Crnoj Gori sa sopstvenom platformom</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 45: Future Roadmap -->
+      <section data-transition="convex" data-background-color="#09090b">
+        <h2>🗺️ Plan Razvoja</h2>
+        <div class="section-divider mb-2"></div>
+        <div class="timeline" style="max-width: 500px;">
+          <div class="timeline-item fragment slide-right">
+            <div class="badge badge-green" style="font-size: 0.55em;">Završeno</div>
+            <div class="text-sm mt-1" style="font-weight: 600;">Osnovna platforma</div>
+            <div class="text-xs text-muted">Registracija, novosti, raspored, profil</div>
+          </div>
+          <div class="timeline-item fragment slide-right">
+            <div class="badge badge-green" style="font-size: 0.55em;">Završeno</div>
+            <div class="text-sm mt-1" style="font-weight: 600;">Lekcije, kvizovi, kalendar</div>
+            <div class="text-xs text-muted">Obrazovni sadržaj i organizacija</div>
+          </div>
+          <div class="timeline-item fragment slide-right">
+            <div class="badge badge-green" style="font-size: 0.55em;">Završeno</div>
+            <div class="text-sm mt-1" style="font-weight: 600;">Dumbs — Foto galerija</div>
+            <div class="text-xs text-muted">Dijeljenje fotografija sa moderacijom</div>
+          </div>
+          <div class="timeline-item fragment slide-right">
+            <div class="badge badge-purple" style="font-size: 0.55em;">U planu</div>
+            <div class="text-sm mt-1" style="font-weight: 600;">Push notifikacije</div>
+            <div class="text-xs text-muted">Real-time obavještenja na telefon</div>
+          </div>
+          <div class="timeline-item fragment slide-right">
+            <div class="badge badge-purple" style="font-size: 0.55em;">U planu</div>
+            <div class="text-sm mt-1" style="font-weight: 600;">Chat sistem</div>
+            <div class="text-xs text-muted">Komunikacija učenik-nastavnik</div>
+          </div>
+          <div class="timeline-item fragment slide-right">
+            <div class="badge badge-blue" style="font-size: 0.55em;">Vizija</div>
+            <div class="text-sm mt-1" style="font-weight: 600;">AI asistent</div>
+            <div class="text-xs text-muted">Pomoć pri učenju, rezimei lekcija</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 46: Tech Stack -->
+      <section data-transition="fade" data-background-color="#09090b">
+        <h2>⚙️ Tehnološki Stack</h2>
+        <div class="section-divider mb-2"></div>
+        <div style="display: flex; justify-content: center; gap: 1.5em; flex-wrap: wrap; max-width: 800px; margin: 0 auto;">
+          <div class="glass-card fragment scale-in" style="min-width: 180px; text-align: center;">
+            <div style="font-size: 2em;">▲</div>
+            <h4 class="text-purple" style="font-size: 0.8em;">Next.js 15</h4>
+            <p class="text-xs text-muted">React framework</p>
+          </div>
+          <div class="glass-card fragment scale-in" style="min-width: 180px; text-align: center;">
+            <div style="font-size: 2em;">⚡</div>
+            <h4 class="text-green" style="font-size: 0.8em;">Supabase</h4>
+            <p class="text-xs text-muted">Baza podataka & Auth</p>
+          </div>
+          <div class="glass-card fragment scale-in" style="min-width: 180px; text-align: center;">
+            <div style="font-size: 2em;">🎨</div>
+            <h4 class="text-blue" style="font-size: 0.8em;">Tailwind CSS</h4>
+            <p class="text-xs text-muted">Utility-first styling</p>
+          </div>
+          <div class="glass-card fragment scale-in" style="min-width: 180px; text-align: center;">
+            <div style="font-size: 2em;">🚀</div>
+            <h4 style="font-size: 0.8em; color: #fafafa;">Vercel</h4>
+            <p class="text-xs text-muted">Hosting & CDN</p>
+          </div>
+        </div>
+        <p class="fragment fade-up text-xs text-muted mt-2" style="text-align: center;">
+          Ista tehnologija koju koriste kompanije poput Netflix, TikTok, Twitch
+        </p>
+      </section>
+
+      <!-- SLIDE 47: Thank You — small -->
+      <section data-auto-animate data-auto-animate-easing="cubic-bezier(0.68, -0.15, 0.27, 1.15)" data-background-color="#09090b">
+        <div data-id="ty-emoji" style="font-size: 2em;" class="float">🎓</div>
+        <h2 data-id="ty-title" style="font-size: 1em; color: #a1a1aa;">Hvala na pažnji</h2>
+      </section>
+
+      <!-- SLIDE 48: Thank You — full -->
+      <section data-auto-animate data-auto-animate-easing="cubic-bezier(0.68, -0.15, 0.27, 1.15)" data-background-color="#09090b">
+        <div data-id="ty-emoji" style="font-size: 4em;" class="float">🎓</div>
+        <h1 data-id="ty-title" class="gradient-text" style="font-size: 2.2em; line-height: 1.2;">
+          Hvala na pažnji
+        </h1>
+        <div class="section-divider" style="margin: 0.6em auto;"></div>
+        <div class="fragment fade-up" style="margin-top: 1em;">
+          <p class="text-sm text-muted">Projekat kreirao</p>
+          <p style="font-size: 1em; font-weight: 700; color: #fafafa; margin-top: 0.3em;">
+            Dmitrij Ivašcenko
+          </p>
+          <p class="text-sm text-muted">Učenik 2-1, Gimnazija "Niko Rolović"</p>
+        </div>
+        <div class="fragment fade-up mt-2">
+          <div class="dark-card-sm" style="display: inline-block;">
+            <span class="text-sm">🌐</span>
+            <a href="https://niko-rolovic-site.vercel.app" target="_blank" style="font-size: 0.7em; color: #a78bfa; text-decoration: none;">
+              niko-rolovic-site.vercel.app
+            </a>
+          </div>
+        </div>
+        <p class="fragment fade-up text-xs text-muted mt-2" style="opacity: 0.5;">
+          Podgorica, 2025/2026
+        </p>
+      </section>
+
+    </div><!-- /slides -->
+  </div><!-- /reveal -->
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      transition: 'slide',
+      transitionSpeed: 'default',
+      backgroundTransition: 'fade',
+      center: true,
+      controls: true,
+      progress: true,
+      slideNumber: 'c/t',
+      autoAnimateDuration: 0.8,
+      autoAnimateEasing: 'ease',
+      autoAnimateUnmatched: true,
+      width: 1280,
+      height: 720,
+      margin: 0.04,
+      minScale: 0.2,
+      maxScale: 2.0,
+    });
+
+    // Counter animation
+    function animateCounters() {
+      const counters = document.querySelectorAll('[data-count]');
+      counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-count'));
+        const duration = 1500;
+        const step = target / (duration / 16);
+        let current = 0;
+        
+        const update = () => {
+          current += step;
+          if (current < target) {
+            counter.textContent = Math.floor(current);
+            requestAnimationFrame(update);
+          } else {
+            counter.textContent = target;
+          }
+        };
+        
+        // Reset and start when slide becomes visible
+        counter.textContent = '0';
+        
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              current = 0;
+              update();
+            }
+          });
+        }, { threshold: 0.5 });
+        
+        observer.observe(counter);
+      });
+    }
+
+    // Run counter animation on slide change
+    Reveal.on('slidechanged', () => {
+      const currentSlide = Reveal.getCurrentSlide();
+      const counters = currentSlide.querySelectorAll('[data-count]');
+      counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-count'));
+        const duration = 1500;
+        const step = target / (duration / 16);
+        let current = 0;
+        
+        counter.textContent = '0';
+        
+        const update = () => {
+          current += step;
+          if (current < target) {
+            counter.textContent = Math.floor(current);
+            requestAnimationFrame(update);
+          } else {
+            counter.textContent = target;
+          }
+        };
+        
+        setTimeout(update, 300);
+      });
+    });
+
+    // Initialize counters on first load
+    animateCounters();
+  </script>
+</body>
+</html>
