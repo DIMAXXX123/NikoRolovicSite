@@ -416,10 +416,10 @@ export default function BlockBlastPage() {
   // ── Render ───────────────────────────────────────────────────────────
   return (
     <div
-      className={`fixed inset-0 top-14 bottom-20 overflow-hidden select-none flex flex-col ${shaking ? 'animate-shake' : ''}`}
+      className={`min-h-[calc(100vh-8rem)] overflow-hidden select-none ${shaking ? 'animate-shake' : ''}`}
       onTouchMove={handleTouchMove as any}
       onTouchEnd={handleTouchEnd}
-      style={{ touchAction: 'none' }}
+      style={{ touchAction: 'none', maxHeight: 'calc(100vh - 8rem)' }}
     >
       <style jsx global>{`
         @keyframes shake {
