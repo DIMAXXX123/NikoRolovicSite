@@ -16,7 +16,7 @@ const slides = [
   {
     title: 'O školi',
     subtitle: 'Tradicija i kvalitet',
-    description: 'Jedna od najprestižnijih gimnazija u Podgorici, Crna Gora. Bogata istorija, izvrsni profesori i generacije uspješnih učenika.',
+    description: 'Jedna od najprestižnijih gimnazija u Baru, Crna Gora. Osnovana u čast narodnog heroja Nika Rolovića. Bogata istorija, izvrsni profesori i generacije uspješnih učenika.',
     illustration: 'school' as const,
     accent: '#818cf8',
     accentAlt: '#4f46e5',
