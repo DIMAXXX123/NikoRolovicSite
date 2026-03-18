@@ -36,71 +36,38 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
 
-    // Step 1: Verify student exists in verified_students (by name + class, email is optional)
-    const { data: verified, error: verifyError } = await supabase
-      .from('verified_students')
-      .select('id, used')
-      .eq('first_name', firstName.trim())
-      .eq('last_name', lastName.trim())
-      .eq('class_number', parseInt(classNumber))
-      .eq('section_number', parseInt(sectionNumber))
-      .single()
-
-    if (verifyError || !verified) {
-      setError('Nismo te pronašli u bazi učenika. Proveri podatke.')
-      setLoading(false)
-      return
-    }
-
-    if (verified.used) {
-      setError('Ovaj učenik je već registrovan.')
-      setLoading(false)
-      return
-    }
-
-    // Step 2: Create auth user
-    const { data: authData, error: signUpError } = await supabase.auth.signUp({
-      email: email.trim().toLowerCase(),
-      password,
-      options: {
-        data: {
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          class_number: parseInt(classNumber),
-          section_number: parseInt(sectionNumber),
-        },
-      },
+    // Register via server API (admin SDK, email auto-confirmed)
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        classNumber: parseInt(classNumber),
+        sectionNumber: parseInt(sectionNumber),
+        email: email.trim().toLowerCase(),
+        password,
+      }),
     })
 
-    if (signUpError) {
-      if (signUpError.message.includes('rate limit') || signUpError.message.includes('limit exceed')) {
-        setError('Previše zahtjeva. Pokušaj ponovo za par minuta.')
-      } else {
-        setError(signUpError.message)
-      }
+    const data = await res.json()
+
+    if (!res.ok) {
+      setError(data.error || 'Greška pri registraciji')
       setLoading(false)
       return
     }
 
-    // 2FA DISABLED FOR NOW — create profile immediately
-    // TODO: Re-enable OTP verification before full launch
-    if (authData.user) {
-      // Mark student as used
-      await supabase
-        .from('verified_students')
-        .update({ used: true })
-        .eq('id', verified.id)
+    // Sign in immediately (user already confirmed via admin)
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    })
 
-      // Create profile directly
-      await supabase.from('profiles').insert({
-        id: authData.user.id,
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        email: email.trim().toLowerCase(),
-        class_number: parseInt(classNumber),
-        section_number: parseInt(sectionNumber),
-        role: 'student',
-      })
+    if (signInError) {
+      setError(signInError.message)
+      setLoading(false)
+      return
     }
 
     // Go straight to main page
