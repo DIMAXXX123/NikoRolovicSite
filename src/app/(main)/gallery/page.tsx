@@ -461,11 +461,9 @@ export default function GalleryPage() {
                             className="flex items-center gap-1 active:scale-90 transition-transform"
                           >
                             <Heart className={`w-4 h-4 transition-colors ${likedPhotos[photo.id] ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
-                            {(likeCounts[photo.id] || 0) > 0 && (
-                              <span className={`text-[11px] ${likedPhotos[photo.id] ? 'text-red-500' : 'text-muted-foreground'}`}>
-                                {likeCounts[photo.id]}
-                              </span>
-                            )}
+                            <span className={`text-[11px] ${likedPhotos[photo.id] ? 'text-red-500' : 'text-muted-foreground'}`}>
+                              {likeCounts[photo.id] || 0}
+                            </span>
                           </button>
 
                           {/* Time */}
