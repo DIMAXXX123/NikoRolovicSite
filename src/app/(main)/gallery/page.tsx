@@ -321,8 +321,20 @@ export default function GalleryPage() {
                       <div className="relative rounded-2xl rounded-br-sm bg-card/80 p-2">
                         {/* Sender name */}
                         {!anon && photo.user && (
-                          <p className={`${getSenderColor(photo.user_id)} text-xs font-medium px-1 pb-1`}>
+                          <p className={`${getSenderColor(photo.user_id)} text-xs font-medium px-1 pb-1 flex items-center gap-1.5`}>
                             {photo.user.first_name} {photo.user.last_name}
+                            {photo.user.role && photo.user.role !== 'student' && (
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
+                                photo.user.role === 'creator' ? 'bg-amber-500/20 text-amber-400' :
+                                photo.user.role === 'admin' ? 'bg-purple-500/20 text-purple-400' :
+                                photo.user.role === 'moderator' ? 'bg-blue-500/20 text-blue-400' :
+                                'bg-green-500/20 text-green-400'
+                              }`}>
+                                {photo.user.role === 'creator' ? '👑 Creator' : 
+                                 photo.user.role === 'admin' ? 'Admin' :
+                                 photo.user.role === 'moderator' ? 'Mod' : photo.user.role}
+                              </span>
+                            )}
                           </p>
                         )}
 
@@ -380,7 +392,7 @@ export default function GalleryPage() {
       {/* Floating upload button - bottom right */}
       <button
         onClick={() => setShowUpload(true)}
-        className="fixed bottom-[5.5rem] right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform animate-bounce-in"
+        className="fixed bottom-24 right-4 z-[60] w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform"
       >
         <Camera className="w-6 h-6" />
       </button>
