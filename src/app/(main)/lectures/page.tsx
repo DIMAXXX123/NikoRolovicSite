@@ -176,7 +176,7 @@ export default function LecturesPage() {
       .select('*')
       .eq('class_number', profile.class_number)
       .eq('subject', subject)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: false })
     if (data) {
       setLectures(data)
     }
