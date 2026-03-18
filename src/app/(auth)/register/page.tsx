@@ -73,7 +73,11 @@ export default function RegisterPage() {
     })
 
     if (signUpError) {
-      setError(signUpError.message)
+      if (signUpError.message.includes('rate limit') || signUpError.message.includes('limit exceed')) {
+        setError('Previše zahtjeva. Pokušaj ponovo za par minuta.')
+      } else {
+        setError(signUpError.message)
+      }
       setLoading(false)
       return
     }
@@ -101,7 +105,17 @@ export default function RegisterPage() {
     }
 
     // Step 5: Send OTP code via signInWithOtp (sends a 6-digit code, not a link)
-    await supabase.auth.signInWithOtp({ email: email.trim().toLowerCase() })
+    const { error: otpError } = await supabase.auth.signInWithOtp({ email: email.trim().toLowerCase() })
+
+    if (otpError) {
+      if (otpError.message.includes('rate limit') || otpError.message.includes('limit exceed')) {
+        // Rate limited but account was created - skip OTP, go to verify page
+        setError('')
+      } else {
+        // Non-critical - account created, just OTP failed
+        console.error('OTP error:', otpError.message)
+      }
+    }
 
     // Save email for verify page
     localStorage.setItem('verify_email', email.trim().toLowerCase())
