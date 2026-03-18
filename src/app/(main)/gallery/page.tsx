@@ -266,8 +266,8 @@ export default function GalleryPage() {
 
       {/* Upload modal */}
       {showUpload && (
-        <div className="fixed inset-0 z-50 bg-background flex items-end justify-center" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
-          <div className="bg-card w-full rounded-t-2xl p-5 space-y-4 animate-slide-up" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
+          <div className="bg-card w-full max-w-lg rounded-2xl p-5 space-y-4 animate-scale-in" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Nova fotografija</h2>
               <button onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }} className="p-1 rounded-full hover:bg-muted transition-colors">
@@ -276,7 +276,7 @@ export default function GalleryPage() {
             </div>
 
             {previewUrl ? (
-              <div className="relative aspect-[3/4] rounded-xl overflow-hidden">
+              <div className="relative aspect-square max-h-[50vh] rounded-xl overflow-hidden">
                 <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                 <button
                   onClick={() => { setSelectedFile(null); setPreviewUrl(null) }}
@@ -288,7 +288,7 @@ export default function GalleryPage() {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full aspect-[3/4] rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary transition-colors"
+                className="w-full aspect-square max-h-[50vh] rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary transition-colors"
               >
                 <Camera className="w-8 h-8" />
                 <span className="text-sm">Izaberi fotografiju</span>

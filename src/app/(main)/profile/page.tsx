@@ -98,13 +98,9 @@ export default function ProfilePage() {
   const router = useRouter()
   const supabase = createClient()
 
-  function getMultiplier() {
-    return (Math.floor(Date.now() / 10000) % 2) + 1
-  }
-
   function updateDisplayCount() {
     if (baseCountRef.current === null) return
-    const newCount = baseCountRef.current * getMultiplier()
+    const newCount = baseCountRef.current
     setActiveUsers(prev => {
       if (prev !== null && prev !== newCount) {
         setPrevActiveUsers(prev)
@@ -579,7 +575,7 @@ export default function ProfilePage() {
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
             </span>
             <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-              Aktivnih korisnika:{' '}
+              Registrovanih učenika:{' '}
               <span className="inline-flex overflow-hidden h-5 align-middle" key={animKey}>
                 <span className="inline-block animate-[slideUp_0.4s_ease-out]">
                   {activeUsers}
