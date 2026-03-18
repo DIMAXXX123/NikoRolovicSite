@@ -14,9 +14,18 @@ type LeaderEntry = { rank: number; name: string; classInfo: string; role: string
 
 // ── Constants ──────────────────────────────────────────────────────────
 const GRID = 8
+// Block Blast style colors - vibrant with gradients
 const COLORS = [
-  '#a78bfa', '#818cf8', '#c084fc', '#f472b6', '#fb923c',
-  '#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a3e635',
+  '#FF6B35', // orange
+  '#4ECDC4', // teal  
+  '#FFE66D', // yellow
+  '#FF6B6B', // red
+  '#7C5CFC', // purple
+  '#45B7D1', // blue
+  '#96CEB4', // green
+  '#DDA0DD', // plum
+  '#FF9FF3', // pink
+  '#54A0FF', // sky blue
 ]
 
 const SHAPE_DEFS: { cells: [number, number][]; name: string }[] = [
@@ -274,24 +283,53 @@ export default function BlockBlastPage() {
   const loadLeaderboard = useCallback(async (currentScore: number) => {
     try {
       const supabase = createClient()
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, class_number, section_number, role')
-        .order('created_at', { ascending: true })
+
+      // Save score to DB
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && currentScore > 0) {
+        // Upsert — only update if new score is higher
+        const { data: existing } = await supabase
+          .from('game_scores')
+          .select('score')
+          .eq('user_id', user.id)
+          .single()
+
+        if (!existing || currentScore > existing.score) {
+          await supabase.from('game_scores').upsert(
+            { user_id: user.id, score: currentScore },
+            { onConflict: 'user_id' }
+          )
+        }
+      }
+
+      // Load top 10 scores with profiles
+      const { data: scores } = await supabase
+        .from('game_scores')
+        .select('score, user_id')
+        .order('score', { ascending: false })
         .limit(10)
 
-      if (profiles && profiles.length > 0) {
-        const entries: LeaderEntry[] = profiles.map((p: any, i: number) => ({
-          rank: i + 1,
-          name: `${p.first_name || ''} ${p.last_name || ''}`.trim(),
-          classInfo: `${p.class_number || '?'}-${p.section_number || '?'}`,
-          role: p.role || 'student',
-          score: 0,
-        }))
+      if (scores && scores.length > 0) {
+        const entries: LeaderEntry[] = []
+        for (const s of scores) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, class_number, section_number, role')
+            .eq('id', s.user_id)
+            .single()
+          if (profile) {
+            entries.push({
+              rank: entries.length + 1,
+              name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+              classInfo: `${profile.class_number || '?'}-${profile.section_number || '?'}`,
+              role: profile.role || 'student',
+              score: s.score,
+            })
+          }
+        }
         setLeaderboard(entries)
       }
     } catch {
-      // Fallback to local scores
       const local = getLocalScores()
       if (local.length > 0) {
         setLeaderboard(local.slice(0, 10).map((e, i) => ({ ...e, rank: i + 1 })))
@@ -416,10 +454,10 @@ export default function BlockBlastPage() {
   // ── Render ───────────────────────────────────────────────────────────
   return (
     <div
-      className={`min-h-[calc(100vh-8rem)] overflow-hidden select-none ${shaking ? 'animate-shake' : ''}`}
+      className={`h-[calc(100dvh-8rem)] overflow-hidden select-none flex flex-col ${shaking ? 'animate-shake' : ''}`}
       onTouchMove={handleTouchMove as any}
       onTouchEnd={handleTouchEnd}
-      style={{ touchAction: 'none', maxHeight: 'calc(100vh - 8rem)' }}
+      style={{ touchAction: 'none' }}
     >
       <style jsx global>{`
         @keyframes shake {
@@ -552,6 +590,11 @@ export default function BlockBlastPage() {
                       : isGhost
                         ? `${ghostColor}55`
                         : undefined,
+                    ...(cell.filled ? {
+                      backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(0,0,0,0.2) 100%)`,
+                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.3)`,
+                      borderRadius: '4px',
+                    } : {}),
                   }}
                   onClick={(e) => { e.stopPropagation(); handleGridClick(r, c) }}
                 />
@@ -609,6 +652,11 @@ export default function BlockBlastPage() {
                         width: 16,
                         height: 16,
                         backgroundColor: isFilled ? shape.color : 'transparent',
+                        ...(isFilled ? {
+                          backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(0,0,0,0.2) 100%)',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.3)',
+                          borderRadius: '3px',
+                        } : {}),
                       }}
                     />
                   )
