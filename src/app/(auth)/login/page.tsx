@@ -105,6 +105,10 @@ export default function LoginPage() {
               className="bg-background/50"
             />
           </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" defaultChecked className="rounded border-border" />
+            <span className="text-muted-foreground">Zapamti me</span>
+          </label>
           {error && (
             <p className="text-destructive text-sm text-center">{error}</p>
           )}
