@@ -206,8 +206,8 @@ export default function GalleryPage() {
     return (
       <div className="flex flex-col gap-3 p-4 pt-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
-            <div className={`rounded-2xl p-2.5 space-y-2 ${i % 2 === 0 ? 'max-w-[80%]' : 'max-w-[75%]'}`}
+          <div key={i} className="mx-auto max-w-[85%]">
+            <div className="rounded-2xl rounded-br-sm p-2.5 space-y-2"
                  style={{ background: 'rgba(255,255,255,0.04)' }}>
               <div className="h-3 w-20 rounded-full bg-muted animate-shimmer" />
               <div className={`rounded-xl bg-muted animate-shimmer ${i === 1 ? 'w-56 h-64' : i === 2 ? 'w-48 h-52' : 'w-60 h-72'}`} />
@@ -317,11 +317,11 @@ export default function GalleryPage() {
                   const anon = isAnon(photo)
 
                   return (
-                    <div key={photo.id} className={`${own ? 'ml-auto' : ''} max-w-[85%] animate-fade-in`}>
-                      <div className="relative rounded-2xl bg-card/80 p-2">
+                    <div key={photo.id} className="mx-auto max-w-[85%] animate-fade-in">
+                      <div className="relative rounded-2xl rounded-br-sm bg-card/80 p-2">
                         {/* Sender name */}
-                        {!own && !anon && photo.user && (
-                          <p className="text-primary text-xs font-medium px-1 pb-1">
+                        {!anon && photo.user && (
+                          <p className={`${getSenderColor(photo.user_id)} text-xs font-medium px-1 pb-1`}>
                             {photo.user.first_name} {photo.user.last_name}
                           </p>
                         )}
