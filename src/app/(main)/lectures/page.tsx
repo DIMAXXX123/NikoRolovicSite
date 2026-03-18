@@ -651,7 +651,7 @@ export default function LecturesPage() {
           <div className="animate-fade-in space-y-3">
             <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-border/30 bg-black">
               <iframe
-                src={`https://www.youtube.com/embed/${getYouTubeId(selectedLecture.video_url)}`}
+                src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(selectedLecture.video_url)}`}
                 title={selectedLecture.title}
                 className="absolute inset-0 w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

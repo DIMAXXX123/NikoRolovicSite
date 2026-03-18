@@ -30,16 +30,16 @@ const roleBorderGlow: Record<string, string> = {
 }
 
 const roleLabel: Record<string, string> = {
-  student: 'U─ìenik',
+  student: 'Učenik',
   moderator: 'Moderator',
   admin: 'Administrator',
   creator: 'Kreator',
 }
 
 const QUICK_ACCESS_PAGES = [
-  { id: 'about', href: '/about', label: 'O ┼íkoli', icon: School, color: 'from-emerald-500 to-teal-600' },
+  { id: 'about', href: '/about', label: 'O školi', icon: School, color: 'from-emerald-500 to-teal-600' },
   { id: 'schedule', href: '/schedule', label: 'Raspored', icon: Clock, color: 'from-blue-500 to-cyan-600' },
-  { id: 'teachers', href: '/teachers', label: 'Status nastavnika', icon: Users, color: 'from-teal-500 to-cyan-600' },
+  { id: 'teachers', href: '/teachers', label: 'Status profesora', icon: Users, color: 'from-teal-500 to-cyan-600' },
   { id: 'grades', href: '/grades', label: 'Moje ocjene', icon: GraduationCap, color: 'from-purple-500 to-violet-600' },
 ]
 
@@ -375,7 +375,7 @@ export default function ProfilePage() {
             <span>{roleLabel[profile.role] || profile.role}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">─îlan od</span>
+            <span className="text-muted-foreground">Član od</span>
             <span>{new Date(profile.created_at).toLocaleDateString('sr-Latn')}</span>
           </div>
 
@@ -403,7 +403,7 @@ export default function ProfilePage() {
             className="w-full flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground pt-1 transition-colors"
           >
             {showStats ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {showStats ? 'Sakrij' : 'Prika┼╛i vi┼íe'}
+            {showStats ? 'Sakrij' : 'Prikaži više'}
           </button>
         </CardContent>
       </Card>
@@ -438,7 +438,7 @@ export default function ProfilePage() {
         className="w-full justify-start gap-2"
       >
         <Settings className="w-4 h-4" />
-        Pode┼íavanja
+        Podešavanja
       </Button>
 
       {showSettings && (
@@ -450,7 +450,7 @@ export default function ProfilePage() {
                 <Zap className="w-4 h-4 text-yellow-400" />
                 <div>
                   <p className="text-sm font-medium">Performance Mode</p>
-                  <p className="text-xs text-muted-foreground">Isklju─ìi animacije</p>
+                  <p className="text-xs text-muted-foreground">Isključi animacije</p>
                 </div>
               </div>
               <button
@@ -483,7 +483,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-green-400" />
                 <div>
-                  <p className="text-sm font-medium">Obavje┼ítenja</p>
+                  <p className="text-sm font-medium">Obavještenja</p>
                   <p className="text-xs text-muted-foreground">Push notifikacije</p>
                 </div>
               </div>
@@ -500,7 +500,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <Type className="w-4 h-4 text-orange-400" />
                 <div>
-                  <p className="text-sm font-medium">Veli─ìina fonta</p>
+                  <p className="text-sm font-medium">Veličina fonta</p>
                   <p className="text-xs text-muted-foreground">Prilagodi tekst</p>
                 </div>
               </div>
@@ -517,7 +517,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <Trash2 className="w-4 h-4 text-red-400" />
                 <div>
-                  <p className="text-sm font-medium">Obri┼íi ke┼í</p>
+                  <p className="text-sm font-medium">Obriši keš</p>
                   <p className="text-xs text-muted-foreground">Resetuj lokalne podatke</p>
                 </div>
               </div>
@@ -525,7 +525,7 @@ export default function ProfilePage() {
                 onClick={clearCache}
                 className="px-3 py-1 rounded-lg bg-destructive/10 text-destructive text-xs font-medium transition-all active:scale-95"
               >
-                Obri┼íi
+                Obriši
               </button>
             </div>
 
@@ -536,10 +536,10 @@ export default function ProfilePage() {
                 <p className="text-sm font-medium">O aplikaciji</p>
               </div>
               <p className="text-xs text-muted-foreground">
-                Niko Rolovi─ç Portal v1.0.0
+                Niko Rolović Portal v1.0.0
               </p>
               <p className="text-xs text-muted-foreground">
-                Gimnazija &quot;Niko Rolovi─ç&quot; ┬╖ Bar, Crna Gora
+                Gimnazija &quot;Niko Rolović&quot; · Bar, Crna Gora
               </p>
             </div>
           </CardContent>
@@ -576,7 +576,7 @@ export default function ProfilePage() {
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
             </span>
             <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-              Registrovanih u─ìenika:{' '}
+              Registrovanih učenika:{' '}
               <span className="inline-flex overflow-hidden h-5 align-middle" key={animKey}>
                 <span className="inline-block animate-[slideUp_0.4s_ease-out]">
                   {activeUsers}
@@ -594,23 +594,9 @@ export default function ProfilePage() {
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
           Predlozi
         </a>
-        <a href="viber://chat?number=%2B38269492092" 
+        <a href="viber://chat?number=%2B38268499621" 
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm hover:bg-purple-500/20 transition-all">
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.398.002C9.473.028 5.331.344 3.014 2.467 1.294 4.177.474 6.753.345 9.98.217 13.208.074 19.174 5.58 20.77l.01.006.006.004c.068.039.14.085.22.137v2.87s-.044.858.533 1.031c.637.188.953-.385 1.529-.997l1.252-1.418c3.34.288 5.882-.346 6.166-.445.655-.228 4.366-.687 4.973-5.623.623-5.076-.304-8.283-2.91-10.467C15.645.456 13.167-.022 11.398.002zm.286 1.727c1.524-.03 3.647.36 5.26 1.7 2.177 1.82 2.985 4.593 2.442 8.918-.488 3.906-3.272 4.265-3.81 4.453-.236.082-2.394.613-5.201.441 0 0-2.06 2.479-2.7 3.129-.105.107-.225.148-.306.128-.114-.028-.146-.161-.144-.354.002-.134.01-3.455.01-3.455C3.2 15.643 2.157 13.204 2.267 10.047c.095-2.731.726-4.89 2.176-6.34 1.836-1.767 5.282-2.02 7.24-1.978z"/></svg>
-          Viber
-        </a>
-      </div>
-
-      {/* Contact & suggestions */}
-      <div className="flex items-center justify-center gap-4 py-3">
-        <a href="https://t.me/Dima_ivasch" target="_blank" rel="noopener noreferrer"
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm hover:bg-blue-500/20 transition-all">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-          Predlozi
-        </a>
-        <a href="viber://chat?number=%2B38268499621"
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm hover:bg-purple-500/20 transition-all">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.398.002C9.473.028 5.331.344 3.014 2.467 1.294 4.177.474 6.753.345 9.98.217 13.208.074 19.174 5.58 20.77l.01.006.006.004c.068.039.14.085.22.137v2.87s-.044.858.533 1.031c.637.188.953-.385 1.529-.997l1.252-1.418c3.34.288 5.882-.346 6.166-.445.655-.228 4.366-.687 4.973-5.623.623-5.076-.304-8.283-2.91-10.467C15.645.456 13.167-.022 11.398.002z"/></svg>
           Viber
         </a>
       </div>

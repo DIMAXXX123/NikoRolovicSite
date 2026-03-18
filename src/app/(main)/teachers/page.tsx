@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
-import { ChevronLeft, ChevronRight, UserCheck, UserX, AlertTriangle, HelpCircle, Coffee, Plus, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, UserCheck, UserX, AlertTriangle, HelpCircle, RefreshCw, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -12,7 +12,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: any; color: string; b
   absent: { label: 'Odsutan/na', icon: UserX, color: 'text-red-400', bg: 'bg-red-500/15 border-red-500/30' },
   sick: { label: 'Boluje', icon: AlertTriangle, color: 'text-orange-400', bg: 'bg-orange-500/15 border-orange-500/30' },
   asking: { label: 'Ispituje', icon: HelpCircle, color: 'text-blue-400', bg: 'bg-blue-500/15 border-blue-500/30' },
-  zamjena: { label: 'Zamjena', icon: Coffee, color: 'text-cyan-400', bg: 'bg-cyan-500/15 border-cyan-500/30' },
+  zamjena: { label: 'Zamjena', icon: RefreshCw, color: 'text-cyan-400', bg: 'bg-cyan-500/15 border-cyan-500/30' },
 }
 
 const STATUS_KEYS = Object.keys(STATUS_CONFIG)
@@ -122,7 +122,7 @@ export default function TeachersPage() {
     if (target.getTime() === today.getTime()) return 'Danas'
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
-    if (target.getTime() === yesterday.getTime()) return 'Ju─ìe'
+    if (target.getTime() === yesterday.getTime()) return 'Juče'
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
     if (target.getTime() === tomorrow.getTime()) return 'Sutra'
@@ -266,7 +266,7 @@ export default function TeachersPage() {
                   className="bg-background/50 rounded-xl"
                 />
                 <div className="flex gap-2">
-                  <Button onClick={() => setShowAdd(false)} variant="outline" className="flex-1 rounded-xl">Otka┼╛i</Button>
+                  <Button onClick={() => setShowAdd(false)} variant="outline" className="flex-1 rounded-xl">Otkaži</Button>
                   <Button onClick={addTeacher} disabled={!newName.trim()} className="flex-1 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700">Dodaj</Button>
                 </div>
               </CardContent>
