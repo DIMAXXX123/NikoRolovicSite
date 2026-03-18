@@ -53,10 +53,15 @@ export default function MainLayout({
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push('/game')}
-              className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-orange-500 to-red-600 active:scale-90 transition-transform shadow-lg shadow-orange-500/20"
+              className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-orange-500 to-red-600 active:scale-90 transition-transform shadow-lg shadow-orange-500/20 overflow-hidden"
               title="Block Blast"
             >
-              <span className="text-xs">🎮</span>
+              <div className="grid grid-cols-2 gap-[1px] w-5 h-5">
+                <div className="rounded-[2px] bg-yellow-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.4),transparent 60%)'}} />
+                <div className="rounded-[2px] bg-cyan-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.4),transparent 60%)'}} />
+                <div className="rounded-[2px] bg-purple-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.4),transparent 60%)'}} />
+                <div className="rounded-[2px] bg-pink-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.4),transparent 60%)'}} />
+              </div>
             </button>
             <ThemeSwitcher />
           </div>
