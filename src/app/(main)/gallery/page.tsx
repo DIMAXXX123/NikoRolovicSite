@@ -264,9 +264,9 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* Upload modal */}
-      {showUpload && (
-        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
+      {/* Upload modal — Portal to body to escape transform stacking context */}
+      {showUpload && typeof document !== 'undefined' && createPortal(
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }} className="bg-background/95 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
           <div className="bg-card w-full max-w-lg rounded-2xl p-5 space-y-4 animate-scale-in" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Nova fotografija</h2>
@@ -323,7 +323,8 @@ export default function GalleryPage() {
               {uploading ? 'Šalje se...' : <><Send className="w-4 h-4 mr-2" />Pošalji</>}
             </Button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Photo feed — newest on top, scroll down for older */}
