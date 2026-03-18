@@ -54,7 +54,7 @@ export default function MainLayout({
         </div>
       </header>
       <ProfileGuard />
-      <main className="max-w-lg mx-auto px-4 pt-18">
+      <main className="max-w-lg mx-auto px-4 pt-16">
         <div className="page-content-transition" style={{ opacity, transform: `translateY(${translateY}px)` }}>
           {children}
         </div>
