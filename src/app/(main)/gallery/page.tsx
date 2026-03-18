@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
 import { Camera, X, Send, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -419,14 +420,17 @@ export default function GalleryPage() {
         )}
       </div>
 
-      {/* CAMERA BUTTON — fixed to viewport bottom-right, ALWAYS visible while scrolling */}
-      <button
-        onClick={() => setShowUpload(true)}
-        style={{ position: 'fixed', bottom: '6rem', right: '1rem', zIndex: 9999 }}
-        className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform"
-      >
-        <Camera className="w-6 h-6" />
-      </button>
+      {/* CAMERA BUTTON — Portal to body so parent transforms can't break fixed positioning */}
+      {typeof document !== 'undefined' && createPortal(
+        <button
+          onClick={() => setShowUpload(true)}
+          style={{ position: 'fixed', bottom: '6rem', right: '1rem', zIndex: 9999 }}
+          className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform"
+        >
+          <Camera className="w-6 h-6" />
+        </button>,
+        document.body
+      )}
     </>
   )
 }
