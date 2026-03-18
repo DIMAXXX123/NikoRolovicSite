@@ -49,12 +49,79 @@ function getSubjectColor(subject: string): string {
 type ScheduleData = Record<string, string>
 
 const DEFAULT_SCHEDULES: Record<string, ScheduleData> = {
+  // I razred
+  'schedule_1_1': {
+    '0-1': 'Matematika', '0-2': 'CSBH', '0-3': 'Engleski', '0-4': 'Biologija', '0-5': 'Fizičko', '0-6': 'Geografija',
+    '1-1': 'Fizika', '1-2': 'Matematika', '1-3': 'Hemija', '1-4': 'Istorija', '1-5': 'CSBH', '1-6': 'Likovno',
+    '2-1': 'Engleski', '2-2': 'Biologija', '2-3': 'Matematika', '2-4': 'Fizika', '2-5': 'Geografija', '2-6': 'Muzičko',
+    '3-1': 'CSBH', '3-2': 'Hemija', '3-3': 'Istorija', '3-4': 'Engleski', '3-5': 'Matematika',
+    '4-1': 'Informatika', '4-2': 'Fizičko', '4-3': 'Biologija', '4-4': 'Hemija', '4-5': 'Italijanski',
+  },
+  'schedule_1_2': {
+    '0-1': 'Engleski', '0-2': 'Matematika', '0-3': 'Fizika', '0-4': 'CSBH', '0-5': 'Biologija', '0-6': 'Istorija',
+    '1-1': 'Hemija', '1-2': 'Geografija', '1-3': 'Matematika', '1-4': 'Engleski', '1-5': 'Fizičko', '1-6': 'Likovno',
+    '2-1': 'Matematika', '2-2': 'CSBH', '2-3': 'Engleski', '2-4': 'Hemija', '2-5': 'Fizika', '2-6': 'Biologija',
+    '3-1': 'Istorija', '3-2': 'Fizičko', '3-3': 'Geografija', '3-4': 'Matematika', '3-5': 'CSBH',
+    '4-1': 'Italijanski', '4-2': 'Informatika', '4-3': 'Muzičko', '4-4': 'Engleski', '4-5': 'Biologija',
+  },
+  'schedule_1_3': {
+    '0-1': 'CSBH', '0-2': 'Fizika', '0-3': 'Matematika', '0-4': 'Engleski', '0-5': 'Hemija', '0-6': 'Fizičko',
+    '1-1': 'Biologija', '1-2': 'Matematika', '1-3': 'Istorija', '1-4': 'Geografija', '1-5': 'Engleski', '1-6': 'Italijanski',
+    '2-1': 'Fizika', '2-2': 'CSBH', '2-3': 'Hemija', '2-4': 'Matematika', '2-5': 'Likovno', '2-6': 'Biologija',
+    '3-1': 'Engleski', '3-2': 'Informatika', '3-3': 'CSBH', '3-4': 'Fizičko', '3-5': 'Matematika',
+    '4-1': 'Geografija', '4-2': 'Istorija', '4-3': 'Fizika', '4-4': 'Muzičko', '4-5': 'Hemija',
+  },
+  // II razred
   'schedule_2_1': {
-    '0-1': 'Matematika', '0-2': 'Engleski', '0-3': 'Hemija', '0-4': 'Fizicko', '0-5': 'CSBH', '0-6': 'Biologija',
+    '0-1': 'Matematika', '0-2': 'Engleski', '0-3': 'Hemija', '0-4': 'Fizičko', '0-5': 'CSBH', '0-6': 'Biologija',
     '1-1': 'Fizika', '1-2': 'Istorija', '1-3': 'Matematika', '1-4': 'Engleski', '1-5': 'Geografija', '1-6': 'Likovno',
     '2-1': 'CSBH', '2-2': 'Hemija', '2-3': 'Biologija', '2-4': 'Matematika', '2-5': 'Fizika', '2-6': 'Engleski',
     '3-1': 'Istorija', '3-2': 'Geografija', '3-3': 'Engleski', '3-4': 'CSBH', '3-5': 'Matematika', '3-6': 'Hemija',
-    '4-1': 'Fizicko', '4-2': 'Likovno', '4-3': 'Fizika', '4-4': 'Biologija', '4-5': 'Istorija',
+    '4-1': 'Fizičko', '4-2': 'Likovno', '4-3': 'Fizika', '4-4': 'Biologija', '4-5': 'Istorija',
+  },
+  'schedule_2_2': {
+    '0-1': 'Engleski', '0-2': 'Fizika', '0-3': 'CSBH', '0-4': 'Matematika', '0-5': 'Hemija', '0-6': 'Biologija',
+    '1-1': 'Matematika', '1-2': 'Geografija', '1-3': 'Engleski', '1-4': 'Fizičko', '1-5': 'Istorija', '1-6': 'Hemija',
+    '2-1': 'Biologija', '2-2': 'Matematika', '2-3': 'Fizika', '2-4': 'CSBH', '2-5': 'Engleski', '2-6': 'Likovno',
+    '3-1': 'Hemija', '3-2': 'CSBH', '3-3': 'Matematika', '3-4': 'Geografija', '3-5': 'Fizičko',
+    '4-1': 'Italijanski', '4-2': 'Informatika', '4-3': 'Istorija', '4-4': 'Engleski', '4-5': 'Fizika',
+  },
+  'schedule_2_3': {
+    '0-1': 'Hemija', '0-2': 'Matematika', '0-3': 'Engleski', '0-4': 'Biologija', '0-5': 'CSBH', '0-6': 'Fizičko',
+    '1-1': 'Istorija', '1-2': 'Fizika', '1-3': 'CSBH', '1-4': 'Matematika', '1-5': 'Engleski', '1-6': 'Geografija',
+    '2-1': 'Matematika', '2-2': 'Hemija', '2-3': 'Italijanski', '2-4': 'Fizika', '2-5': 'Biologija', '2-6': 'CSBH',
+    '3-1': 'Engleski', '3-2': 'Matematika', '3-3': 'Likovno', '3-4': 'Istorija', '3-5': 'Fizičko',
+    '4-1': 'Informatika', '4-2': 'Geografija', '4-3': 'Hemija', '4-4': 'Biologija', '4-5': 'Fizika',
+  },
+  // III razred
+  'schedule_3_1': {
+    '0-1': 'Matematika', '0-2': 'Fizika', '0-3': 'Engleski', '0-4': 'Hemija', '0-5': 'CSBH', '0-6': 'Biologija',
+    '1-1': 'Istorija', '1-2': 'Matematika', '1-3': 'Geografija', '1-4': 'Fizičko', '1-5': 'Engleski',
+    '2-1': 'CSBH', '2-2': 'Hemija', '2-3': 'Matematika', '2-4': 'Fizika', '2-5': 'Biologija', '2-6': 'Filozofija',
+    '3-1': 'Engleski', '3-2': 'Sociologija', '3-3': 'Matematika', '3-4': 'CSBH', '3-5': 'Fizičko',
+    '4-1': 'Informatika', '4-2': 'Italijanski', '4-3': 'Fizika', '4-4': 'Istorija', '4-5': 'Hemija',
+  },
+  'schedule_3_2': {
+    '0-1': 'Fizika', '0-2': 'Engleski', '0-3': 'Matematika', '0-4': 'CSBH', '0-5': 'Biologija', '0-6': 'Hemija',
+    '1-1': 'Matematika', '1-2': 'Istorija', '1-3': 'Fizičko', '1-4': 'Engleski', '1-5': 'Geografija',
+    '2-1': 'Filozofija', '2-2': 'Matematika', '2-3': 'Fizika', '2-4': 'Hemija', '2-5': 'CSBH', '2-6': 'Biologija',
+    '3-1': 'CSBH', '3-2': 'Engleski', '3-3': 'Sociologija', '3-4': 'Matematika', '3-5': 'Fizičko',
+    '4-1': 'Italijanski', '4-2': 'Informatika', '4-3': 'Istorija', '4-4': 'Fizika', '4-5': 'Geografija',
+  },
+  // IV razred
+  'schedule_4_1': {
+    '0-1': 'Matematika', '0-2': 'CSBH', '0-3': 'Engleski', '0-4': 'Fizika', '0-5': 'Hemija',
+    '1-1': 'Biologija', '1-2': 'Matematika', '1-3': 'Istorija', '1-4': 'Fizičko', '1-5': 'Engleski',
+    '2-1': 'Filozofija', '2-2': 'Fizika', '2-3': 'Matematika', '2-4': 'CSBH', '2-5': 'Sociologija',
+    '3-1': 'Engleski', '3-2': 'Hemija', '3-3': 'Biologija', '3-4': 'Matematika', '3-5': 'Fizičko',
+    '4-1': 'Italijanski', '4-2': 'Geografija', '4-3': 'Informatika', '4-4': 'Istorija',
+  },
+  'schedule_4_2': {
+    '0-1': 'Engleski', '0-2': 'Fizika', '0-3': 'CSBH', '0-4': 'Matematika', '0-5': 'Biologija',
+    '1-1': 'Hemija', '1-2': 'Engleski', '1-3': 'Matematika', '1-4': 'Istorija', '1-5': 'Geografija',
+    '2-1': 'Matematika', '2-2': 'Fizičko', '2-3': 'Filozofija', '2-4': 'Fizika', '2-5': 'CSBH',
+    '3-1': 'Sociologija', '3-2': 'Biologija', '3-3': 'Engleski', '3-4': 'Hemija', '3-5': 'Matematika',
+    '4-1': 'Informatika', '4-2': 'Italijanski', '4-3': 'Fizičko', '4-4': 'Istorija',
   },
 }
 
