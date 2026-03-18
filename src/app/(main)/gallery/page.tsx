@@ -32,6 +32,15 @@ export default function GalleryPage() {
     if (saved) setLikedPhotos(JSON.parse(saved))
   }, [])
 
+  // Auto-scroll to bottom (newest photos) on load
+  useEffect(() => {
+    if (!loading && photos.length > 0) {
+      setTimeout(() => {
+        feedEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+  }, [loading])
+
   async function loadCurrentUser() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) setCurrentUserId(user.id)
@@ -293,7 +302,7 @@ export default function GalleryPage() {
       )}
 
       {/* Chat-style photo feed */}
-      <div className="px-3 py-2 space-y-1 pb-24">
+      <div className="px-3 py-2 space-y-1 pb-36">
         {photos.length === 0 ? (
           <div className="h-[60vh] flex flex-col items-center justify-center text-muted-foreground">
             <Camera className="w-12 h-12 mb-3 opacity-30" />
@@ -389,13 +398,18 @@ export default function GalleryPage() {
         <div ref={feedEndRef} />
       </div>
 
-      {/* Floating upload button - bottom right */}
-      <button
-        onClick={() => setShowUpload(true)}
-        className="fixed bottom-24 right-4 z-[60] w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform"
-      >
-        <Camera className="w-6 h-6" />
-      </button>
+      {/* Full-width upload bar above bottom nav */}
+      <div className="fixed bottom-20 left-0 right-0 z-[55]">
+        <div className="max-w-lg mx-auto">
+          <button
+            onClick={() => setShowUpload(true)}
+            className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-purple-600 to-violet-700 text-white font-medium text-sm active:scale-[0.98] transition-transform shadow-lg shadow-purple-500/20"
+          >
+            <Camera className="w-5 h-5" />
+            Dodaj fotografiju
+          </button>
+        </div>
+      </div>
     </>
   )
 }
