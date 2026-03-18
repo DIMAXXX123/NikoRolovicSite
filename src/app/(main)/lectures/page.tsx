@@ -59,8 +59,16 @@ function generateFlashcards(lecture: Lecture): FlashCard[] {
   if (quizMatch) {
     try {
       const parsed = JSON.parse(quizMatch[1])
+      // Support format: { flashcards: [...] }
       if (parsed.flashcards && parsed.flashcards.length > 0) {
         return parsed.flashcards
+      }
+      // Support format: [{ question, options, correct }] (multiple choice → flashcard)
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].question) {
+        return parsed.map((q: any) => ({
+          question: q.question,
+          answer: q.options?.[q.correct] || q.answer || 'Pogledaj lekciju za odgovor',
+        }))
       }
     } catch {}
   }
@@ -362,11 +370,11 @@ export default function LecturesPage() {
           {selectedLecture.content.includes('<') ? (
             <div
               className="text-foreground/90 leading-relaxed text-sm [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_li]:mb-1 [&_strong]:font-bold [&_em]:italic [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_img]:rounded-xl [&_img]:max-w-full"
-              dangerouslySetInnerHTML={{ __html: selectedLecture.content }}
+              dangerouslySetInnerHTML={{ __html: selectedLecture.content.replace(/\n*QUIZ_DATA:[\s\S]*?:QUIZ_DATA\n*/, '') }}
             />
           ) : (
             <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed text-sm">
-              {selectedLecture.content}
+              {selectedLecture.content.replace(/\n*QUIZ_DATA:[\s\S]*?:QUIZ_DATA\n*/, '')}
             </div>
           )}
         </div>
@@ -488,7 +496,14 @@ export default function LecturesPage() {
       {availableOptional.length > 0 && (
         <div className="space-y-3">
           <button
-            onClick={() => setShowAddSubject(!showAddSubject)}
+            onClick={() => {
+              setShowAddSubject(!showAddSubject)
+              if (!showAddSubject) {
+                setTimeout(() => {
+                  document.getElementById('add-subject-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }, 100)
+              }
+            }}
             className="w-full py-3 rounded-2xl border border-dashed border-border/50 text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
@@ -496,7 +511,7 @@ export default function LecturesPage() {
           </button>
 
           {showAddSubject && (
-            <div className="space-y-2 animate-fade-in">
+            <div id="add-subject-list" className="space-y-2 animate-fade-in">
               {availableOptional.map((subject) => (
                 <Card
                   key={subject.name}
