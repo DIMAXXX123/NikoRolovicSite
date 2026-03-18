@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { createClient } from '@/lib/supabase/client'
-import { Camera, X, Send, Heart } from 'lucide-react'
+import { Camera, X, Send, Heart, Flag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { Photo, Profile } from '@/lib/types'
@@ -21,6 +21,9 @@ export default function GalleryPage() {
   const [likedPhotos, setLikedPhotos] = useState<Record<string, boolean>>({})
   const [heartAnimId, setHeartAnimId] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({})
+  const [showReportConfirm, setShowReportConfirm] = useState<string | null>(null)
+  const [reportCooldown, setReportCooldown] = useState(false)
   const lastTapRef = useRef<Record<string, number>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
@@ -31,6 +34,8 @@ export default function GalleryPage() {
     loadCurrentUser()
     const saved = localStorage.getItem('photo_likes')
     if (saved) setLikedPhotos(JSON.parse(saved))
+    const savedCounts = localStorage.getItem('photo_like_counts')
+    if (savedCounts) setLikeCounts(JSON.parse(savedCounts))
   }, [])
 
   // Realtime subscription — new approved photos appear at top
@@ -92,14 +97,61 @@ export default function GalleryPage() {
   }
 
   function toggleLike(photoId: string) {
+    const wasLiked = !!likedPhotos[photoId]
     const updated = { ...likedPhotos }
-    if (updated[photoId]) {
+    if (wasLiked) {
       delete updated[photoId]
     } else {
       updated[photoId] = true
     }
     setLikedPhotos(updated)
     localStorage.setItem('photo_likes', JSON.stringify(updated))
+
+    // Update count
+    setLikeCounts((prev) => ({
+      ...prev,
+      [photoId]: Math.max(0, (prev[photoId] || 0) + (wasLiked ? -1 : 1)),
+    }))
+
+    // Save counts
+    const newCounts = { ...likeCounts, [photoId]: Math.max(0, (likeCounts[photoId] || 0) + (wasLiked ? -1 : 1)) }
+    localStorage.setItem('photo_like_counts', JSON.stringify(newCounts))
+  }
+
+  async function handleReport(photoId: string) {
+    // Check cooldown (max 5 reports per hour)
+    const reportsRaw = localStorage.getItem('photo_reports_log')
+    const reportsLog: number[] = reportsRaw ? JSON.parse(reportsRaw) : []
+    const oneHourAgo = Date.now() - 3600000
+    const recentReports = reportsLog.filter((t) => t > oneHourAgo)
+
+    if (recentReports.length >= 5) {
+      setReportCooldown(true)
+      setTimeout(() => setReportCooldown(false), 3000)
+      setShowReportConfirm(null)
+      return
+    }
+
+    // Send report to Telegram
+    try {
+      await fetch('/api/telegram/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photoId,
+          imageUrl: photos.find((p) => p.id === photoId)?.image_url || '',
+          userName: 'REPORT',
+          caption: '⚠️ REPORT: Korisnik je prijavio ovu fotografiju',
+        }),
+      })
+    } catch {}
+
+    // Log report
+    recentReports.push(Date.now())
+    localStorage.setItem('photo_reports_log', JSON.stringify(recentReports))
+    setShowReportConfirm(null)
+    setToast('Fotografija prijavljena ⚠️')
+    setTimeout(() => setToast(''), 3000)
   }
 
   const handleDoubleTap = useCallback((photoId: string) => {
@@ -401,14 +453,33 @@ export default function GalleryPage() {
                           </p>
                         )}
 
-                        {/* Time + like */}
-                        <div className="flex items-center justify-end gap-1.5 px-1 pt-1">
-                          {likedPhotos[photo.id] && (
-                            <Heart className="w-3 h-3 fill-red-500 text-red-500" />
-                          )}
+                        {/* Actions: like + time + report */}
+                        <div className="flex items-center justify-between px-1 pt-1.5">
+                          {/* Like button */}
+                          <button
+                            onClick={() => toggleLike(photo.id)}
+                            className="flex items-center gap-1 active:scale-90 transition-transform"
+                          >
+                            <Heart className={`w-4 h-4 transition-colors ${likedPhotos[photo.id] ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
+                            {(likeCounts[photo.id] || 0) > 0 && (
+                              <span className={`text-[11px] ${likedPhotos[photo.id] ? 'text-red-500' : 'text-muted-foreground'}`}>
+                                {likeCounts[photo.id]}
+                              </span>
+                            )}
+                          </button>
+
+                          {/* Time */}
                           <span className="text-[10px] text-muted-foreground">
                             {formatTime(photo.created_at)}
                           </span>
+
+                          {/* Report button */}
+                          <button
+                            onClick={() => setShowReportConfirm(photo.id)}
+                            className="p-0.5 active:scale-90 transition-transform"
+                          >
+                            <Flag className="w-3 h-3 text-muted-foreground/50 hover:text-orange-400 transition-colors" />
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -419,6 +490,31 @@ export default function GalleryPage() {
           ))
         )}
       </div>
+
+      {/* Report confirmation modal */}
+      {showReportConfirm && typeof document !== 'undefined' && createPortal(
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99998 }} className="bg-black/60 backdrop-blur-sm flex items-center justify-center p-6" onClick={() => setShowReportConfirm(null)}>
+          <div className="bg-card rounded-2xl p-5 max-w-sm w-full space-y-4 animate-scale-in" onClick={e => e.stopPropagation()}>
+            {reportCooldown ? (
+              <>
+                <p className="text-center text-orange-400 font-medium">⚠️ Previše prijava</p>
+                <p className="text-center text-sm text-muted-foreground">Možeš prijaviti maksimalno 5 fotografija na sat.</p>
+                <Button onClick={() => { setShowReportConfirm(null); setReportCooldown(false) }} className="w-full rounded-xl" variant="outline">Zatvori</Button>
+              </>
+            ) : (
+              <>
+                <p className="text-center font-medium">Prijavi fotografiju?</p>
+                <p className="text-center text-sm text-muted-foreground">Da li si siguran/na da želiš prijaviti ovu fotografiju? Prijava će biti poslata administratoru.</p>
+                <div className="flex gap-3">
+                  <Button onClick={() => setShowReportConfirm(null)} className="flex-1 rounded-xl" variant="outline">Ne</Button>
+                  <Button onClick={() => handleReport(showReportConfirm)} className="flex-1 rounded-xl bg-orange-600 hover:bg-orange-500 text-white">Da, prijavi</Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* CAMERA BUTTON — Portal to body so parent transforms can't break fixed positioning */}
       {typeof document !== 'undefined' && createPortal(
