@@ -454,7 +454,7 @@ export default function BlockBlastPage() {
   // ── Render ───────────────────────────────────────────────────────────
   return (
     <div
-      className={`h-[calc(100dvh-8rem)] overflow-hidden select-none flex flex-col ${shaking ? 'animate-shake' : ''}`}
+      className={`overflow-hidden select-none ${shaking ? 'animate-shake' : ''}`}
       onTouchMove={handleTouchMove as any}
       onTouchEnd={handleTouchEnd}
       style={{ touchAction: 'none' }}
@@ -560,11 +560,11 @@ export default function BlockBlastPage() {
       )}
 
       {/* Grid */}
-      <div className="relative mx-auto" style={{ maxWidth: 'min(100%, 360px)' }}>
+      <div className="relative mx-auto flex-1 w-full" style={{ maxWidth: '360px' }}>
         <div
           ref={gridRef}
-          className="grid gap-[1px] bg-zinc-800/50 rounded-xl p-[1px] border border-zinc-700/50"
-          style={{ gridTemplateColumns: `repeat(${GRID}, 1fr)`, aspectRatio: '1/1' }}
+          className="grid gap-[2px] bg-zinc-700/60 rounded-xl p-[2px] border border-zinc-600/50 w-full mx-auto"
+          style={{ gridTemplateColumns: `repeat(${GRID}, 1fr)`, aspectRatio: '1/1', maxWidth: '340px', maxHeight: '340px' }}
           onMouseMove={handleGridMouseMove}
           onMouseLeave={handleGridMouseLeave}
           onClick={handleGridClick2}
@@ -581,7 +581,7 @@ export default function BlockBlastPage() {
                     aspect-square rounded-[3px] transition-all duration-150
                     ${cell.filled ? (cell.justPlaced ? 'cell-placed' : '') : ''}
                     ${isClearing ? 'cell-clearing' : ''}
-                    ${!cell.filled && !isGhost ? 'bg-zinc-900/80' : ''}
+                    ${!cell.filled && !isGhost ? 'bg-zinc-900' : ''}
                     ${isGhost ? 'ring-1 ring-white/30' : ''}
                   `}
                   style={{
