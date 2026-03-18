@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { BookOpen, ChevronRight, ChevronLeft, Plus, X, Play, Brain, RotateCcw, ThumbsUp } from 'lucide-react'
+import { BookOpen, ChevronRight, ChevronLeft, Plus, X, Play, Brain, RotateCcw, ThumbsUp, Trophy, CheckCircle2, XCircle, Zap } from 'lucide-react'
 import { LikeBurst } from '@/components/like-burst'
 import type { Lecture, Profile } from '@/lib/types'
 
@@ -48,22 +48,37 @@ function SubjectIcon({ name, emoji, size = 'lg' }: { name: string; emoji: string
 
 type ViewState = 'subjects' | 'lectures' | 'lecture' | 'quiz'
 
+interface QuizQuestion {
+  question: string
+  options: string[]
+  correct: number
+}
+
 interface FlashCard {
   question: string
   answer: string
 }
 
+function parseQuizData(content: string): QuizQuestion[] | null {
+  const quizMatch = content.match(/QUIZ_DATA:([\s\S]*?):QUIZ_DATA/)
+  if (!quizMatch) return null
+  try {
+    const parsed = JSON.parse(quizMatch[1])
+    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].options) {
+      return parsed
+    }
+  } catch {}
+  return null
+}
+
 function generateFlashcards(lecture: Lecture): FlashCard[] {
-  // First check for admin-created quiz data
-  const quizMatch = lecture.content.match(/QUIZ_DATA:(.*?):QUIZ_DATA/)
+  const quizMatch = lecture.content.match(/QUIZ_DATA:([\s\S]*?):QUIZ_DATA/)
   if (quizMatch) {
     try {
       const parsed = JSON.parse(quizMatch[1])
-      // Support format: { flashcards: [...] }
       if (parsed.flashcards && parsed.flashcards.length > 0) {
         return parsed.flashcards
       }
-      // Support format: [{ question, options, correct }] (multiple choice → flashcard)
       if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].question) {
         return parsed.map((q: any) => ({
           question: q.question,
@@ -73,7 +88,6 @@ function generateFlashcards(lecture: Lecture): FlashCard[] {
     } catch {}
   }
 
-  // Auto-generate from content
   const lines = lecture.content.split('\n').filter(l => l.trim().length > 20)
   const cards: FlashCard[] = []
 
@@ -92,20 +106,6 @@ function generateFlashcards(lecture: Lecture): FlashCard[] {
   }
 
   if (cards.length === 0) {
-    const sentences = lecture.content.split(/[.!?]+/).filter(s => s.trim().length > 15).slice(0, 4)
-    sentences.forEach((s, i) => {
-      const trimmed = s.trim()
-      const words = trimmed.split(' ')
-      if (words.length >= 4) {
-        const blankIdx = Math.floor(words.length / 2)
-        const answer = words[blankIdx]
-        const question = words.map((w, j) => j === blankIdx ? '______' : w).join(' ')
-        cards.push({ question, answer })
-      }
-    })
-  }
-
-  if (cards.length === 0) {
     cards.push({
       question: `Šta je glavna tema lekcije "${lecture.title}"?`,
       answer: `Ova lekcija pokriva temu: ${lecture.subject} - ${lecture.title}`,
@@ -113,6 +113,15 @@ function generateFlashcards(lecture: Lecture): FlashCard[] {
   }
 
   return cards
+}
+
+function getYouTubeId(url: string): string | null {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([a-zA-Z0-9_-]{11})/)
+  return match ? match[1] : null
+}
+
+function stripQuizData(html: string): string {
+  return html.replace(/\n*QUIZ_DATA:[\s\S]*?:QUIZ_DATA\n*/g, '')
 }
 
 export default function LecturesPage() {
@@ -129,6 +138,14 @@ export default function LecturesPage() {
   const [flipped, setFlipped] = useState(false)
   const [likedLectures, setLikedLectures] = useState<Record<string, boolean>>({})
   const [likeBurst, setLikeBurst] = useState<{ x: number; y: number; key: number } | null>(null)
+  // Quiz state
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([])
+  const [quizCurrent, setQuizCurrent] = useState(0)
+  const [quizSelected, setQuizSelected] = useState<number | null>(null)
+  const [quizAnswered, setQuizAnswered] = useState(false)
+  const [quizScore, setQuizScore] = useState(0)
+  const [quizFinished, setQuizFinished] = useState(false)
+  const [activeSection, setActiveSection] = useState<'content' | 'video' | 'quiz'>('content')
   const supabase = createClient()
 
   useEffect(() => {
@@ -154,16 +171,13 @@ export default function LecturesPage() {
 
   const loadLectures = useCallback(async (subject: string) => {
     if (!profile) return
-    console.log('[Lectures] Loading for class_number:', profile.class_number, 'subject:', subject)
     const { data, error } = await supabase
       .from('lectures')
       .select('*')
       .eq('class_number', profile.class_number)
       .eq('subject', subject)
-      .order('created_at', { ascending: false })
-    if (error) console.error('[Lectures] Query error:', error)
+      .order('created_at', { ascending: true })
     if (data) {
-      console.log('[Lectures] Found:', data.length, 'lectures', data.map((l: Lecture) => ({ id: l.id, title: l.title, contentPreview: l.content?.substring(0, 100) })))
       setLectures(data)
     }
   }, [profile])
@@ -176,15 +190,48 @@ export default function LecturesPage() {
 
   function handleLectureTap(lecture: Lecture) {
     setSelectedLecture(lecture)
+    setActiveSection('content')
     setView('lecture')
   }
 
   function handleQuiz(lecture: Lecture) {
-    const cards = generateFlashcards(lecture)
-    setFlashcards(cards)
-    setCurrentCard(0)
-    setFlipped(false)
-    setView('quiz')
+    const mcq = parseQuizData(lecture.content)
+    if (mcq && mcq.length > 0) {
+      setQuizQuestions(mcq)
+      setQuizCurrent(0)
+      setQuizSelected(null)
+      setQuizAnswered(false)
+      setQuizScore(0)
+      setQuizFinished(false)
+      setView('quiz')
+    } else {
+      // Fallback to flashcards
+      const cards = generateFlashcards(lecture)
+      setFlashcards(cards)
+      setCurrentCard(0)
+      setFlipped(false)
+      setQuizQuestions([])
+      setView('quiz')
+    }
+  }
+
+  function handleQuizAnswer(optionIdx: number) {
+    if (quizAnswered) return
+    setQuizSelected(optionIdx)
+    setQuizAnswered(true)
+    if (optionIdx === quizQuestions[quizCurrent].correct) {
+      setQuizScore(s => s + 1)
+    }
+  }
+
+  function handleQuizNext() {
+    if (quizCurrent + 1 >= quizQuestions.length) {
+      setQuizFinished(true)
+    } else {
+      setQuizCurrent(c => c + 1)
+      setQuizSelected(null)
+      setQuizAnswered(false)
+    }
   }
 
   function goBack() {
@@ -198,6 +245,22 @@ export default function LecturesPage() {
       setSelectedSubject(null)
     }
   }
+
+  function navigateLecture(direction: 'prev' | 'next') {
+    if (!selectedLecture) return
+    const currentIdx = lectures.findIndex(l => l.id === selectedLecture.id)
+    const nextIdx = direction === 'next' ? currentIdx + 1 : currentIdx - 1
+    if (nextIdx >= 0 && nextIdx < lectures.length) {
+      setSelectedLecture(lectures[nextIdx])
+      setActiveSection('content')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const currentLectureIndex = useMemo(() => {
+    if (!selectedLecture) return -1
+    return lectures.findIndex(l => l.id === selectedLecture.id)
+  }, [selectedLecture, lectures])
 
   function addSubject(name: string) {
     const updated = [...extraSubjects, name]
@@ -225,40 +288,178 @@ export default function LecturesPage() {
     localStorage.setItem('lecture_likes', JSON.stringify(updated))
   }
 
-  function getLikeCount(lectureId: string): number {
-    return likedLectures[lectureId] ? 1 : 0
-  }
-
   const allSubjects = [
     ...DEFAULT_SUBJECTS,
     ...OPTIONAL_SUBJECTS.filter(s => extraSubjects.includes(s.name)),
   ]
 
-  const subjectLectureCounts = lectures.length > 0 ? {} : {}
-  // We don't have all counts preloaded; show them in the subject grid when available
-
   const availableOptional = OPTIONAL_SUBJECTS.filter(s => !extraSubjects.includes(s.name))
 
-  // ========== QUIZ VIEW ==========
+  // ========== QUIZ VIEW (MULTIPLE CHOICE) ==========
   if (view === 'quiz' && selectedLecture) {
+    // Multiple-choice quiz
+    if (quizQuestions.length > 0) {
+      if (quizFinished) {
+        const percentage = Math.round((quizScore / quizQuestions.length) * 100)
+        const emoji = percentage >= 80 ? '🏆' : percentage >= 60 ? '👍' : percentage >= 40 ? '📚' : '💪'
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <button onClick={goBack} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
+              <ChevronLeft className="w-4 h-4" /> Nazad na lekciju
+            </button>
+            <div className="text-center space-y-4 py-8">
+              <div className="text-6xl">{emoji}</div>
+              <h1 className="text-2xl font-bold gradient-text">Kviz završen!</h1>
+              <div className="relative w-32 h-32 mx-auto">
+                <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="8" className="text-muted/30" />
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="url(#scoreGrad)" strokeWidth="8" strokeLinecap="round"
+                    strokeDasharray={`${percentage * 3.27} 327`}
+                    className="transition-all duration-1000"
+                  />
+                  <defs>
+                    <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#a78bfa" />
+                      <stop offset="100%" stopColor="#7c3aed" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-3xl font-bold">{quizScore}</span>
+                  <span className="text-xs text-muted-foreground">od {quizQuestions.length}</span>
+                </div>
+              </div>
+              <p className="text-muted-foreground text-sm">
+                {percentage >= 80 ? 'Odlično! Savladao/la si ovu lekciju!' :
+                 percentage >= 60 ? 'Dobro! Još malo vježbe i biće savršeno.' :
+                 'Probaj ponovo nakon što ponoviš lekciju.'}
+              </p>
+              <div className="flex gap-3 justify-center pt-4">
+                <button
+                  onClick={() => { setQuizCurrent(0); setQuizSelected(null); setQuizAnswered(false); setQuizScore(0); setQuizFinished(false) }}
+                  className="px-5 py-2.5 rounded-xl bg-muted text-sm font-medium flex items-center gap-2 transition-all active:scale-95 hover:bg-muted/80"
+                >
+                  <RotateCcw className="w-4 h-4" /> Ponovo
+                </button>
+                <button
+                  onClick={goBack}
+                  className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-95"
+                >
+                  Nazad na lekciju
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      const q = quizQuestions[quizCurrent]
+      return (
+        <div className="space-y-5 animate-fade-in">
+          <button onClick={goBack} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
+            <ChevronLeft className="w-4 h-4" /> Nazad na lekciju
+          </button>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h1 className="text-lg font-bold gradient-text">Provjeri znanje</h1>
+              <span className="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
+                {quizCurrent + 1} / {quizQuestions.length}
+              </span>
+            </div>
+            {/* Progress bar */}
+            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-600 transition-all duration-500"
+                style={{ width: `${((quizCurrent + (quizAnswered ? 1 : 0)) / quizQuestions.length) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          <Card className="border-border/30 bg-card/50 backdrop-blur">
+            <CardContent className="p-5 space-y-4">
+              <p className="text-base font-medium leading-relaxed">{q.question}</p>
+
+              <div className="space-y-2.5">
+                {q.options.map((option, idx) => {
+                  let cardClass = 'border border-border/40 bg-background/50 hover:border-primary/50 hover:bg-primary/5 cursor-pointer'
+                  if (quizAnswered) {
+                    if (idx === q.correct) {
+                      cardClass = 'border-2 border-green-500/60 bg-green-500/10'
+                    } else if (idx === quizSelected && idx !== q.correct) {
+                      cardClass = 'border-2 border-red-500/60 bg-red-500/10'
+                    } else {
+                      cardClass = 'border border-border/20 bg-background/30 opacity-50'
+                    }
+                  } else if (idx === quizSelected) {
+                    cardClass = 'border-2 border-primary bg-primary/10'
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleQuizAnswer(idx)}
+                      disabled={quizAnswered}
+                      className={`w-full text-left p-3.5 rounded-xl transition-all duration-300 flex items-center gap-3 ${cardClass}`}
+                    >
+                      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                        quizAnswered && idx === q.correct ? 'bg-green-500 text-white' :
+                        quizAnswered && idx === quizSelected ? 'bg-red-500 text-white' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        {quizAnswered && idx === q.correct ? <CheckCircle2 className="w-4 h-4" /> :
+                         quizAnswered && idx === quizSelected && idx !== q.correct ? <XCircle className="w-4 h-4" /> :
+                         String.fromCharCode(65 + idx)}
+                      </span>
+                      <span className="text-sm">{option}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {quizAnswered && (
+                <div className="pt-2 animate-fade-in">
+                  <button
+                    onClick={handleQuizNext}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 text-white font-medium text-sm transition-all active:scale-[0.98]"
+                  >
+                    {quizCurrent + 1 >= quizQuestions.length ? 'Pogledaj rezultat' : 'Sljedeće pitanje →'}
+                  </button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Score tracker */}
+          <div className="flex justify-center gap-1.5">
+            {quizQuestions.map((_, i) => (
+              <div
+                key={i}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  i === quizCurrent ? 'bg-primary scale-125 ring-2 ring-primary/30' :
+                  i < quizCurrent ? 'bg-primary/50' : 'bg-muted'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    // Fallback: flashcard quiz
     const card = flashcards[currentCard]
     return (
       <div className="space-y-6 animate-fade-in">
         <button onClick={goBack} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
           <ChevronLeft className="w-4 h-4" /> Nazad na lekciju
         </button>
-
         <div className="text-center space-y-1">
           <h1 className="text-xl font-bold gradient-text">Provjeri znanje</h1>
           <p className="text-xs text-muted-foreground">{selectedLecture.title}</p>
           <p className="text-xs text-muted-foreground">{currentCard + 1} / {flashcards.length}</p>
         </div>
-
         {card && (
-          <div
-            className="relative min-h-[220px] cursor-pointer perspective-1000"
-            onClick={() => setFlipped(!flipped)}
-          >
+          <div className="relative min-h-[220px] cursor-pointer" onClick={() => setFlipped(!flipped)}>
             <div className={`w-full min-h-[220px] transition-all duration-500 ${flipped ? 'animate-scale-in' : 'animate-fade-in'}`}>
               <Card className="border-border/30 bg-card/50 backdrop-blur min-h-[220px] flex items-center justify-center">
                 <CardContent className="p-6 text-center space-y-4">
@@ -282,7 +483,6 @@ export default function LecturesPage() {
             </div>
           </div>
         )}
-
         <div className="flex gap-2 justify-center">
           <button
             onClick={(e) => { e.stopPropagation(); setFlipped(false); setCurrentCard(Math.max(0, currentCard - 1)) }}
@@ -311,94 +511,201 @@ export default function LecturesPage() {
             ) : flipped ? 'Sljedeće →' : 'Otkrij'}
           </button>
         </div>
-
-        {/* Progress dots */}
         <div className="flex justify-center gap-1.5">
           {flashcards.map((_, i) => (
-            <div
-              key={i}
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === currentCard ? 'bg-primary scale-125' : i < currentCard ? 'bg-primary/40' : 'bg-muted'
-              }`}
-            />
+            <div key={i} className={`w-2 h-2 rounded-full transition-all ${
+              i === currentCard ? 'bg-primary scale-125' : i < currentCard ? 'bg-primary/40' : 'bg-muted'
+            }`} />
           ))}
         </div>
       </div>
     )
   }
 
-  // ========== LECTURE DETAIL VIEW ==========
+  // ========== LECTURE DETAIL VIEW (PREMIUM) ==========
   if (view === 'lecture' && selectedLecture) {
+    const hasVideo = selectedLecture.video_url && getYouTubeId(selectedLecture.video_url)
+    const hasQuiz = !!parseQuizData(selectedLecture.content) || true
+    const isCurrent = selectedLecture.content.includes('<!-- CURRENT -->')
+    const cleanContent = stripQuizData(selectedLecture.content).replace('<!-- CURRENT -->', '')
+
     return (
       <div className="space-y-4 animate-fade-in">
         {likeBurst && (
-          <LikeBurst
-            key={likeBurst.key}
-            x={likeBurst.x}
-            y={likeBurst.y}
-            onDone={() => setLikeBurst(null)}
-          />
+          <LikeBurst key={likeBurst.key} x={likeBurst.x} y={likeBurst.y} onDone={() => setLikeBurst(null)} />
         )}
+
+        {/* Header */}
         <button onClick={goBack} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
           <ChevronLeft className="w-4 h-4" /> Nazad
         </button>
-        <div className="space-y-2">
+
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Badge variant="secondary" className="text-xs">{selectedLecture.subject}</Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">{selectedLecture.subject}</Badge>
+              {isCurrent && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400 border border-violet-500/30 animate-pulse flex items-center gap-1">
+                  <Zap className="w-3 h-3" /> Trenutna lekcija
+                </span>
+              )}
+            </div>
             <button
               onClick={(e) => toggleLike(selectedLecture.id, e)}
               className="flex items-center gap-1.5 transition-all duration-200 active:scale-110"
             >
-              <ThumbsUp
-                className={`w-5 h-5 transition-all ${
-                  likedLectures[selectedLecture.id]
-                    ? 'fill-blue-500 text-blue-500'
-                    : 'text-muted-foreground'
-                }`}
-              />
+              <ThumbsUp className={`w-5 h-5 transition-all ${
+                likedLectures[selectedLecture.id] ? 'fill-blue-500 text-blue-500' : 'text-muted-foreground'
+              }`} />
               <span className={`text-sm ${likedLectures[selectedLecture.id] ? 'text-blue-500' : 'text-muted-foreground'}`}>
                 {likedLectures[selectedLecture.id] ? 1 : 0}
               </span>
             </button>
           </div>
-          <h1 className="text-2xl font-bold">{selectedLecture.title}</h1>
+
+          <h1 className="text-2xl font-bold leading-tight">{selectedLecture.title}</h1>
+
+          {/* Progress indicator */}
+          {lectures.length > 1 && currentLectureIndex >= 0 && (
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">
+                Lekcija {currentLectureIndex + 1} od {lectures.length}
+              </p>
+              <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-purple-500 to-violet-600 rounded-full transition-all duration-500"
+                  style={{ width: `${((currentLectureIndex + 1) / lectures.length) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           <p className="text-xs text-muted-foreground">
             {profile?.class_number}-{profile?.section_number} · {new Date(selectedLecture.created_at).toLocaleDateString('sr-Latn')}
           </p>
         </div>
-        <div className="prose prose-invert prose-sm max-w-none">
-          {selectedLecture.content.includes('<') ? (
-            <div
-              className="text-foreground/90 leading-relaxed text-sm [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_li]:mb-1 [&_strong]:font-bold [&_em]:italic [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_img]:rounded-xl [&_img]:max-w-full"
-              dangerouslySetInnerHTML={{ __html: selectedLecture.content.replace(/\n*QUIZ_DATA:[\s\S]*?:QUIZ_DATA\n*/, '') }}
-            />
-          ) : (
-            <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed text-sm">
-              {selectedLecture.content.replace(/\n*QUIZ_DATA:[\s\S]*?:QUIZ_DATA\n*/, '')}
-            </div>
+
+        {/* Section tabs */}
+        <div className="flex gap-1 p-1 bg-muted/50 rounded-xl">
+          <button
+            onClick={() => setActiveSection('content')}
+            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+              activeSection === 'content' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            📖 Lekcija
+          </button>
+          {hasVideo && (
+            <button
+              onClick={() => setActiveSection('video')}
+              className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+                activeSection === 'video' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              🎬 Video
+            </button>
           )}
+          <button
+            onClick={() => setActiveSection('quiz')}
+            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+              activeSection === 'quiz' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            🧠 Kviz
+          </button>
         </div>
 
-        <div className="space-y-3 pt-4 border-t border-border/30">
-          <button
-            onClick={() => handleQuiz(selectedLecture)}
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-violet-700 text-white font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-lg hover:shadow-purple-500/20"
-          >
-            <Brain className="w-4 h-4" />
-            Provjeri znanje
-          </button>
+        {/* Content section */}
+        {activeSection === 'content' && (
+          <div className="animate-fade-in">
+            <div className="prose prose-invert prose-sm max-w-none">
+              {cleanContent.includes('<') ? (
+                <div
+                  className="text-foreground/90 leading-relaxed text-[15px]
+                    [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h1]:mt-6 [&_h1]:bg-gradient-to-r [&_h1]:from-purple-400 [&_h1]:to-violet-300 [&_h1]:bg-clip-text [&_h1]:text-transparent
+                    [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-purple-300
+                    [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-4
+                    [&_p]:mb-3 [&_p]:leading-7
+                    [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul]:space-y-1
+                    [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol]:space-y-1
+                    [&_li]:mb-1
+                    [&_strong]:font-bold [&_strong]:text-foreground
+                    [&_em]:italic
+                    [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2
+                    [&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground
+                    [&_img]:rounded-xl [&_img]:max-w-full
+                    [&_hr]:border-border/30 [&_hr]:my-6"
+                  dangerouslySetInnerHTML={{ __html: cleanContent }}
+                />
+              ) : (
+                <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed text-[15px]">
+                  {cleanContent}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-          {selectedLecture.video_url && (
+        {/* Video section */}
+        {activeSection === 'video' && selectedLecture.video_url && (
+          <div className="animate-fade-in space-y-3">
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-border/30 bg-black">
+              <iframe
+                src={`https://www.youtube.com/embed/${getYouTubeId(selectedLecture.video_url)}`}
+                title={selectedLecture.title}
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
             <a
               href={selectedLecture.video_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-3 rounded-2xl bg-muted text-foreground font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:bg-muted/80"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
             >
-              <Play className="w-4 h-4" />
-              Pogledaj video
+              <Play className="w-3 h-3" /> Otvori na YouTube
             </a>
-          )}
+          </div>
+        )}
+
+        {/* Quiz section (inline) */}
+        {activeSection === 'quiz' && (
+          <div className="animate-fade-in space-y-4">
+            <Card className="border-border/30 bg-gradient-to-br from-purple-500/10 to-violet-600/5 backdrop-blur">
+              <CardContent className="p-5 text-center space-y-3">
+                <Brain className="w-10 h-10 mx-auto text-purple-400" />
+                <h3 className="text-lg font-bold">Provjeri znanje</h3>
+                <p className="text-sm text-muted-foreground">Testiraj koliko si naučio/la iz ove lekcije</p>
+                <button
+                  onClick={() => handleQuiz(selectedLecture)}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 text-white font-medium text-sm transition-all active:scale-[0.98] hover:shadow-lg hover:shadow-purple-500/20"
+                >
+                  Započni kviz →
+                </button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Navigation buttons */}
+        <div className="pt-4 border-t border-border/30 space-y-3">
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigateLecture('prev')}
+              disabled={currentLectureIndex <= 0}
+              className="flex-1 py-3 rounded-xl border border-border/30 text-sm font-medium flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-muted/50"
+            >
+              <ChevronLeft className="w-4 h-4" /> Prethodna tema
+            </button>
+            <button
+              onClick={() => navigateLecture('next')}
+              disabled={currentLectureIndex >= lectures.length - 1}
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 text-white text-sm font-medium flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              Sljedeća tema <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -427,28 +734,43 @@ export default function LecturesPage() {
           </div>
         ) : (
           <div className="space-y-2 animate-stagger">
-            {lectures.map((lecture) => (
-              <Card
-                key={lecture.id}
-                className="border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98] card-hover"
-                onClick={() => handleLectureTap(lecture)}
-              >
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div className="space-y-0.5 flex-1 min-w-0">
-                    <h3 className="font-medium text-sm">{lecture.title}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(lecture.created_at).toLocaleDateString('sr-Latn')}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {likedLectures[lecture.id] && (
-                      <ThumbsUp className="w-3.5 h-3.5 fill-blue-500 text-blue-500" />
-                    )}
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {lectures.map((lecture, idx) => {
+              const isCurrent = lecture.content?.includes('<!-- CURRENT -->')
+              return (
+                <Card
+                  key={lecture.id}
+                  className={`border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98] card-hover ${
+                    isCurrent ? 'ring-1 ring-violet-500/50 bg-violet-500/5' : ''
+                  }`}
+                  onClick={() => handleLectureTap(lecture)}
+                >
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="text-xs text-muted-foreground font-mono w-6 text-right flex-shrink-0">{idx + 1}</span>
+                      <div className="space-y-0.5 min-w-0">
+                        <h3 className="font-medium text-sm flex items-center gap-2">
+                          {lecture.title}
+                          {isCurrent && (
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-400 border border-violet-500/30 whitespace-nowrap flex-shrink-0">
+                              📍 OVDJE SI
+                            </span>
+                          )}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(lecture.created_at).toLocaleDateString('sr-Latn')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {likedLectures[lecture.id] && (
+                        <ThumbsUp className="w-3.5 h-3.5 fill-blue-500 text-blue-500" />
+                      )}
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         )}
       </div>
@@ -492,7 +814,6 @@ export default function LecturesPage() {
         ))}
       </div>
 
-      {/* Add subject button */}
       {availableOptional.length > 0 && (
         <div className="space-y-3">
           <button
@@ -530,7 +851,6 @@ export default function LecturesPage() {
         </div>
       )}
 
-      {/* Remove extra subjects */}
       {extraSubjects.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {extraSubjects.map((name) => (
