@@ -1,1919 +1,1969 @@
-﻿<!doctype html>
-<html lang="sr">
+<!DOCTYPE html>
+<html lang="sr-Latn">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Digitalna Transformacija â€” Gimnazija "Niko RoloviÄ‡"</title>
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css">
+  <title>Digitalna Transformacija Gimnazije Niko Rolović</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
   <style>
-    /* ============================================
-       ROOT THEME â€” matching NikoRolovicSite
-       ============================================ */
     :root {
-      --r-background-color: #09090b;
-      --r-main-color: #e4e4e7;
-      --r-heading-color: #fafafa;
-      --r-link-color: #a78bfa;
-      --r-link-color-hover: #c4b5fd;
-      --r-selection-background-color: #7c3aed;
-      --r-selection-color: #fff;
+      --bg-primary: #09090b;
+      --bg-card: #18181b;
+      --bg-card-hover: #1f1f23;
       --purple: #a78bfa;
       --violet: #7c3aed;
-      --deep-violet: #6d28d9;
-      --card-bg: #18181b;
-      --card-border: #27272a;
-      --muted: #a1a1aa;
-      --bg: #09090b;
+      --violet-dark: #5b21b6;
+      --pink: #e879f9;
+      --blue: #60a5fa;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --admin-bg: #0c1220;
+      --admin-card: #131c2e;
+      --admin-accent: #3b82f6;
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     .reveal {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
     }
 
-    .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
-      font-family: 'Inter', system-ui, sans-serif;
-      font-weight: 700;
-      letter-spacing: -0.02em;
+    .reveal .slides {
+      text-align: center;
     }
 
-    .reveal h1 { font-size: 2.6em; }
-    .reveal h2 { font-size: 1.8em; }
-    .reveal h3 { font-size: 1.3em; }
-
-    /* ============================================
-       ANIMATED GRADIENT BACKGROUND
-       ============================================ */
-    .reveal .backgrounds {
-      background: var(--bg);
+    .reveal .slides section {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      height: 100% !important;
+      padding: 40px 60px !important;
+      top: 0 !important;
     }
 
-    body::before {
+    .reveal .slides section.stack {
+      padding: 0 !important;
+    }
+
+    /* Animated gradient background */
+    .reveal .slide-background {
+      background: var(--bg-primary) !important;
+    }
+
+    .reveal .slide-background::after {
       content: '';
-      position: fixed;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: 
-        radial-gradient(ellipse at 20% 50%, rgba(167, 139, 250, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 80%, rgba(109, 40, 217, 0.04) 0%, transparent 50%);
-      animation: bgDrift 20s ease-in-out infinite;
-      z-index: 0;
-      pointer-events: none;
+        radial-gradient(ellipse 800px 600px at 20% 30%, rgba(124, 58, 237, 0.08), transparent),
+        radial-gradient(ellipse 600px 400px at 80% 70%, rgba(167, 139, 250, 0.06), transparent);
+      animation: bgShift 12s ease-in-out infinite alternate;
     }
 
-    @keyframes bgDrift {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      25% { transform: translate(-2%, 1%) rotate(1deg); }
-      50% { transform: translate(1%, -2%) rotate(-1deg); }
-      75% { transform: translate(-1%, -1%) rotate(0.5deg); }
+    @keyframes bgShift {
+      0% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+      100% { opacity: 0.7; transform: scale(0.98); }
     }
 
-    /* Dot pattern overlay */
-    body::after {
+    /* Admin slides */
+    .admin-slide .slide-background {
+      background: var(--admin-bg) !important;
+    }
+
+    /* Typography */
+    .reveal h1 {
+      font-size: 3.2em;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 0.4em;
+      background: linear-gradient(135deg, var(--purple), var(--pink), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .reveal h2 {
+      font-size: 2.4em;
+      font-weight: 700;
+      margin-bottom: 0.5em;
+      background: linear-gradient(135deg, var(--purple), var(--violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .reveal h3 {
+      font-size: 1.6em;
+      font-weight: 600;
+      color: var(--purple);
+      margin-bottom: 0.4em;
+    }
+
+    .reveal p, .reveal li {
+      font-size: 1.15em;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .reveal ul {
+      list-style: none;
+      padding: 0;
+      text-align: left;
+    }
+
+    .reveal li {
+      padding: 0.35em 0;
+      padding-left: 1.6em;
+      position: relative;
+    }
+
+    .reveal li::before {
       content: '';
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      opacity: 0.04;
-      background-image: radial-gradient(circle, #a78bfa 1px, transparent 1px);
-      background-size: 32px 32px;
-      animation: dotsDrift 60s linear infinite;
+      position: absolute;
+      left: 0;
+      top: 0.75em;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), var(--violet));
     }
 
-    @keyframes dotsDrift {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(-32px, -32px); }
+    /* Subtitle text */
+    .subtitle {
+      font-size: 1.4em !important;
+      color: var(--text-secondary) !important;
+      font-weight: 300;
+      letter-spacing: 0.02em;
     }
 
-    /* ============================================
-       GRADIENT TEXT
-       ============================================ */
+    .small-text {
+      font-size: 0.95em !important;
+      color: var(--text-muted) !important;
+    }
+
+    .accent-text {
+      color: var(--purple) !important;
+      font-weight: 600;
+    }
+
     .gradient-text {
-      background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #a78bfa 100%);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: gradientShift 3s ease-in-out infinite;
-    }
-
-    @keyframes gradientShift {
-      0%, 100% { background-position: 0% center; }
-      50% { background-position: 200% center; }
-    }
-
-    .gradient-text-warm {
-      background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 40%, #8b5cf6 100%);
+      background: linear-gradient(135deg, var(--purple), var(--pink));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
-    /* ============================================
-       GLOW EFFECTS
-       ============================================ */
-    .glow {
-      text-shadow: 0 0 40px rgba(167, 139, 250, 0.4), 0 0 80px rgba(167, 139, 250, 0.15);
+    .gradient-text-blue {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    .glow-box {
-      box-shadow: 0 0 30px -5px rgba(167, 139, 250, 0.3), 0 0 60px -10px rgba(124, 58, 237, 0.15);
-    }
-
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 20px -5px rgba(167, 139, 250, 0.3); }
-      50% { box-shadow: 0 0 40px -5px rgba(167, 139, 250, 0.5); }
-    }
-
-    .pulse-glow {
-      animation: pulseGlow 2.5s ease-in-out infinite;
-    }
-
-    /* ============================================
-       DARK CARDS
-       ============================================ */
-    .dark-card {
-      background: rgba(24, 24, 27, 0.8);
-      border: 1px solid rgba(39, 39, 42, 0.8);
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid rgba(167, 139, 250, 0.15);
       border-radius: 16px;
-      padding: 2em;
-      backdrop-filter: blur(10px);
+      padding: 32px;
+      transition: all 0.3s ease;
     }
 
-    .dark-card-sm {
-      background: rgba(24, 24, 27, 0.8);
-      border: 1px solid rgba(39, 39, 42, 0.8);
-      border-radius: 12px;
-      padding: 1.2em;
+    .card:hover {
+      border-color: rgba(167, 139, 250, 0.35);
+      box-shadow: 0 0 30px rgba(167, 139, 250, 0.1);
     }
 
-    .glass-card {
-      background: rgba(10, 10, 15, 0.7);
-      backdrop-filter: blur(40px) saturate(200%);
+    .card-glow {
+      background: var(--bg-card);
+      border: 1px solid rgba(167, 139, 250, 0.2);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 0 25px rgba(124, 58, 237, 0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    /* Feature grid */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 1600px;
+      margin-top: 20px;
+    }
+
+    .feature-item {
+      background: var(--bg-card);
       border: 1px solid rgba(167, 139, 250, 0.12);
       border-radius: 16px;
-      padding: 2em;
+      padding: 28px 20px;
+      text-align: center;
+      transition: all 0.4s ease;
     }
 
-    /* ============================================
-       CUSTOM FRAGMENTS
-       ============================================ */
-    .fragment.blur-in {
-      filter: blur(8px);
-      opacity: 0;
-      transition: all 0.6s ease-out;
-    }
-    .fragment.blur-in.visible {
-      filter: blur(0);
-      opacity: 1;
+    .feature-item:hover {
+      transform: translateY(-4px);
+      border-color: rgba(167, 139, 250, 0.4);
+      box-shadow: 0 8px 32px rgba(124, 58, 237, 0.15);
     }
 
-    .fragment.scale-in {
-      transform: scale(0.5);
-      opacity: 0;
-      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .fragment.scale-in.visible {
-      transform: scale(1);
-      opacity: 1;
+    .feature-icon {
+      font-size: 2.4em;
+      margin-bottom: 12px;
+      display: block;
     }
 
-    .fragment.slide-right {
-      transform: translateX(-40px);
-      opacity: 0;
-      transition: all 0.5s ease-out;
-    }
-    .fragment.slide-right.visible {
-      transform: translateX(0);
-      opacity: 1;
+    .feature-item h4 {
+      font-size: 1.1em;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
     }
 
-    .fragment.slide-left {
-      transform: translateX(40px);
-      opacity: 0;
-      transition: all 0.5s ease-out;
-    }
-    .fragment.slide-left.visible {
-      transform: translateX(0);
-      opacity: 1;
+    .feature-item p {
+      font-size: 0.85em !important;
+      color: var(--text-muted) !important;
     }
 
-    .fragment.flip-in {
-      transform: perspective(600px) rotateY(90deg);
-      opacity: 0;
-      transition: all 0.6s ease-out;
-    }
-    .fragment.flip-in.visible {
-      transform: perspective(600px) rotateY(0deg);
-      opacity: 1;
-    }
-
-    /* ============================================
-       FLOATING ANIMATION
-       ============================================ */
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-12px); }
-    }
-    .float { animation: float 3s ease-in-out infinite; }
-    .float-slow { animation: float 5s ease-in-out infinite; }
-    .float-delay { animation: float 3s ease-in-out 1s infinite; }
-
-    @keyframes floatRotate {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-8px) rotate(3deg); }
-    }
-    .float-rotate { animation: floatRotate 4s ease-in-out infinite; }
-
-    /* ============================================
-       TYPING EFFECT
-       ============================================ */
-    @keyframes typing {
-      from { width: 0; }
-      to { width: 100%; }
-    }
-    @keyframes blink {
-      0%, 50% { border-color: #a78bfa; }
-      51%, 100% { border-color: transparent; }
-    }
-    .typing-text {
-      overflow: hidden;
-      white-space: nowrap;
-      border-right: 3px solid #a78bfa;
-      width: 0;
-      animation: typing 2.5s steps(40) 0.5s forwards, blink 0.8s step-end infinite;
-      display: inline-block;
-    }
-
-    /* ============================================
-       COUNTER ANIMATION (via JS)
-       ============================================ */
-    .counter {
-      font-size: 4em;
-      font-weight: 900;
-      color: #a78bfa;
-      line-height: 1;
-    }
-
-    .counter-sm {
-      font-size: 2.5em;
-      font-weight: 800;
-      color: #a78bfa;
-    }
-
-    /* ============================================
-       SCREENSHOT PLACEHOLDER
-       ============================================ */
-            <div class="phone-screen"><img src="screenshots/news.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
-      background: linear-gradient(135deg, #18181b 0%, #1a1a2e 100%);
-      border: 2px dashed rgba(167, 139, 250, 0.3);
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #a1a1aa;
-      font-size: 0.75em;
+    /* Phone frame mockup */
+    .phone-frame {
       position: relative;
+      width: 320px;
+      height: 640px;
+      background: #000;
+      border-radius: 40px;
+      border: 3px solid #333;
+      padding: 12px;
+      box-shadow: 
+        0 0 0 2px #1a1a1a,
+        0 20px 60px rgba(0,0,0,0.5),
+        0 0 40px rgba(124, 58, 237, 0.15);
       overflow: hidden;
+      flex-shrink: 0;
     }
 
-            <div class="phone-screen"><img src="screenshots/news.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
+    .phone-frame::before {
       content: '';
       position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(167, 139, 250, 0.03) 0%, transparent 50%, rgba(124, 58, 237, 0.02) 100%);
-    }
-
-    .phone-frame {
-      width: 220px;
-      height: 440px;
-      border: 3px solid #27272a;
-      border-radius: 28px;
-      position: relative;
-      overflow: hidden;
-      background: #09090b;
-    }
-
-    .phone-frame .phone-notch {
-      position: absolute;
-      top: 0;
+      top: 8px;
       left: 50%;
       transform: translateX(-50%);
-      width: 100px;
-      height: 24px;
-      background: #09090b;
+      width: 120px;
+      height: 28px;
+      background: #000;
       border-radius: 0 0 16px 16px;
       z-index: 10;
     }
 
-    .phone-frame .phone-screen {
+    .phone-frame img {
       width: 100%;
       height: 100%;
+      object-fit: cover;
+      border-radius: 28px;
+    }
+
+    .phone-frame-large {
+      width: 360px;
+      height: 720px;
+    }
+
+    /* Layout helpers */
+    .split-layout {
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
-      padding: 1.5em 1em;
-      text-align: center;
+      gap: 80px;
+      width: 100%;
+      max-width: 1600px;
     }
 
-    /* ============================================
-       ICON STYLES
-       ============================================ */
-    .icon-circle {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5em;
-      margin: 0.3em;
-    }
-
-    .icon-circle-lg {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2em;
-    }
-
-    .icon-purple {
-      background: rgba(167, 139, 250, 0.15);
-      border: 1px solid rgba(167, 139, 250, 0.25);
-      color: #a78bfa;
-    }
-
-    .icon-violet {
-      background: rgba(124, 58, 237, 0.15);
-      border: 1px solid rgba(124, 58, 237, 0.25);
-      color: #8b5cf6;
-    }
-
-    .icon-green {
-      background: rgba(34, 197, 94, 0.15);
-      border: 1px solid rgba(34, 197, 94, 0.25);
-      color: #22c55e;
-    }
-
-    .icon-blue {
-      background: rgba(59, 130, 246, 0.15);
-      border: 1px solid rgba(59, 130, 246, 0.25);
-      color: #3b82f6;
-    }
-
-    .icon-amber {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.25);
-      color: #f59e0b;
-    }
-
-    .icon-red {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.25);
-      color: #ef4444;
-    }
-
-    /* ============================================
-       FEATURE GRID
-       ============================================ */
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1em;
+    .split-content {
+      flex: 1;
       text-align: left;
-      max-width: 800px;
-      margin: 0 auto;
+      max-width: 680px;
     }
 
-    .feature-grid-3 {
+    .split-visual {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .dual-phones {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .dual-phones .phone-frame {
+      width: 280px;
+      height: 560px;
+    }
+
+    .center-content {
+      text-align: center;
+      max-width: 1200px;
+    }
+
+    /* Stats grid */
+    .stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1em;
-      text-align: center;
+      gap: 24px;
+      width: 100%;
       max-width: 900px;
-      margin: 0 auto;
+      margin-top: 24px;
     }
 
-    .feature-item {
-      background: rgba(24, 24, 27, 0.6);
-      border: 1px solid rgba(39, 39, 42, 0.6);
-      border-radius: 12px;
-      padding: 1.2em;
-      transition: all 0.3s ease;
-    }
-
-    .feature-item:hover {
-      border-color: rgba(167, 139, 250, 0.3);
-      transform: translateY(-2px);
-    }
-
-    .feature-item h4 {
-      font-size: 0.9em;
-      color: #a78bfa;
-      margin: 0.4em 0;
-    }
-
-    .feature-item p {
-      font-size: 0.65em;
-      color: #a1a1aa;
-      margin: 0;
-    }
-
-    /* ============================================
-       PROGRESS BAR CUSTOM
-       ============================================ */
-    .reveal .progress {
-      height: 4px;
-      background: rgba(167, 139, 250, 0.1);
-    }
-
-    .reveal .progress span {
-      background: linear-gradient(90deg, #7c3aed, #a78bfa);
-      transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-    }
-
-    /* ============================================
-       CONTROLS STYLE
-       ============================================ */
-    .reveal .controls {
-      color: #a78bfa;
-    }
-
-    /* ============================================
-       BADGE / TAG
-       ============================================ */
-    .badge {
-      display: inline-block;
-      padding: 0.25em 0.75em;
-      border-radius: 9999px;
-      font-size: 0.6em;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-    }
-
-    .badge-purple {
-      background: rgba(167, 139, 250, 0.15);
-      color: #a78bfa;
-      border: 1px solid rgba(167, 139, 250, 0.25);
-    }
-
-    .badge-green {
-      background: rgba(34, 197, 94, 0.15);
-      color: #22c55e;
-      border: 1px solid rgba(34, 197, 94, 0.25);
-    }
-
-    .badge-blue {
-      background: rgba(59, 130, 246, 0.15);
-      color: #3b82f6;
-      border: 1px solid rgba(59, 130, 246, 0.25);
-    }
-
-    /* ============================================
-       TIMELINE
-       ============================================ */
-    .timeline {
-      position: relative;
-      text-align: left;
-      max-width: 600px;
-      margin: 0 auto;
-      padding-left: 2em;
-    }
-
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: linear-gradient(180deg, #7c3aed, #a78bfa, transparent);
-    }
-
-    .timeline-item {
-      position: relative;
-      padding: 0.8em 0 0.8em 1.5em;
-    }
-
-    .timeline-item::before {
-      content: '';
-      position: absolute;
-      left: -2em;
-      top: 1.2em;
-      width: 12px;
-      height: 12px;
-      background: #a78bfa;
-      border-radius: 50%;
-      border: 2px solid #09090b;
-      transform: translateX(calc(2em - 7px));
-    }
-
-    /* ============================================
-       SECTION DIVIDER
-       ============================================ */
-    .section-divider {
-      width: 60px;
-      height: 4px;
-      background: linear-gradient(90deg, #7c3aed, #a78bfa);
-      border-radius: 2px;
-      margin: 0.5em auto;
-    }
-
-    /* ============================================
-       STAT ROW
-       ============================================ */
-    .stat-row {
-      display: flex;
-      justify-content: center;
-      gap: 2em;
-      flex-wrap: wrap;
-    }
-
-    .stat-item {
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(167, 139, 250, 0.15);
+      border-radius: 16px;
+      padding: 32px 24px;
       text-align: center;
     }
 
     .stat-number {
-      font-size: 2.8em;
-      font-weight: 900;
-      color: #a78bfa;
-      line-height: 1;
+      font-size: 3em;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
     }
 
     .stat-label {
-      font-size: 0.7em;
-      color: #a1a1aa;
-      margin-top: 0.3em;
+      font-size: 1em;
+      color: var(--text-muted);
+      margin-top: 4px;
     }
 
-    /* ============================================
-       SHIELD ANIMATION (security)
-       ============================================ */
-    @keyframes shieldPulse {
-      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.3)); }
-      50% { transform: scale(1.05); filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.5)); }
+    /* Security badge */
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 1100px;
+      margin-top: 24px;
     }
-    .shield-pulse { animation: shieldPulse 2s ease-in-out infinite; }
 
-    /* ============================================
-       ROLE HIERARCHY
-       ============================================ */
+    .security-item {
+      background: var(--bg-card);
+      border: 1px solid rgba(74, 222, 128, 0.15);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: left;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .security-item .icon {
+      font-size: 2em;
+      flex-shrink: 0;
+    }
+
+    .security-item h4 {
+      font-size: 1.1em;
+      font-weight: 600;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+
+    .security-item p {
+      font-size: 0.9em !important;
+      color: var(--text-muted) !important;
+    }
+
+    /* Role badges */
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 1400px;
+      margin-top: 24px;
+    }
+
     .role-card {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6em;
-      background: rgba(24, 24, 27, 0.8);
-      border: 1px solid rgba(39, 39, 42, 0.8);
-      border-radius: 12px;
-      padding: 0.8em 1.2em;
-      margin: 0.3em;
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
     }
 
-    .role-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
+    .role-card.student { border-color: rgba(96, 165, 250, 0.3); }
+    .role-card.moderator { border-color: rgba(74, 222, 128, 0.3); }
+    .role-card.admin { border-color: rgba(248, 113, 113, 0.3); }
+    .role-card.creator { border-color: rgba(250, 204, 21, 0.3); }
+
+    .role-icon { font-size: 2.6em; margin-bottom: 12px; display: block; }
+    .role-card h4 { font-size: 1.2em; font-weight: 700; margin-bottom: 8px; }
+    .role-card.student h4 { color: var(--blue); }
+    .role-card.moderator h4 { color: var(--green); }
+    .role-card.admin h4 { color: var(--red); }
+    .role-card.creator h4 { color: var(--yellow); }
+    .role-card p { font-size: 0.85em !important; color: var(--text-muted) !important; }
+
+    /* Benefits */
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 20px;
     }
 
-    /* ============================================
-       ORBITING ELEMENTS
-       ============================================ */
-    @keyframes orbit {
-      from { transform: rotate(0deg) translateX(120px) rotate(0deg); }
-      to { transform: rotate(360deg) translateX(120px) rotate(-360deg); }
+    .benefit-item {
+      background: var(--bg-card);
+      border: 1px solid rgba(167, 139, 250, 0.12);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: left;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
     }
 
-    .orbit-container {
-      position: relative;
-      width: 280px;
-      height: 280px;
-      margin: 0 auto;
-    }
+    .benefit-item .icon { font-size: 2em; flex-shrink: 0; }
+    .benefit-item h4 { font-size: 1.05em; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .benefit-item p { font-size: 0.9em !important; color: var(--text-muted) !important; }
 
-    .orbit-center {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .orbit-item {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      margin-top: -20px;
-      margin-left: -20px;
-      animation: orbit 8s linear infinite;
-    }
-
-    .orbit-item:nth-child(2) { animation-delay: -2s; }
-    .orbit-item:nth-child(3) { animation-delay: -4s; }
-    .orbit-item:nth-child(4) { animation-delay: -6s; }
-
-    /* ============================================
-       REVEAL OVERRIDES
-       ============================================ */
-    .reveal .slide-number {
-      color: #a1a1aa;
-      background: rgba(24, 24, 27, 0.8);
-      font-family: 'Inter', sans-serif;
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 6px 0 0 0;
-    }
-
-    /* ============================================
-       ADMIN BLUE THEME OVERRIDE
-       ============================================ */
-    .admin-slide {
-      background: linear-gradient(135deg, #0c1220 0%, #0f172a 50%, #0c1220 100%) !important;
-    }
-
+    /* Admin cards */
     .admin-card {
-      background: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(71, 85, 105, 0.4);
-      border-radius: 12px;
-      padding: 1.2em;
+      background: var(--admin-card);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.08);
     }
 
-    /* ============================================
-       MISC UTILITY
-       ============================================ */
-    .text-muted { color: #a1a1aa; }
-    .text-purple { color: #a78bfa; }
-    .text-violet { color: #8b5cf6; }
-    .text-green { color: #22c55e; }
-    .text-blue { color: #3b82f6; }
-    .text-amber { color: #f59e0b; }
-    .text-red { color: #ef4444; }
-    .text-sm { font-size: 0.65em; }
-    .text-xs { font-size: 0.55em; }
-    .text-lg { font-size: 1.2em; }
-    .mt-1 { margin-top: 0.5em; }
-    .mt-2 { margin-top: 1em; }
-    .mb-1 { margin-bottom: 0.5em; }
-    .mb-2 { margin-bottom: 1em; }
-    .mx-auto { margin-left: auto; margin-right: auto; }
-    .text-left { text-align: left; }
-    .text-center { text-align: center; }
-    .flex { display: flex; }
-    .flex-col { flex-direction: column; }
-    .items-center { align-items: center; }
-    .justify-center { justify-content: center; }
-    .gap-1 { gap: 0.5em; }
-    .gap-2 { gap: 1em; }
-    .inline-block { display: inline-block; }
-    .w-full { width: 100%; }
-
-    /* Heart animation for Dumbs */
-    @keyframes heartBeat {
-      0% { transform: scale(1); }
-      15% { transform: scale(1.3); }
-      30% { transform: scale(1); }
-      45% { transform: scale(1.15); }
-      60% { transform: scale(1); }
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 1400px;
+      margin-top: 20px;
     }
-    .heart-beat { animation: heartBeat 1.2s ease-in-out infinite; }
 
-    /* Slide-in from bottom */
-    @keyframes slideInUp {
-      from { transform: translateY(40px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    .admin-feature {
+      background: var(--admin-card);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
     }
-    .slide-in-up { animation: slideInUp 0.6s ease-out both; }
 
-    /* Spinning loader for security */
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .admin-feature .icon { font-size: 2.2em; margin-bottom: 10px; display: block; }
+    .admin-feature h4 { font-size: 1.1em; font-weight: 600; color: var(--admin-accent); margin-bottom: 6px; }
+    .admin-feature p { font-size: 0.85em !important; color: var(--text-muted) !important; }
+
+    /* Tech stack */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 1400px;
+      margin-top: 24px;
     }
-    .spin { animation: spin 3s linear infinite; }
-    .spin-slow { animation: spin 8s linear infinite; }
 
-    /* Underline gradient */
-    .gradient-underline {
+    .tech-item {
+      background: var(--bg-card);
+      border: 1px solid rgba(167, 139, 250, 0.12);
+      border-radius: 16px;
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    .tech-item .icon { font-size: 2.4em; margin-bottom: 10px; display: block; }
+    .tech-item h4 { font-size: 1.05em; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .tech-item p { font-size: 0.8em !important; color: var(--text-muted) !important; }
+
+    /* Roadmap */
+    .roadmap-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      width: 100%;
+      max-width: 1400px;
+      margin-top: 24px;
+    }
+
+    .roadmap-item {
+      background: var(--bg-card);
+      border: 1px solid rgba(167, 139, 250, 0.15);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: left;
       position: relative;
-      display: inline-block;
+      overflow: hidden;
     }
-    .gradient-underline::after {
+
+    .roadmap-item::before {
       content: '';
       position: absolute;
-      bottom: -4px;
-      left: 0;
-      width: 100%;
+      top: 0; left: 0; right: 0;
       height: 3px;
-      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      background: linear-gradient(90deg, var(--purple), var(--violet));
+    }
+
+    .roadmap-item .phase {
+      font-size: 0.8em;
+      font-weight: 700;
+      color: var(--purple);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .roadmap-item h4 { font-size: 1.1em; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+    .roadmap-item p { font-size: 0.85em !important; color: var(--text-muted) !important; }
+
+    /* Trimester tabs */
+    .trimester-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      width: 100%;
+      max-width: 1000px;
+      margin-top: 20px;
+    }
+
+    .trimester-tab {
+      background: var(--bg-card);
+      border: 1px solid rgba(167, 139, 250, 0.15);
+      border-radius: 12px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .trimester-tab.active {
+      border-color: var(--purple);
+      box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+    }
+
+    .trimester-tab h4 { font-size: 0.95em; font-weight: 600; color: var(--purple); margin-bottom: 4px; }
+    .trimester-tab p { font-size: 0.8em !important; color: var(--text-muted) !important; }
+
+    /* Theme swatches */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+      width: 100%;
+      max-width: 1000px;
+      margin-top: 20px;
+    }
+
+    .theme-swatch {
+      border-radius: 16px;
+      padding: 24px 16px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .theme-swatch h4 { font-size: 0.9em; font-weight: 600; margin-bottom: 4px; }
+
+    .theme-purple { background: #1a0a2e; border-color: rgba(167, 139, 250, 0.3); }
+    .theme-purple h4 { color: #a78bfa; }
+    .theme-blue { background: #0a1628; border-color: rgba(96, 165, 250, 0.3); }
+    .theme-blue h4 { color: #60a5fa; }
+    .theme-green { background: #0a1f0a; border-color: rgba(74, 222, 128, 0.3); }
+    .theme-green h4 { color: #4ade80; }
+    .theme-rose { background: #1f0a14; border-color: rgba(251, 113, 133, 0.3); }
+    .theme-rose h4 { color: #fb7185; }
+    .theme-amber { background: #1f1a0a; border-color: rgba(251, 191, 36, 0.3); }
+    .theme-amber h4 { color: #fbbf24; }
+    .theme-cyan { background: #0a1a1f; border-color: rgba(34, 211, 238, 0.3); }
+    .theme-cyan h4 { color: #22d3ee; }
+
+    /* Quiz comparison */
+    .quiz-types-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 1300px;
+      margin-top: 20px;
+    }
+
+    .quiz-type-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(167, 139, 250, 0.15);
+      border-radius: 16px;
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    .quiz-type-card .icon { font-size: 2.2em; margin-bottom: 10px; display: block; }
+    .quiz-type-card h4 { font-size: 1.05em; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+    .quiz-type-card p { font-size: 0.8em !important; color: var(--text-muted) !important; }
+    .quiz-type-card.active { border-color: var(--green); box-shadow: 0 0 20px rgba(74, 222, 128, 0.1); }
+    .quiz-type-card.upcoming { border-color: rgba(167, 139, 250, 0.3); opacity: 0.7; }
+    .badge-live { display: inline-block; background: var(--green); color: #000; font-size: 0.7em; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-top: 8px; }
+    .badge-soon { display: inline-block; background: var(--violet); color: #fff; font-size: 0.7em; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-top: 8px; }
+
+    /* Gallery */
+    .gallery-features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 20px;
+    }
+
+    .gallery-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(232, 121, 249, 0.15);
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .gallery-card .icon { font-size: 2.4em; margin-bottom: 10px; display: block; }
+    .gallery-card h4 { font-size: 1.1em; font-weight: 600; color: var(--pink); margin-bottom: 6px; }
+    .gallery-card p { font-size: 0.85em !important; color: var(--text-muted) !important; }
+
+    /* Divider */
+    .divider {
+      width: 120px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--purple), var(--violet));
       border-radius: 2px;
+      margin: 16px auto;
     }
 
-    /* Stagger children on slide enter */
-    .stagger-in > * {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    .reveal .present .stagger-in > * {
-      animation: slideInUp 0.5s ease-out both;
-    }
-    .reveal .present .stagger-in > *:nth-child(1) { animation-delay: 0.1s; }
-    .reveal .present .stagger-in > *:nth-child(2) { animation-delay: 0.2s; }
-    .reveal .present .stagger-in > *:nth-child(3) { animation-delay: 0.3s; }
-    .reveal .present .stagger-in > *:nth-child(4) { animation-delay: 0.4s; }
-    .reveal .present .stagger-in > *:nth-child(5) { animation-delay: 0.5s; }
-    .reveal .present .stagger-in > *:nth-child(6) { animation-delay: 0.6s; }
-    .reveal .present .stagger-in > *:nth-child(7) { animation-delay: 0.7s; }
-    .reveal .present .stagger-in > *:nth-child(8) { animation-delay: 0.8s; }
-
-    /* Lock icon animation */
-    @keyframes lockClick {
-      0%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-3px) rotate(-5deg); }
-      60% { transform: translateY(-3px) rotate(5deg); }
-    }
-    .lock-anim { animation: lockClick 2s ease-in-out infinite; }
-
-    /* Telegram blue */
-    .bg-telegram {
-      background: rgba(36, 161, 222, 0.15);
-      border: 1px solid rgba(36, 161, 222, 0.3);
+    /* Glow effect */
+    .glow-border {
+      position: relative;
     }
 
-    /* Theme circle preview */
-    .theme-dot {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+    .glow-border::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, var(--purple), var(--violet), var(--pink));
+      z-index: -1;
+      opacity: 0.4;
+      filter: blur(8px);
+    }
+
+    /* Animated counter */
+    .big-number {
+      font-size: 5em;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--purple), var(--pink), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+
+    /* Tag badges */
+    .tag {
       display: inline-block;
-      margin: 0 0.3em;
-      border: 2px solid rgba(255,255,255,0.1);
-      transition: transform 0.3s ease;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: 600;
+      margin: 3px;
     }
-    .theme-dot:hover { transform: scale(1.2); }
+
+    .tag-purple { background: rgba(167, 139, 250, 0.15); color: var(--purple); }
+    .tag-blue { background: rgba(96, 165, 250, 0.15); color: var(--blue); }
+    .tag-green { background: rgba(74, 222, 128, 0.15); color: var(--green); }
+    .tag-pink { background: rgba(232, 121, 249, 0.15); color: var(--pink); }
+    .tag-yellow { background: rgba(250, 204, 21, 0.15); color: var(--yellow); }
+    .tag-red { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+
+    /* Final slide */
+    .thank-you h1 {
+      font-size: 4em;
+    }
+
+    /* Override reveal defaults */
+    .reveal .slides section .fragment.blur-in {
+      filter: blur(8px);
+      opacity: 0;
+      transition: all 0.6s ease;
+    }
+    .reveal .slides section .fragment.blur-in.visible {
+      filter: blur(0);
+      opacity: 1;
+    }
+
+    .reveal .slides section .fragment.scale-in {
+      transform: scale(0.8);
+      opacity: 0;
+      transition: all 0.5s ease;
+    }
+    .reveal .slides section .fragment.scale-in.visible {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .email-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .email-step {
+      background: var(--bg-card);
+      border: 1px solid rgba(167, 139, 250, 0.15);
+      border-radius: 16px;
+      padding: 24px 28px;
+      text-align: center;
+      min-width: 200px;
+    }
+
+    .email-step .icon { font-size: 2em; margin-bottom: 8px; display: block; }
+    .email-step h4 { font-size: 0.95em; font-weight: 600; color: var(--text-primary); }
+    .email-step p { font-size: 0.78em !important; color: var(--text-muted) !important; }
+
+    .arrow {
+      font-size: 2em;
+      color: var(--purple);
+    }
+
+    /* GPA visual */
+    .gpa-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 20px;
+    }
+
+    .gpa-circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: conic-gradient(var(--purple) 0% 82%, rgba(167, 139, 250, 0.1) 82% 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .gpa-circle-inner {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gpa-value {
+      font-size: 2.8em;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gpa-label {
+      font-size: 0.85em;
+      color: var(--text-muted);
+    }
+
+    .gpa-details {
+      text-align: left;
+    }
+
+    .gpa-details li {
+      padding: 6px 0;
+      font-size: 1em !important;
+    }
+
+    /* Pulse animation for live elements */
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(167, 139, 250, 0); }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    /* Contact info */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      width: 100%;
+      max-width: 1000px;
+      margin-top: 24px;
+    }
+
+    .contact-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(167, 139, 250, 0.15);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+    }
+
+    .contact-card .icon { font-size: 2em; margin-bottom: 10px; display: block; }
+    .contact-card h4 { font-size: 1em; font-weight: 600; color: var(--purple); margin-bottom: 4px; }
+    .contact-card p { font-size: 0.9em !important; color: var(--text-secondary) !important; }
+
+    /* Photo gallery mockup */
+    .photo-grid-mockup {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 300px;
+      padding: 16px;
+      background: var(--bg-card);
+      border-radius: 16px;
+    }
+
+    .photo-placeholder {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--bg-card-hover), var(--bg-card));
+      border: 1px solid rgba(167, 139, 250, 0.1);
+    }
+
+    /* Admin screenshot in browser frame */
+    .browser-frame {
+      background: #1e1e1e;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      max-width: 700px;
+    }
+
+    .browser-bar {
+      background: #2d2d2d;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .browser-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .browser-dot.red { background: #ff5f57; }
+    .browser-dot.yellow { background: #febc2e; }
+    .browser-dot.green { background: #28c840; }
+
+    .browser-url {
+      background: #1e1e1e;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 0.7em;
+      color: var(--text-muted);
+      margin-left: 12px;
+      flex: 1;
+    }
+
+    .browser-frame img {
+      width: 100%;
+      display: block;
+    }
   </style>
 </head>
 <body>
   <div class="reveal">
     <div class="slides">
 
-      <!-- ============================================
-           OPENING SECTION
-           ============================================ -->
-
-      <!-- SLIDE 1: Title â€” small logo -->
-      <section data-auto-animate data-auto-animate-easing="cubic-bezier(0.68, -0.15, 0.27, 1.15)" data-background-color="#09090b">
-        <div data-id="logo-icon" class="icon-circle-lg icon-purple float" style="font-size: 2.5em; margin-bottom: 0.3em;">ðŸŽ“</div>
-        <h1 data-id="main-title" style="font-size: 1em; opacity: 0.6; color: #a1a1aa;">Gimnazija "Niko RoloviÄ‡"</h1>
+      <!-- ==================== SLIDE 1: TITLE ==================== -->
+      <section data-transition="zoom" data-auto-animate>
+        <p class="small-text fragment fade-up" style="letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 16px;">Gimnazija "Niko Rolović" &bull; Bar, Crna Gora</p>
+        <h1 data-id="title" style="font-size: 3em;">Digitalna Transformacija</h1>
+        <h1 data-id="subtitle" style="font-size: 2.2em; margin-top: -10px;">Skolskog Iskustva</h1>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Studentski portal za školsku godinu 2025/2026</p>
+        <p class="small-text fragment fade-up" style="margin-top: 24px;">Autor: Dmitrij Ivascenko &bull; Razred II-1</p>
       </section>
 
-      <!-- SLIDE 2: Title â€” full reveal -->
-      <section data-auto-animate data-auto-animate-easing="cubic-bezier(0.68, -0.15, 0.27, 1.15)" data-background-color="#09090b">
-        <div data-id="logo-icon" class="icon-circle-lg icon-purple" style="font-size: 1.5em; margin-bottom: 0.2em;">ðŸŽ“</div>
-        <h1 data-id="main-title" class="gradient-text" style="font-size: 2em; line-height: 1.2; margin-bottom: 0.2em;">
-          Digitalna Transformacija<br>Gimnazije "Niko RoloviÄ‡"
-        </h1>
-        <div class="section-divider" style="margin: 0.6em auto;"></div>
-        <p class="fragment fade-up text-muted" style="font-size: 0.7em;">
-          Studentski portal za modernu Å¡kolu
-        </p>
-        <p class="fragment fade-up" style="font-size: 0.55em; color: #52525b; margin-top: 1em;">
-          Bar, Crna Gora â€¢ 2025/2026
-        </p>
-      </section>
-
-      <!-- SLIDE 3: Vision Statement -->
-      <section data-transition="slide" data-background-color="#09090b">
-        <h2 class="glow" style="margin-bottom: 0.1em;">ðŸŒ Vizija</h2>
-        <div class="section-divider"></div>
-        <div class="dark-card mt-2" style="max-width: 700px; margin: 1em auto; text-align: left;">
-          <p class="fragment blur-in" style="font-size: 0.8em; line-height: 1.6;">
-            <span class="text-purple" style="font-size: 1.2em;">â€ž</span>
-            Moderna Å¡kola zahtijeva moderne alate. U dobu kada uÄenici odrastaju sa pametnim telefonima, 
-            digitalna platforma nije luksuz â€” to je <span class="gradient-text-warm" style="font-weight: 700;">neophodnost</span>.
-            <span class="text-purple" style="font-size: 1.2em;">â€ž</span>
-          </p>
-          <p class="fragment fade-up text-muted text-sm mt-2">
-            Jedna platforma. Sve na jednom mjestu. PristupaÄno svima.
-          </p>
+      <!-- ==================== SLIDE 2: VISION ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <h2 data-id="vision-title">Zasto Digitalna Platforma?</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up" style="max-width: 900px;">Moderno obrazovanje zahtijeva moderne alate.<br>Učenici zasluzuju pristup informacijama u svakom trenutku.</p>
+        <div style="display: flex; gap: 40px; margin-top: 32px; justify-content: center;">
+          <div class="card fragment scale-in" style="padding: 28px 36px; text-align: center;">
+            <span class="feature-icon">&#x1F4F1;</span>
+            <h4 style="color: var(--purple); font-weight: 600;">Mobilni pristup</h4>
+            <p class="small-text">Sve informacije na dlanu</p>
+          </div>
+          <div class="card fragment scale-in" style="padding: 28px 36px; text-align: center;">
+            <span class="feature-icon">&#x23F0;</span>
+            <h4 style="color: var(--purple); font-weight: 600;">24/7 dostupnost</h4>
+            <p class="small-text">Bez ogranicenja vremena</p>
+          </div>
+          <div class="card fragment scale-in" style="padding: 28px 36px; text-align: center;">
+            <span class="feature-icon">&#x1F512;</span>
+            <h4 style="color: var(--purple); font-weight: 600;">Sigurnost podataka</h4>
+            <p class="small-text">Enkriptovana zastita</p>
+          </div>
+          <div class="card fragment scale-in" style="padding: 28px 36px; text-align: center;">
+            <span class="feature-icon">&#x1F680;</span>
+            <h4 style="color: var(--purple); font-weight: 600;">Inovacija</h4>
+            <p class="small-text">Korak ispred ostalih</p>
+          </div>
         </div>
       </section>
 
-      <!-- SLIDE 4: Overview -->
-      <section data-transition="convex" data-background-color="#09090b">
-        <h2 style="margin-bottom: 0.2em;">Å ta nudi platforma?</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="feature-grid-3">
-          <div class="feature-item fragment scale-in">
-            <div style="font-size: 2em;">ðŸ“°</div>
-            <h4>Novosti</h4>
-            <p>Å kolska obavjeÅ¡tenja i vijesti</p>
+      <!-- ==================== SLIDE 3: FEATURE OVERVIEW GRID ==================== -->
+      <section data-transition="fade" data-auto-animate>
+        <h2>Pregled Funkcionalnosti</h2>
+        <div class="divider fragment fade-up"></div>
+        <div class="feature-grid" style="margin-top: 24px;">
+          <div class="feature-item fragment fade-up">
+            <span class="feature-icon">&#x1F4F0;</span>
+            <h4>Vijesti</h4>
+            <p>Skolske novosti u realnom vremenu</p>
           </div>
-          <div class="feature-item fragment scale-in">
-            <div style="font-size: 2em;">ðŸ“š</div>
+          <div class="feature-item fragment fade-up">
+            <span class="feature-icon">&#x1F4DA;</span>
             <h4>Lekcije</h4>
-            <p>Predavanja i kvizovi</p>
+            <p>Predavanja po predmetima</p>
           </div>
-          <div class="feature-item fragment scale-in">
-            <div style="font-size: 2em;">ðŸ“…</div>
+          <div class="feature-item fragment fade-up">
+            <span class="feature-icon">&#x2753;</span>
+            <h4>Kvizovi</h4>
+            <p>Interaktivno testiranje znanja</p>
+          </div>
+          <div class="feature-item fragment fade-up">
+            <span class="feature-icon">&#x1F4C5;</span>
             <h4>Kalendar</h4>
-            <p>Testovi, ispiti, zadaci</p>
+            <p>Dogadjaji i aktivnosti</p>
           </div>
-          <div class="feature-item fragment scale-in">
-            <div style="font-size: 2em;">ðŸ“Š</div>
+          <div class="feature-item fragment fade-up">
+            <span class="feature-icon">&#x1F4CB;</span>
+            <h4>Raspored</h4>
+            <p>Sedmični i dnevni pregled</p>
+          </div>
+          <div class="feature-item fragment fade-up">
+            <span class="feature-icon">&#x1F4CA;</span>
             <h4>Ocjene</h4>
-            <p>PraÄ‡enje uspjeha</p>
+            <p>Praćenje uspjeha po trimestrima</p>
           </div>
-          <div class="feature-item fragment scale-in">
-            <div style="font-size: 2em;">ðŸ‘¤</div>
-            <h4>Profili</h4>
-            <p>Uloge i personalizacija</p>
-          </div>
-          <div class="feature-item fragment scale-in">
-            <div style="font-size: 2em;">ðŸ“¸</div>
+          <div class="feature-item fragment fade-up">
+            <span class="feature-icon">&#x1F4F7;</span>
             <h4>Galerija</h4>
             <p>Dijeljenje fotografija</p>
           </div>
+          <div class="feature-item fragment fade-up">
+            <span class="feature-icon">&#x2699;&#xFE0F;</span>
+            <h4>Podešavanja</h4>
+            <p>Personalizacija iskustva</p>
+          </div>
         </div>
       </section>
 
-      <!-- ============================================
-           REGISTRATION & SECURITY
-           ============================================ -->
-
-      <!-- SLIDE 5: Registration â€” Section Title -->
-      <section data-auto-animate data-background-color="#09090b">
-        <div data-id="sec-icon" style="font-size: 4em;" class="float">ðŸ”</div>
-        <h2 data-id="sec-title" class="gradient-text mt-1">Registracija & Sigurnost</h2>
-        <p data-id="sec-sub" class="text-muted text-sm">Samo verifikovani uÄenici mogu pristupiti</p>
-      </section>
-
-      <!-- SLIDE 6: Registration Flow -->
-      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
-        <div data-id="sec-icon" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">ðŸ”</div>
-        <h2 data-id="sec-title" style="font-size: 1.3em; text-align: left; margin-left: 0.5em;">Tok Registracije</h2>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em; margin-top: 1.5em;">
-          <div class="phone-frame fragment slide-right pulse-glow">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/register.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
+      <!-- ==================== SLIDE 4: REGISTRATION ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-content">
+            <h2 data-id="reg-title">Registracija</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Jednostavan proces registracije u tri koraka:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up"><strong style="color: var(--purple);">1.</strong> Unos licnih podataka (ime, prezime, razred)</li>
+              <li class="fragment fade-up"><strong style="color: var(--purple);">2.</strong> Verifikacija putem školske baze podataka</li>
+              <li class="fragment fade-up"><strong style="color: var(--purple);">3.</strong> Potvrda email adrese</li>
+            </ul>
+            <p class="small-text fragment fade-up" style="margin-top: 16px;">Samo verifikovani ucenici mogu kreirati nalog</p>
           </div>
-          <div style="text-align: left; max-width: 380px;">
-            <div class="fragment fade-up" style="margin-bottom: 0.8em;">
-              <span class="badge badge-purple">1</span>
-              <span style="font-size: 0.7em; margin-left: 0.5em;">Unos imena i prezimena</span>
-            </div>
-            <div class="fragment fade-up" style="margin-bottom: 0.8em;">
-              <span class="badge badge-purple">2</span>
-              <span style="font-size: 0.7em; margin-left: 0.5em;">Izbor razreda i odjeljenja</span>
-            </div>
-            <div class="fragment fade-up" style="margin-bottom: 0.8em;">
-              <span class="badge badge-purple">3</span>
-              <span style="font-size: 0.7em; margin-left: 0.5em;">Email adresa</span>
-            </div>
-            <div class="fragment fade-up" style="margin-bottom: 0.8em;">
-              <span class="badge badge-purple">4</span>
-              <span style="font-size: 0.7em; margin-left: 0.5em;">Kreiranje sigurne lozinke</span>
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/register.jpg" alt="Registracija">
             </div>
           </div>
         </div>
       </section>
 
-      <!-- SLIDE 7: Verified Database -->
-      <section data-transition="slide" data-background-color="#09090b">
-        <h2 style="margin-bottom: 0.1em;">âœ… Verifikovana Baza UÄenika</h2>
-        <div class="section-divider"></div>
-        <div class="dark-card mt-2" style="max-width: 650px; margin: 1em auto;">
-          <div class="stat-row">
-            <div class="stat-item fragment scale-in">
-              <div class="counter" data-count="83">0</div>
-              <div class="stat-label">verifikovanih uÄenika</div>
-            </div>
-            <div class="stat-item fragment scale-in">
-              <div class="counter-sm" data-count="4" style="color: #8b5cf6;">0</div>
-              <div class="stat-label">razreda</div>
-            </div>
-            <div class="stat-item fragment scale-in">
-              <div class="counter-sm" data-count="6" style="color: #c4b5fd;">0</div>
-              <div class="stat-label">odjeljenja</div>
-            </div>
+      <!-- ==================== SLIDE 5: STUDENT DATABASE ==================== -->
+      <section data-transition="fade" data-auto-animate>
+        <h2 data-id="db-title">Verifikovana Baza Ucenika</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Svaki nalog je povezan sa stvarnim učenikom skole</p>
+        <div class="stats-grid fragment scale-in" style="margin-top: 32px;">
+          <div class="stat-card">
+            <div class="stat-number">83</div>
+            <div class="stat-label">Ucenika u bazi</div>
           </div>
-          <p class="fragment fade-up text-muted text-sm mt-2" style="text-align: center;">
-            Samo uÄenici Äije se ime nalazi u bazi podataka mogu kreirati nalog.
-            <br>Nema anonimnih korisnika â€” potpuna kontrola.
-          </p>
-        </div>
-      </section>
-
-      <!-- SLIDE 8: Two-Factor Auth -->
-      <section data-transition="fade" data-background-color="#09090b">
-        <h2>ðŸ“§ Email Verifikacija</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; justify-content: center; gap: 1.5em; align-items: stretch;">
-          <div class="glass-card fragment blur-in" style="max-width: 260px; text-align: center;">
-            <div style="font-size: 2.5em;" class="lock-anim">ðŸ”’</div>
-            <h4 class="text-purple mt-1" style="font-size: 0.8em;">Korak 1</h4>
-            <p class="text-sm text-muted">Registracija sa Å¡kolskim podacima</p>
+          <div class="stat-card">
+            <div class="stat-number">4</div>
+            <div class="stat-label">Razreda</div>
           </div>
-          <div class="glass-card fragment blur-in" style="max-width: 260px; text-align: center;">
-            <div style="font-size: 2.5em;" class="float-delay">âœ‰ï¸</div>
-            <h4 class="text-purple mt-1" style="font-size: 0.8em;">Korak 2</h4>
-            <p class="text-sm text-muted">Verifikacioni email sa kodom</p>
-          </div>
-          <div class="glass-card fragment blur-in" style="max-width: 260px; text-align: center;">
-            <div style="font-size: 2.5em;" class="shield-pulse">ðŸ›¡ï¸</div>
-            <h4 class="text-green mt-1" style="font-size: 0.8em;">Verifikovano</h4>
-            <p class="text-sm text-muted">Pristup odobren â€” siguran nalog</p>
+          <div class="stat-card">
+            <div class="stat-number">6</div>
+            <div class="stat-label">Odjeljenja</div>
           </div>
         </div>
+        <p class="small-text fragment fade-up" style="margin-top: 24px;">Baza se azurira na pocetku svake školske godine &bull; Pristup iskljucivo za učenike Gimnazije</p>
       </section>
 
-      <!-- SLIDE 9: Login Screen -->
-      <section data-transition="slide" data-background-color="#09090b">
-        <h2 style="margin-bottom: 0.1em;">Prijavljivanje</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div class="phone-frame fragment slide-right pulse-glow">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/login.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
+      <!-- ==================== SLIDE 6: EMAIL VERIFICATION ==================== -->
+      <section data-transition="convex" data-auto-animate>
+        <h2>Email Verifikacija</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Dvostepena provjera identiteta</p>
+        <div class="email-flow" style="margin-top: 32px;">
+          <div class="email-step fragment fade-up">
+            <span class="icon">&#x1F4DD;</span>
+            <h4>Registracija</h4>
+            <p>Unos podataka</p>
           </div>
-          <div style="text-align: left; max-width: 350px;">
-            <p class="fragment fade-up text-sm">âœ¨ ÄŒist, minimalistiÄki dizajn</p>
-            <p class="fragment fade-up text-sm">âš¡ Brza autentikacija</p>
-            <p class="fragment fade-up text-sm">ðŸ”’ Enkripcija na svakom koraku</p>
-            <p class="fragment fade-up text-sm">ðŸ“± Optimizovano za mobilne ureÄ‘aje</p>
+          <span class="arrow fragment fade-up">&#x27A1;&#xFE0F;</span>
+          <div class="email-step fragment fade-up">
+            <span class="icon">&#x1F4E7;</span>
+            <h4>Email poslan</h4>
+            <p>Verifikacioni link</p>
+          </div>
+          <span class="arrow fragment fade-up">&#x27A1;&#xFE0F;</span>
+          <div class="email-step fragment fade-up">
+            <span class="icon">&#x2705;</span>
+            <h4>Potvrda</h4>
+            <p>Nalog aktiviran</p>
+          </div>
+          <span class="arrow fragment fade-up">&#x27A1;&#xFE0F;</span>
+          <div class="email-step fragment fade-up">
+            <span class="icon">&#x1F513;</span>
+            <h4>Pristup</h4>
+            <p>Puni pristup portalu</p>
           </div>
         </div>
+        <p class="small-text fragment fade-up" style="margin-top: 24px;">Bez verifikovanog emaila, pristup portalu nije moguc</p>
       </section>
 
-      <!-- SLIDE 10: Data Protection -->
-      <section data-transition="zoom" data-background-color="#09090b">
-        <h2>ðŸ›¡ï¸ ZaÅ¡tita Podataka</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="feature-grid" style="max-width: 700px;">
-          <div class="feature-item fragment flip-in">
-            <div style="font-size: 1.5em;">ðŸ”</div>
-            <h4>Enkriptovane Lozinke</h4>
-            <p>bcrypt hashing â€” nemoguÄ‡e dekriptovati</p>
+      <!-- ==================== SLIDE 7: LOGIN ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-content">
+            <h2 data-id="login-title">Prijava na Portal</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Siguran pristup vasem nalogu:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Email adresa kao korisnicko ime</li>
+              <li class="fragment fade-up">Enkriptovana lozinka</li>
+              <li class="fragment fade-up">Opcija "Zapamti me" za brzi pristup</li>
+              <li class="fragment fade-up">Automatsko odjavljanje nakon neaktivnosti</li>
+            </ul>
           </div>
-          <div class="feature-item fragment flip-in">
-            <div style="font-size: 1.5em;">ðŸ›ï¸</div>
-            <h4>RLS Politike</h4>
-            <p>Row Level Security â€” svaki korisnik vidi samo svoje podatke</p>
-          </div>
-          <div class="feature-item fragment flip-in">
-            <div style="font-size: 1.5em;">ðŸ”—</div>
-            <h4>Siguran API</h4>
-            <p>HTTPS, JWT tokeni, zaÅ¡tiÄ‡eni endpointi</p>
-          </div>
-          <div class="feature-item fragment flip-in">
-            <div style="font-size: 1.5em;">ðŸ‡ªðŸ‡º</div>
-            <h4>GDPR Kompatibilno</h4>
-            <p>Europski standardi zaÅ¡tite podataka</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================
-           MAIN FEATURES
-           ============================================ -->
-
-      <!-- SLIDE 11: Features Section Title -->
-      <section data-auto-animate data-background-color="#09090b">
-        <div data-id="feat-icon" style="font-size: 4em;" class="float-rotate">âš¡</div>
-        <h2 data-id="feat-title" class="gradient-text mt-1">Funkcionalnosti</h2>
-        <p data-id="feat-sub" class="text-muted text-sm">Sve Å¡to uÄeniku treba â€” na jednom mjestu</p>
-      </section>
-
-      <!-- SLIDE 12: News Feed -->
-      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
-        <div data-id="feat-icon" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">âš¡</div>
-        <h2 data-id="feat-title" style="font-size: 1.4em;">ðŸ“° Novosti</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div class="phone-frame fragment slide-right pulse-glow">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/news.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
-          </div>
-          <div style="text-align: left; max-width: 350px;">
-            <p class="fragment fade-up text-sm">ðŸ“£ Å kolska obavjeÅ¡tenja u realnom vremenu</p>
-            <p class="fragment fade-up text-sm">ðŸ–¼ï¸ PodrÅ¡ka za slike i bogate objave</p>
-            <p class="fragment fade-up text-sm">â¤ï¸ Like sistem za interakciju</p>
-            <p class="fragment fade-up text-sm">ðŸ“Œ Sortiranje po datumu i vaÅ¾nosti</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 13: Lectures â€” Subject Selection -->
-      <section data-transition="slide" data-background-color="#09090b">
-        <h2>ðŸ“š Lekcije â€” Izbor Predmeta</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div style="text-align: left; max-width: 350px;">
-            <p class="fragment fade-up text-sm">ðŸ“ Matematika, Fizika, Hemija...</p>
-            <p class="fragment fade-up text-sm">ðŸŒ Istorija, Geografija, Jezici...</p>
-            <p class="fragment fade-up text-sm">ðŸ” PretraÅ¾ivanje predmeta</p>
-            <p class="fragment fade-up text-sm">ðŸ“Š Pregled broja lekcija po predmetu</p>
-          </div>
-          <div class="phone-frame fragment slide-left pulse-glow">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/lectures-subjects.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 14: Lecture View -->
-      <section data-transition="fade" data-background-color="#09090b">
-        <h2>ðŸ“– Pregled Lekcije</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div class="phone-frame fragment slide-right glow-box">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/lecture-view.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
-          </div>
-          <div style="text-align: left; max-width: 350px;">
-            <p class="fragment fade-up text-sm">ðŸ“ Rich text sa formatiranjem</p>
-            <p class="fragment fade-up text-sm">ðŸ–¼ï¸ Embedded slike i dijagrami</p>
-            <p class="fragment fade-up text-sm">ðŸ“ MatematiÄke formule</p>
-            <p class="fragment fade-up text-sm">ðŸ§ª Kreator: admin</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 15: Quizzes -->
-      <section data-transition="convex" data-background-color="#09090b">
-        <h2>ðŸ§  Kvizovi</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="dark-card" style="max-width: 650px; margin: 1em auto;">
-          <p class="fragment fade-up text-sm" style="text-align: center; margin-bottom: 1em;">
-            Provjerite znanje nakon svake lekcije!
-          </p>
-          <div style="display: flex; justify-content: center; gap: 1.5em; flex-wrap: wrap;">
-            <div class="feature-item fragment scale-in" style="flex: 1; min-width: 160px;">
-              <div style="font-size: 1.5em;">âœ…</div>
-              <h4>ViÅ¡estruki izbor</h4>
-              <p>Odaberite taÄan odgovor</p>
-            </div>
-            <div class="feature-item fragment scale-in" style="flex: 1; min-width: 160px;">
-              <div style="font-size: 1.5em;">ðŸ“Š</div>
-              <h4>Rezultati</h4>
-              <p>Trenutni feedback</p>
-            </div>
-            <div class="feature-item fragment scale-in" style="flex: 1; min-width: 160px;">
-              <div style="font-size: 1.5em;">ðŸ”„</div>
-              <h4>Ponovi</h4>
-              <p>Ponavljajte do savrÅ¡enstva</p>
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/login.jpg" alt="Prijava">
             </div>
           </div>
         </div>
       </section>
 
-      <!-- SLIDE 16: Future Quiz Types -->
-      <section data-transition="slide" data-background-color="#09090b">
-        <h2>ðŸš€ BuduÄ‡i Tipovi Kvizova</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; justify-content: center; gap: 1.5em; flex-wrap: wrap; max-width: 800px; margin: 0 auto;">
-          <div class="glass-card fragment blur-in" style="flex: 1; min-width: 200px; text-align: center;">
-            <div style="font-size: 2.5em;">ðŸ‘ðŸ‘Ž</div>
-            <h4 class="text-purple mt-1" style="font-size: 0.8em;">Da / Ne</h4>
-            <p class="text-sm text-muted">Brza provjera â€” taÄno ili netaÄno</p>
-          </div>
-          <div class="glass-card fragment blur-in" style="flex: 1; min-width: 200px; text-align: center;">
-            <div style="font-size: 2.5em;">ðŸŽ¯</div>
-            <h4 class="text-purple mt-1" style="font-size: 0.8em;">Pogodi</h4>
-            <p class="text-sm text-muted">Unesite taÄan odgovor</p>
-          </div>
-          <div class="glass-card fragment blur-in" style="flex: 1; min-width: 200px; text-align: center;">
-            <div style="font-size: 2.5em;">ðŸ”¢</div>
-            <h4 class="text-purple mt-1" style="font-size: 0.8em;">Multiple Choice</h4>
-            <p class="text-sm text-muted">ViÅ¡e taÄnih odgovora</p>
-          </div>
-        </div>
-        <p class="fragment fade-up text-muted text-xs mt-2" style="text-align: center;">
-          <span class="badge badge-green">Uskoro</span> Planirano za naredne verzije
-        </p>
-      </section>
-
-      <!-- SLIDE 17: Calendar -->
-      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
-        <h2 data-id="cal-title">ðŸ“… Kalendar</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div class="phone-frame fragment slide-right pulse-glow">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/calendar.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
-          </div>
-          <div style="text-align: left;">
-            <div class="fragment fade-up" style="margin-bottom: 0.6em;">
-              <span class="icon-circle icon-red" style="width: 36px; height: 36px; font-size: 0.8em;">ðŸ“</span>
-              <span class="text-sm" style="margin-left: 0.5em;">Test / Ispit</span>
-            </div>
-            <div class="fragment fade-up" style="margin-bottom: 0.6em;">
-              <span class="icon-circle icon-blue" style="width: 36px; height: 36px; font-size: 0.8em;">âœï¸</span>
-              <span class="text-sm" style="margin-left: 0.5em;">Pismeni zadatak</span>
-            </div>
-            <div class="fragment fade-up" style="margin-bottom: 0.6em;">
-              <span class="icon-circle icon-amber" style="width: 36px; height: 36px; font-size: 0.8em;">ðŸ </span>
-              <span class="text-sm" style="margin-left: 0.5em;">DomaÄ‡i zadatak</span>
-            </div>
-            <div class="fragment fade-up" style="margin-bottom: 0.6em;">
-              <span class="icon-circle icon-purple" style="width: 36px; height: 36px; font-size: 0.8em;">ðŸ“Œ</span>
-              <span class="text-sm" style="margin-left: 0.5em;">Drugo</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 18: Event List View -->
-      <section data-auto-animate data-transition="fade" data-background-color="#09090b">
-        <h2 data-id="cal-title" style="font-size: 1.4em;">ðŸ“‹ Lista DogaÄ‘aja</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="dark-card" style="max-width: 550px; margin: 0 auto; text-align: left;">
-          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
-            <span style="color: #ef4444;">â—</span>
+      <!-- ==================== SLIDE 8: DATA PROTECTION ==================== -->
+      <section data-transition="fade" data-auto-animate>
+        <h2>Zastita Podataka</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Industrijski standardi sigurnosti</p>
+        <div class="security-grid" style="margin-top: 28px;">
+          <div class="security-item fragment fade-up">
+            <span class="icon">&#x1F510;</span>
             <div>
-              <div class="text-sm" style="font-weight: 600;">Matematika â€” Test</div>
-              <div class="text-xs text-muted">Ponedeljak, 24. mart</div>
+              <h4>Enkriptovane lozinke</h4>
+              <p>Bcrypt hashing sa salt-om &mdash; lozinke se nikada ne cuvaju u citljivom formatu</p>
             </div>
           </div>
-          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
-            <span style="color: #3b82f6;">â—</span>
+          <div class="security-item fragment fade-up">
+            <span class="icon">&#x1F6E1;&#xFE0F;</span>
             <div>
-              <div class="text-sm" style="font-weight: 600;">Fizika â€” Pismeni</div>
-              <div class="text-xs text-muted">Srijeda, 26. mart</div>
+              <h4>Row Level Security (RLS)</h4>
+              <p>Svaki korisnik vidi samo svoje podatke &mdash; zastita na nivou baze podataka</p>
             </div>
           </div>
-          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
-            <span style="color: #f59e0b;">â—</span>
+          <div class="security-item fragment fade-up">
+            <span class="icon">&#x1F511;</span>
             <div>
-              <div class="text-sm" style="font-weight: 600;">Engleski â€” DomaÄ‡i</div>
-              <div class="text-xs text-muted">Petak, 28. mart</div>
+              <h4>JWT Tokeni</h4>
+              <p>Sigurna autentifikacija bez cuvanja sesija na serveru</p>
             </div>
           </div>
-          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0;">
-            <span style="color: #a78bfa;">â—</span>
+          <div class="security-item fragment fade-up">
+            <span class="icon">&#x1F310;</span>
             <div>
-              <div class="text-sm" style="font-weight: 600;">Izlet â€” Cetinje</div>
-              <div class="text-xs text-muted">Subota, 29. mart</div>
+              <h4>HTTPS Enkripcija</h4>
+              <p>Svi podaci se prenose putem enkriptovane veze</p>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- SLIDE 19: Weekly Schedule -->
-      <section data-transition="slide" data-background-color="#09090b">
-        <h2>ðŸ—“ï¸ SedmiÄni Raspored</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div class="phone-frame fragment slide-right pulse-glow">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/schedule-weekly.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
+      <!-- ==================== SLIDE 9: NEWS FEED ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-content">
+            <h2 data-id="news-title">&#x1F4F0; Vijesti</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Centralizovani izvor školskih informacija:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Najnovije školske vijesti i obavještenja</li>
+              <li class="fragment fade-up">Kategorije: sport, kultura, nastava, vannastavne aktivnosti</li>
+              <li class="fragment fade-up">Slike i formatiran tekst</li>
+              <li class="fragment fade-up">Hronoloski poredak &mdash; najnovije na vrhu</li>
+            </ul>
           </div>
-          <div style="text-align: left; max-width: 350px;">
-            <p class="fragment fade-up text-sm">ðŸ“± Pregled po danima u sedmici</p>
-            <p class="fragment fade-up text-sm">â° TaÄna vremena za svaki Äas</p>
-            <p class="fragment fade-up text-sm">ðŸŽ¨ Kategorisano bojama po predmetu</p>
-            <p class="fragment fade-up text-sm">ðŸ‘† Tap na dan za detaljni pregled</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 20: Daily Schedule -->
-      <section data-transition="fade" data-background-color="#09090b">
-        <h2>ðŸ“‹ Dnevni Raspored</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div style="text-align: left; max-width: 350px;">
-            <p class="fragment fade-up text-sm">ðŸ• ÄŒas po Äas â€” taÄan pregled dana</p>
-            <p class="fragment fade-up text-sm">ðŸ“ UÄionica / kabinet info</p>
-            <p class="fragment fade-up text-sm">ðŸ‘¨â€ðŸ« Ime profesora</p>
-            <p class="fragment fade-up text-sm">ðŸ“ Napomene za svaki Äas</p>
-          </div>
-          <div class="phone-frame fragment slide-left glow-box">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/schedule-daily.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 21: My Grades -->
-      <section data-auto-animate data-transition="convex" data-background-color="#09090b">
-        <h2 data-id="grades-title">ðŸ“Š Moje Ocjene</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="dark-card" style="max-width: 700px; margin: 0 auto;">
-          <p class="fragment fade-up text-sm mb-2" style="text-align: center;">
-            PraÄ‡enje uspjeha kroz cijelu Å¡kolsku godinu â€” 4 tromjeseÄja
-          </p>
-          <div style="display: flex; justify-content: center; gap: 1em; flex-wrap: wrap;">
-            <div class="feature-item fragment scale-in" style="min-width: 130px; text-align: center;">
-              <div style="font-size: 1.3em;">ðŸ“</div>
-              <h4 style="font-size: 0.7em;">Test</h4>
-            </div>
-            <div class="feature-item fragment scale-in" style="min-width: 130px; text-align: center;">
-              <div style="font-size: 1.3em;">âœï¸</div>
-              <h4 style="font-size: 0.7em;">Pismeni</h4>
-            </div>
-            <div class="feature-item fragment scale-in" style="min-width: 130px; text-align: center;">
-              <div style="font-size: 1.3em;">ðŸ—£ï¸</div>
-              <h4 style="font-size: 0.7em;">Usmeni</h4>
-            </div>
-            <div class="feature-item fragment scale-in" style="min-width: 130px; text-align: center;">
-              <div style="font-size: 1.3em;">ðŸ†</div>
-              <h4 style="font-size: 0.7em;">ZakljuÄna</h4>
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/news.jpg" alt="Vijesti">
             </div>
           </div>
         </div>
       </section>
 
-      <!-- SLIDE 22: GPA Calculator -->
-      <section data-auto-animate data-transition="fade" data-background-color="#09090b">
-        <h2 data-id="grades-title" style="font-size: 1.4em;">ðŸ§® Kalkulator Prosjeka</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div class="phone-frame fragment slide-right pulse-glow">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/grades.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
+      <!-- ==================== SLIDE 10: LECTURES - SUBJECTS ==================== -->
+      <section data-transition="convex" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/lectures-subjects.jpg" alt="Predmeti">
+            </div>
           </div>
-          <div style="text-align: left; max-width: 350px;">
-            <p class="fragment fade-up text-sm">ðŸ“Š Automatski prosjek po predmetu</p>
-            <p class="fragment fade-up text-sm">ðŸ“ˆ Ukupan prosek svih predmeta</p>
-            <p class="fragment fade-up text-sm">ðŸ“‰ Vizuelni prikaz napretka</p>
-            <p class="fragment fade-up text-sm">ðŸŽ¯ Cilj: planiraj bolji prosjek</p>
+          <div class="split-content">
+            <h2 data-id="lectures-title">&#x1F4DA; Lekcije &mdash; Predmeti</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Organizovan pristup nastavnim materijalima:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Pregledna lista svih predmeta</li>
+              <li class="fragment fade-up">Ikone i boje za brzu identifikaciju</li>
+              <li class="fragment fade-up">Filtriranje po razredu i odjeljenju</li>
+              <li class="fragment fade-up">Broj dostupnih lekcija po predmetu</li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <!-- SLIDE 23: Profile -->
-      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
-        <div data-id="profile-emoji" style="font-size: 4em;" class="float">ðŸ‘¤</div>
-        <h2 data-id="profile-title" class="gradient-text mt-1">Profil UÄenika</h2>
-        <div class="section-divider"></div>
-      </section>
-
-      <!-- SLIDE 24: Profile Details -->
-      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
-        <div data-id="profile-emoji" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">ðŸ‘¤</div>
-        <h2 data-id="profile-title" style="font-size: 1.4em;">Profil â€” Detalji</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div class="phone-frame fragment slide-right pulse-glow">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/profile.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
+      <!-- ==================== SLIDE 11: LECTURE VIEW ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-content">
+            <h2 data-id="lecture-view-title">&#x1F4D6; Pregled Lekcije</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Detaljan prikaz svake lekcije:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Formatiran tekst sa naslovima i paragrafima</li>
+              <li class="fragment fade-up">Slike i dijagrami unutar lekcije</li>
+              <li class="fragment fade-up">Navigacija izmedju lekcija istog predmeta</li>
+              <li class="fragment fade-up">Mogucnost pokretanja kviza nakon citanja</li>
+            </ul>
           </div>
-          <div style="text-align: left; max-width: 350px;">
-            <p class="fragment fade-up text-sm">ðŸ–¼ï¸ Prilagodljiv avatar</p>
-            <p class="fragment fade-up text-sm">ðŸ“› Ime, razred, odjeljenje</p>
-            <p class="fragment fade-up text-sm">ðŸ… BedÅ¾evi uloga (role badges)</p>
-            <p class="fragment fade-up text-sm">âœ¨ Animirani UI elementi</p>
-            <p class="fragment fade-up text-sm">ðŸ“Š Statistika aktivnosti</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 25: Profile Animations -->
-      <section data-transition="fade" data-background-color="#09090b">
-        <h2>âœ¨ Animacije Profila</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="dark-card" style="max-width: 600px; margin: 0 auto; text-align: center;">
-          <p class="fragment blur-in text-sm mb-2">Svaki profil ima premium animacije</p>
-          <div style="display: flex; justify-content: center; gap: 1.5em; margin: 1em 0;">
-            <div class="fragment scale-in">
-              <div class="icon-circle icon-purple float" style="font-size: 1.2em;">ðŸ§‘â€ðŸŽ“</div>
-              <div class="text-xs text-muted mt-1">Float</div>
-            </div>
-            <div class="fragment scale-in">
-              <div class="icon-circle icon-violet pulse-glow" style="font-size: 1.2em;">ðŸ…</div>
-              <div class="text-xs text-muted mt-1">Glow</div>
-            </div>
-            <div class="fragment scale-in">
-              <div class="icon-circle icon-green float-rotate" style="font-size: 1.2em;">â­</div>
-              <div class="text-xs text-muted mt-1">Rotate</div>
-            </div>
-            <div class="fragment scale-in">
-              <div class="icon-circle icon-blue heart-beat" style="font-size: 1.2em;">ðŸ’œ</div>
-              <div class="text-xs text-muted mt-1">Pulse</div>
-            </div>
-          </div>
-          <p class="fragment fade-up text-xs text-muted">
-            Stilski dizajn inspirisan modernim aplikacijama
-          </p>
-        </div>
-      </section>
-
-      <!-- SLIDE 26: Roles System -->
-      <section data-transition="convex" data-background-color="#09090b">
-        <h2>ðŸ‘¥ Sistem Uloga</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.8em;">
-          <div class="role-card fragment slide-right" style="border-color: rgba(239, 68, 68, 0.3);">
-            <span class="role-dot" style="background: #ef4444;"></span>
-            <span class="text-sm" style="font-weight: 600;">Creator</span>
-            <span class="text-xs text-muted">â€” Kreator platforme, pun pristup</span>
-          </div>
-          <div class="role-card fragment slide-right" style="border-color: rgba(167, 139, 250, 0.3);">
-            <span class="role-dot" style="background: #a78bfa;"></span>
-            <span class="text-sm" style="font-weight: 600;">Admin</span>
-            <span class="text-xs text-muted">â€” Upravljanje sadrÅ¾ajem i korisnicima</span>
-          </div>
-          <div class="role-card fragment slide-right" style="border-color: rgba(59, 130, 246, 0.3);">
-            <span class="role-dot" style="background: #3b82f6;"></span>
-            <span class="text-sm" style="font-weight: 600;">Moderator</span>
-            <span class="text-xs text-muted">â€” Moderacija sadrÅ¾aja i komentara</span>
-          </div>
-          <div class="role-card fragment slide-right" style="border-color: rgba(34, 197, 94, 0.3);">
-            <span class="role-dot" style="background: #22c55e;"></span>
-            <span class="text-sm" style="font-weight: 600;">Student</span>
-            <span class="text-xs text-muted">â€” Osnovni pristup svim funkcijama</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 27: Navigation Customization -->
-      <section data-transition="slide" data-background-color="#09090b">
-        <h2>ðŸ§­ Prilagodljiva Navigacija</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="dark-card" style="max-width: 600px; margin: 0 auto;">
-          <p class="fragment fade-up text-sm mb-2" style="text-align: center;">
-            Svaki uÄenik bira koje tabove Å¾eli vidjeti
-          </p>
-          <div style="display: flex; justify-content: center; gap: 1em; flex-wrap: wrap; margin: 1em 0;">
-            <div class="fragment scale-in" style="background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 10px; padding: 0.5em 1em;">
-              <span style="font-size: 1.2em;">ðŸ“°</span>
-              <span class="text-xs" style="margin-left: 0.3em;">Novosti</span>
-            </div>
-            <div class="fragment scale-in" style="background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 10px; padding: 0.5em 1em;">
-              <span style="font-size: 1.2em;">ðŸ“…</span>
-              <span class="text-xs" style="margin-left: 0.3em;">Kalendar</span>
-            </div>
-            <div class="fragment scale-in" style="background: rgba(39, 39, 42, 0.8); border: 1px solid rgba(39, 39, 42, 0.8); border-radius: 10px; padding: 0.5em 1em; opacity: 0.5;">
-              <span style="font-size: 1.2em;">ðŸ“š</span>
-              <span class="text-xs" style="margin-left: 0.3em;">Lekcije</span>
-            </div>
-            <div class="fragment scale-in" style="background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 10px; padding: 0.5em 1em;">
-              <span style="font-size: 1.2em;">ðŸ“¸</span>
-              <span class="text-xs" style="margin-left: 0.3em;">Galerija</span>
-            </div>
-            <div class="fragment scale-in" style="background: rgba(39, 39, 42, 0.8); border: 1px solid rgba(39, 39, 42, 0.8); border-radius: 10px; padding: 0.5em 1em; opacity: 0.5;">
-              <span style="font-size: 1.2em;">ðŸ“Š</span>
-              <span class="text-xs" style="margin-left: 0.3em;">Ocjene</span>
-            </div>
-          </div>
-          <p class="fragment fade-up text-xs text-muted" style="text-align: center;">
-            Upalite ili ugasite â€” vaÅ¡ portal, vaÅ¡a pravila
-          </p>
-        </div>
-      </section>
-
-      <!-- SLIDE 28: Settings & Themes -->
-      <section data-transition="zoom" data-background-color="#09090b">
-        <h2>âš™ï¸ PodeÅ¡avanja</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div class="phone-frame fragment slide-right pulse-glow">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/settings.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
-          </div>
-          <div style="text-align: left; max-width: 380px;">
-            <div class="fragment fade-up mb-1">
-              <h4 class="text-purple text-sm">ðŸŽ¨ 6 Tema</h4>
-              <div style="margin-top: 0.3em;">
-                <span class="theme-dot" style="background: linear-gradient(135deg, #09090b, #18181b);"></span>
-                <span class="theme-dot" style="background: linear-gradient(135deg, #0f172a, #1e293b);"></span>
-                <span class="theme-dot" style="background: linear-gradient(135deg, #1a1a2e, #16213e);"></span>
-                <span class="theme-dot" style="background: linear-gradient(135deg, #064e3b, #065f46);"></span>
-                <span class="theme-dot" style="background: linear-gradient(135deg, #4c0519, #881337);"></span>
-                <span class="theme-dot" style="background: linear-gradient(135deg, #fafaf9, #d6d3d1);"></span>
-              </div>
-            </div>
-            <p class="fragment fade-up text-sm">ðŸ”¤ VeliÄina fonta â€” Mali / Normalan / Veliki</p>
-            <p class="fragment fade-up text-sm">ðŸŒ Jezik â€” Srpski / English</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 29: School Info Panel -->
-      <section data-transition="fade" data-background-color="#09090b">
-        <h2>ðŸ« Info o Å koli</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="dark-card" style="max-width: 600px; margin: 0 auto;">
-          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
-            <span style="font-size: 1.3em;">ðŸ«</span>
-            <div>
-              <div class="text-sm" style="font-weight: 600;">Gimnazija "Niko RoloviÄ‡"</div>
-              <div class="text-xs text-muted">Bar, Crna Gora</div>
-            </div>
-          </div>
-          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
-            <span style="font-size: 1.3em;">ðŸ“ž</span>
-            <div>
-              <div class="text-sm" style="font-weight: 600;">Kontakt informacije</div>
-              <div class="text-xs text-muted">Telefon, email, adresa</div>
-            </div>
-          </div>
-          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
-            <span style="font-size: 1.3em;">ðŸ•</span>
-            <div>
-              <div class="text-sm" style="font-weight: 600;">Radno vrijeme</div>
-              <div class="text-xs text-muted">Smjene i raspored zvona</div>
-            </div>
-          </div>
-          <div class="fragment fade-up" style="display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0;">
-            <span style="font-size: 1.3em;">ðŸ”—</span>
-            <div>
-              <div class="text-sm" style="font-weight: 600;">Korisni linkovi</div>
-              <div class="text-xs text-muted">Sajt Å¡kole, dokumenti, socijalne mreÅ¾e</div>
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/lecture-view.jpg" alt="Pregled lekcije">
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ============================================
-           ADMIN PANEL
-           ============================================ -->
-
-      <!-- SLIDE 30: Admin Section Title -->
-      <section data-auto-animate data-background-color="#0c1220">
-        <div data-id="admin-icon" style="font-size: 4em;" class="float">ðŸ› ï¸</div>
-        <h2 data-id="admin-title" class="gradient-text mt-1">Admin Panel</h2>
-        <p data-id="admin-sub" class="text-muted text-sm">Potpuna kontrola nad platformom</p>
-      </section>
-
-      <!-- SLIDE 31: Admin Overview -->
-      <section data-auto-animate data-transition="slide" data-background-color="#0c1220">
-        <div data-id="admin-icon" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">ðŸ› ï¸</div>
-        <h2 data-id="admin-title" style="font-size: 1.4em;">Admin â€” Pregled</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="feature-grid" style="max-width: 700px;">
-          <div class="admin-card fragment blur-in">
-            <div style="font-size: 1.5em;">ðŸ“°</div>
-            <h4 class="text-purple" style="font-size: 0.8em;">Novosti</h4>
-            <p class="text-xs text-muted">Kreiranje i ureÄ‘ivanje vijesti</p>
-          </div>
-          <div class="admin-card fragment blur-in">
-            <div style="font-size: 1.5em;">ðŸ“…</div>
-            <h4 class="text-purple" style="font-size: 0.8em;">Kalendar</h4>
-            <p class="text-xs text-muted">Upravljanje dogaÄ‘ajima</p>
-          </div>
-          <div class="admin-card fragment blur-in">
-            <div style="font-size: 1.5em;">ðŸ“š</div>
-            <h4 class="text-purple" style="font-size: 0.8em;">Lekcije</h4>
-            <p class="text-xs text-muted">Rich text editor</p>
-          </div>
-          <div class="admin-card fragment blur-in">
-            <div style="font-size: 1.5em;">ðŸ‘¥</div>
-            <h4 class="text-purple" style="font-size: 0.8em;">UÄenici</h4>
-            <p class="text-xs text-muted">Upravljanje i pretraga</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 32: News Management -->
-      <section data-transition="slide" data-background-color="#0c1220">
-        <h2 style="font-size: 1.4em;">ðŸ“° Upravljanje Novostima</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="admin-card" style="max-width: 600px; margin: 0 auto; text-align: left;">
-          <p class="fragment fade-up text-sm">âœï¸ Kreiranje novih objava sa naslovom i opisom</p>
-          <p class="fragment fade-up text-sm">ðŸ–¼ï¸ Dodavanje slika u objave</p>
-          <p class="fragment fade-up text-sm">ðŸ“Œ Pinovanje vaÅ¾nih obavjeÅ¡tenja</p>
-          <p class="fragment fade-up text-sm">ðŸ—‘ï¸ Brisanje i ureÄ‘ivanje postojeÄ‡ih vijesti</p>
-          <p class="fragment fade-up text-sm">ðŸ“Š Pregled statistike lajkova</p>
-        </div>
-      </section>
-
-      <!-- SLIDE 33: Calendar Management -->
-      <section data-transition="fade" data-background-color="#0c1220">
-        <h2 style="font-size: 1.4em;">ðŸ“… Upravljanje Kalendarom</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="admin-card" style="max-width: 600px; margin: 0 auto; text-align: left;">
-          <p class="fragment fade-up text-sm">ðŸ“ Dodavanje testova, ispita, domaÄ‡ih</p>
-          <p class="fragment fade-up text-sm">ðŸŽ¯ Izbor tipa: test / pismeni / domaÄ‡i / drugo</p>
-          <p class="fragment fade-up text-sm">ðŸ“† Izbor datuma i razreda</p>
-          <p class="fragment fade-up text-sm">âœï¸ UreÄ‘ivanje i brisanje dogaÄ‘aja</p>
-          <p class="fragment fade-up text-sm">ðŸ”” Automatske notifikacije uÄenicima</p>
-        </div>
-      </section>
-
-      <!-- SLIDE 34: Lecture Editor -->
-      <section data-transition="slide" data-background-color="#0c1220">
-        <h2 style="font-size: 1.4em;">ðŸ“ Editor Lekcija</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div class="phone-frame fragment slide-right" style="border-color: rgba(71, 85, 105, 0.5);">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/lecture-view.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
-          </div>
-          <div style="text-align: left; max-width: 350px;">
-            <p class="fragment fade-up text-sm">ðŸ–Šï¸ Rich text editor â€” kao Word</p>
-            <p class="fragment fade-up text-sm">ðŸ“‹ Bold, italic, liste, naslovi</p>
-            <p class="fragment fade-up text-sm">ðŸ–¼ï¸ Umetanje slika</p>
-            <p class="fragment fade-up text-sm">ðŸ‘ï¸ Preview prije objavljivanja</p>
-            <p class="fragment fade-up text-sm">ðŸŽ¯ Izbor predmeta i razreda</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 35: Student Management -->
-      <section data-transition="fade" data-background-color="#0c1220">
-        <h2 style="font-size: 1.4em;">ðŸ‘¥ Upravljanje UÄenicima</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="admin-card" style="max-width: 650px; margin: 0 auto;">
-          <div class="stat-row mb-2">
-            <div class="stat-item fragment scale-in">
-              <div class="counter-sm" data-count="83" style="font-size: 2em;">0</div>
-              <div class="stat-label">Aktivnih uÄenika</div>
-            </div>
-          </div>
-          <p class="fragment fade-up text-sm">ðŸ” Pretraga po imenu, razredu, emailu</p>
-          <p class="fragment fade-up text-sm">ðŸ“‹ Lista svih registrovanih korisnika</p>
-          <p class="fragment fade-up text-sm">ðŸ·ï¸ Filtriranje po razredu i odjeljenju</p>
-        </div>
-      </section>
-
-      <!-- SLIDE 36: Role Management -->
-      <section data-transition="slide" data-background-color="#0c1220">
-        <h2 style="font-size: 1.4em;">ðŸ”‘ Upravljanje Ulogama</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="admin-card" style="max-width: 600px; margin: 0 auto;">
-          <p class="fragment fade-up text-sm mb-1" style="text-align: center;">
-            Dodijelite ili promijenite ulogu bilo kom korisniku
-          </p>
-          <div style="display: flex; flex-direction: column; gap: 0.6em; align-items: center;">
-            <div class="fragment slide-right" style="display: flex; align-items: center; gap: 0.6em; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 0.5em 1.2em; width: 280px;">
-              <span class="role-dot" style="background: #ef4444;"></span>
-              <span class="text-sm">Creator</span>
-              <span class="text-xs text-muted" style="margin-left: auto;">1 korisnik</span>
-            </div>
-            <div class="fragment slide-right" style="display: flex; align-items: center; gap: 0.6em; background: rgba(167, 139, 250, 0.08); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 10px; padding: 0.5em 1.2em; width: 280px;">
-              <span class="role-dot" style="background: #a78bfa;"></span>
-              <span class="text-sm">Admin</span>
-              <span class="text-xs text-muted" style="margin-left: auto;">NeograniÄeno</span>
-            </div>
-            <div class="fragment slide-right" style="display: flex; align-items: center; gap: 0.6em; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 10px; padding: 0.5em 1.2em; width: 280px;">
-              <span class="role-dot" style="background: #3b82f6;"></span>
-              <span class="text-sm">Moderator</span>
-              <span class="text-xs text-muted" style="margin-left: auto;">NeograniÄeno</span>
-            </div>
-            <div class="fragment slide-right" style="display: flex; align-items: center; gap: 0.6em; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 10px; padding: 0.5em 1.2em; width: 280px;">
-              <span class="role-dot" style="background: #22c55e;"></span>
-              <span class="text-sm">Student</span>
-              <span class="text-xs text-muted" style="margin-left: auto;">Svi korisnici</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================
-           PHOTO GALLERY (DUMBS)
-           ============================================ -->
-
-      <!-- SLIDE 37: Dumbs Section Title -->
-      <section data-auto-animate data-background-color="#09090b">
-        <div data-id="dumbs-icon" style="font-size: 4em;" class="float-rotate">ðŸ“¸</div>
-        <h2 data-id="dumbs-title" class="gradient-text mt-1">Dumbs â€” Foto Galerija</h2>
-        <p data-id="dumbs-sub" class="text-muted text-sm">Dijelite trenutke sa cijelom Å¡kolom</p>
-      </section>
-
-      <!-- SLIDE 38: Photo Sharing -->
-      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
-        <div data-id="dumbs-icon" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">ðŸ“¸</div>
-        <h2 data-id="dumbs-title" style="font-size: 1.4em;">Dijeljenje Fotografija</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 2em;">
-          <div class="phone-frame fragment slide-right pulse-glow">
-            <div class="phone-notch"></div>
-            <div class="phone-screen"><img src="screenshots/news.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
-          </div>
-          <div style="text-align: left; max-width: 350px;">
-            <p class="fragment fade-up text-sm">ðŸ“· UÄenici dijele slike iz Å¡kolskog Å¾ivota</p>
-            <p class="fragment fade-up text-sm">â¤ï¸ Interakcija â€” lajkovi i komentari</p>
-            <p class="fragment fade-up text-sm">ðŸ–¼ï¸ Galerija sa moderacijom</p>
-            <p class="fragment fade-up text-sm">ðŸ”’ Samo verifikovani uÄenici mogu postavljati</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- SLIDE 39: Telegram Moderation -->
-      <section data-transition="convex" data-background-color="#09090b">
-        <h2>ðŸ¤– Moderacija putem Telegrama</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="dark-card" style="max-width: 600px; margin: 0 auto; text-align: center;">
-          <p class="fragment fade-up text-sm mb-2">
-            Svaka fotografija prolazi moderaciju prije objavljivanja
-          </p>
-          <div class="fragment scale-in" style="background: rgba(36, 161, 222, 0.08); border: 1px solid rgba(36, 161, 222, 0.25); border-radius: 16px; padding: 1.5em; max-width: 350px; margin: 0 auto;">
-            <div style="font-size: 1.5em; margin-bottom: 0.5em;">ðŸ¤–ðŸ’¬</div>
-            <div class="text-sm" style="font-weight: 600; color: #3b82f6;">Telegram Bot</div>
-            <div class="text-xs text-muted mt-1" style="line-height: 1.5;">
-              "Novi zahtjev za objavljivanje fotografije od uÄenika Marko P."
-            </div>
-            <div style="display: flex; justify-content: center; gap: 1em; margin-top: 1em;">
-              <div style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.4); border-radius: 8px; padding: 0.4em 1.2em; font-size: 0.7em; color: #22c55e; font-weight: 600;">
-                âœ… Da
-              </div>
-              <div style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 0.4em 1.2em; font-size: 0.7em; color: #ef4444; font-weight: 600;">
-                âŒ Ne
-              </div>
-            </div>
-          </div>
-          <p class="fragment fade-up text-xs text-muted mt-2">
-            Admin odobrava ili odbija jednim klikom â€” brzo, sigurno, efikasno
-          </p>
-        </div>
-      </section>
-
-      <!-- SLIDE 40: Double-tap to Like -->
-      <section data-transition="zoom" data-background-color="#09090b">
-        <h2>ðŸ’œ Double-Tap to Like</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="dark-card" style="max-width: 500px; margin: 0 auto; text-align: center;">
+      <!-- ==================== SLIDE 12: QUIZZES ==================== -->
+      <section data-transition="zoom" data-auto-animate>
+        <h2 data-id="quiz-title">&#x2753; Interaktivni Kvizovi</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Testiranje znanja kroz zabavne kvizove</p>
+        <div class="dual-phones" style="margin-top: 28px;">
           <div class="fragment scale-in">
-            <div style="font-size: 5em;" class="heart-beat">ðŸ’œ</div>
+            <div class="phone-frame" style="width: 280px; height: 560px;">
+              <img src="screenshots/quiz-question.jpg" alt="Kviz pitanje">
+            </div>
+            <p class="small-text" style="margin-top: 12px;">Pitanje sa ponudjenim odgovorima</p>
           </div>
-          <p class="fragment fade-up text-sm mt-1">
-            Dupli tap na fotografiju â€” kao Instagram
-          </p>
-          <p class="fragment fade-up text-xs text-muted">
-            Animirano srce sa premium efektima
-          </p>
-        </div>
-      </section>
-
-      <!-- ============================================
-           BENEFITS & CLOSING
-           ============================================ -->
-
-      <!-- SLIDE 41: Benefits Section Title -->
-      <section data-auto-animate data-background-color="#09090b">
-        <div data-id="ben-icon" style="font-size: 4em;" class="float">ðŸ†</div>
-        <h2 data-id="ben-title" class="gradient-text mt-1">Prednosti</h2>
-        <p data-id="ben-sub" class="text-muted text-sm">ZaÅ¡to je ovo vaÅ¾no</p>
-      </section>
-
-      <!-- SLIDE 42: Benefits for Students -->
-      <section data-auto-animate data-transition="slide" data-background-color="#09090b">
-        <div data-id="ben-icon" style="font-size: 1.5em; position: absolute; top: 1em; right: 1.5em;">ðŸ†</div>
-        <h2 data-id="ben-title" style="font-size: 1.4em;">ðŸŽ“ Za UÄenike</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="feature-grid" style="max-width: 700px;">
-          <div class="feature-item fragment slide-right">
-            <div style="font-size: 1.5em;">ðŸ“±</div>
-            <h4>Sve na jednom mjestu</h4>
-            <p>Raspored, ocjene, novosti, lekcije â€” jedan portal</p>
-          </div>
-          <div class="feature-item fragment slide-left">
-            <div style="font-size: 1.5em;">âœ¨</div>
-            <h4>Moderan dizajn</h4>
-            <p>UX na nivou premium aplikacija</p>
-          </div>
-          <div class="feature-item fragment slide-right">
-            <div style="font-size: 1.5em;">ðŸ¤</div>
-            <h4>Zajednica</h4>
-            <p>Dijeljenje fotografija i interakcija</p>
-          </div>
-          <div class="feature-item fragment slide-left">
-            <div style="font-size: 1.5em;">ðŸ“Š</div>
-            <h4>PraÄ‡enje uspjeha</h4>
-            <p>Ocjene i prosjek uvijek dostupni</p>
+          <div class="fragment scale-in">
+            <div class="phone-frame" style="width: 280px; height: 560px;">
+              <img src="screenshots/quiz-answered.jpg" alt="Kviz odgovor">
+            </div>
+            <p class="small-text" style="margin-top: 12px;">Trenutni feedback &mdash; tacan/netacan</p>
           </div>
         </div>
       </section>
 
-      
+      <!-- ==================== SLIDE 13: FUTURE QUIZ TYPES ==================== -->
+      <section data-transition="fade" data-auto-animate>
+        <h2>Tipovi Kvizova</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Trenutni i planirani formati</p>
+        <div class="quiz-types-grid" style="margin-top: 28px;">
+          <div class="quiz-type-card active fragment fade-up">
+            <span class="icon">&#x1F4DD;</span>
+            <h4>Multiple Choice</h4>
+            <p>Odaberi tacan odgovor od ponudjenih opcija</p>
+            <span class="badge-live">AKTIVNO</span>
+          </div>
+          <div class="quiz-type-card upcoming fragment fade-up">
+            <span class="icon">&#x2705;</span>
+            <h4>Da / Ne</h4>
+            <p>Brza pitanja sa dva moguca odgovora</p>
+            <span class="badge-soon">USKORO</span>
+          </div>
+          <div class="quiz-type-card upcoming fragment fade-up">
+            <span class="icon">&#x1F914;</span>
+            <h4>Pogodi odgovor</h4>
+            <p>Ukucaj tacan odgovor bez ponudjenih opcija</p>
+            <span class="badge-soon">USKORO</span>
+          </div>
+          <div class="quiz-type-card upcoming fragment fade-up">
+            <span class="icon">&#x1F504;</span>
+            <h4>Spoji parove</h4>
+            <p>Povezi pojmove sa definicijama</p>
+            <span class="badge-soon">USKORO</span>
+          </div>
+        </div>
+      </section>
 
-      <!-- SLIDE 44: Benefits for Administration -->
-      <section data-transition="slide" data-background-color="#09090b">
-        <h2 style="font-size: 1.4em;">ðŸ›ï¸ Za Upravu</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="dark-card" style="max-width: 650px; margin: 0 auto;">
-          <div class="fragment fade-up" style="display: flex; align-items: flex-start; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
-            <span style="font-size: 1.3em;">ðŸ‘ï¸</span>
-            <div>
-              <div class="text-sm" style="font-weight: 600;">Potpuni nadzor</div>
-              <div class="text-xs text-muted">Pregled svih korisnika, sadrÅ¾aja i aktivnosti</div>
+      <!-- ==================== SLIDE 14: CALENDAR ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/calendar.jpg" alt="Kalendar">
             </div>
           </div>
-          <div class="fragment fade-up" style="display: flex; align-items: flex-start; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
-            <span style="font-size: 1.3em;">ðŸ“Š</span>
-            <div>
-              <div class="text-sm" style="font-weight: 600;">Analitika</div>
-              <div class="text-xs text-muted">Statistike koriÅ¡Ä‡enja, aktivnih korisnika, popularnosti</div>
+          <div class="split-content">
+            <h2 data-id="calendar-title">&#x1F4C5; Kalendar Dogadjaja</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Svi školski dogadjaji na jednom mjestu:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Mjesecni pregled sa oznacenim datumima</li>
+              <li class="fragment fade-up">Razlicite boje za tipove dogadjaja</li>
+              <li class="fragment fade-up">Ekskurzije, takmicenja, praznici</li>
+              <li class="fragment fade-up">Klik na datum otvara detalje</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 15: EVENT DETAIL ==================== -->
+      <section data-transition="convex" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-content">
+            <h2 data-id="event-title">Detalji Dogadjaja</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Svaki dogadjaj sadrzi kompletne informacije:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Naziv, datum i vrijeme dogadjaja</li>
+              <li class="fragment fade-up">Opis i lokacija odrzavanja</li>
+              <li class="fragment fade-up">Tip dogadjaja (školski, sportski, kulturni)</li>
+              <li class="fragment fade-up">Povezani dokumenti ili linkovi</li>
+            </ul>
+          </div>
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/event-detail.jpg" alt="Detalj dogadjaja">
             </div>
           </div>
-          <div class="fragment fade-up" style="display: flex; align-items: flex-start; gap: 0.8em; padding: 0.6em 0; border-bottom: 1px solid #27272a;">
-            <span style="font-size: 1.3em;">ðŸ›¡ï¸</span>
-            <div>
-              <div class="text-sm" style="font-weight: 600;">Moderacija</div>
-              <div class="text-xs text-muted">Kontrola sadrÅ¾aja, Telegram bot za odobrenja</div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 16: WEEKLY SCHEDULE ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/schedule-weekly.jpg" alt="Sedmični raspored">
             </div>
           </div>
-          <div class="fragment fade-up" style="display: flex; align-items: flex-start; gap: 0.8em; padding: 0.6em 0;">
-            <span style="font-size: 1.3em;">ðŸ†</span>
-            <div>
-              <div class="text-sm" style="font-weight: 600;">Pionirski korak</div>
-              <div class="text-xs text-muted">Jedna od prvih Å¡kola u Crnoj Gori sa sopstvenom platformom</div>
+          <div class="split-content">
+            <h2 data-id="schedule-title">&#x1F4CB; Sedmični Raspored</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Kompletni pregled sedmice:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Svi časovi od ponedjeljka do petka</li>
+              <li class="fragment fade-up">Vrijeme pocetka i kraja svakog casa</li>
+              <li class="fragment fade-up">Ime predmeta i ucionice</li>
+              <li class="fragment fade-up">Prebacivanje izmedju sedmicnog i dnevnog prikaza</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 17: DAILY SCHEDULE ==================== -->
+      <section data-transition="fade" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-content">
+            <h2 data-id="daily-title">Dnevni Raspored</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Fokusiran prikaz za tekuci dan:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Detaljan raspored svih časova danas</li>
+              <li class="fragment fade-up">Trenutni i sledeci čas istaknut</li>
+              <li class="fragment fade-up">Vrijeme do sljedeceg casa</li>
+              <li class="fragment fade-up">Brz prelaz na bilo koji dan u sedmici</li>
+            </ul>
+          </div>
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/schedule-daily.jpg" alt="Dnevni raspored">
             </div>
           </div>
         </div>
       </section>
 
-      <!-- SLIDE 45: Future Roadmap -->
-      <section data-transition="convex" data-background-color="#09090b">
-        <h2>ðŸ—ºï¸ Plan Razvoja</h2>
-        <div class="section-divider mb-2"></div>
-        <div class="timeline" style="max-width: 500px;">
-          <div class="timeline-item fragment slide-right">
-            <div class="badge badge-green" style="font-size: 0.55em;">ZavrÅ¡eno</div>
-            <div class="text-sm mt-1" style="font-weight: 600;">Osnovna platforma</div>
-            <div class="text-xs text-muted">Registracija, novosti, raspored, profil</div>
+      <!-- ==================== SLIDE 18: GRADES ==================== -->
+      <section data-transition="zoom" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/grades.jpg" alt="Ocjene">
+            </div>
           </div>
-          <div class="timeline-item fragment slide-right">
-            <div class="badge badge-green" style="font-size: 0.55em;">ZavrÅ¡eno</div>
-            <div class="text-sm mt-1" style="font-weight: 600;">Lekcije, kvizovi, kalendar</div>
-            <div class="text-xs text-muted">Obrazovni sadrÅ¾aj i organizacija</div>
-          </div>
-          <div class="timeline-item fragment slide-right">
-            <div class="badge badge-green" style="font-size: 0.55em;">ZavrÅ¡eno</div>
-            <div class="text-sm mt-1" style="font-weight: 600;">Dumbs â€” Foto galerija</div>
-            <div class="text-xs text-muted">Dijeljenje fotografija sa moderacijom</div>
-          </div>
-          <div class="timeline-item fragment slide-right">
-            <div class="badge badge-purple" style="font-size: 0.55em;">U planu</div>
-            <div class="text-sm mt-1" style="font-weight: 600;">Push notifikacije</div>
-            <div class="text-xs text-muted">Real-time obavjeÅ¡tenja na telefon</div>
-          </div>
-          <div class="timeline-item fragment slide-right">
-            <div class="badge badge-purple" style="font-size: 0.55em;">U planu</div>
-            <div class="text-sm mt-1" style="font-weight: 600;">Chat sistem</div>
-            <div class="text-xs text-muted">Komunikacija između uÄčenika</div>
-          </div>
-          <div class="timeline-item fragment slide-right">
-            <div class="badge badge-blue" style="font-size: 0.55em;">Vizija</div>
-            <div class="text-sm mt-1" style="font-weight: 600;">AI asistent</div>
-            <div class="text-xs text-muted">PomoÄ‡ pri uÄenju, rezimei lekcija</div>
+          <div class="split-content">
+            <h2 data-id="grades-title">&#x1F4CA; Moje Ocjene</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Kompletan uvid u školski uspjeh:</p>
+            <div class="trimester-grid fragment fade-up" style="max-width: 600px;">
+              <div class="trimester-tab active">
+                <h4>I Trimestar</h4>
+                <p>Sep &mdash; Nov</p>
+              </div>
+              <div class="trimester-tab">
+                <h4>II Trimestar</h4>
+                <p>Dec &mdash; Feb</p>
+              </div>
+              <div class="trimester-tab">
+                <h4>III Trimestar</h4>
+                <p>Mar &mdash; Maj</p>
+              </div>
+              <div class="trimester-tab">
+                <h4>IV Trimestar</h4>
+                <p>Jun &mdash; Avg</p>
+              </div>
+            </div>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Ocjene po svakom predmetu i trimestru</li>
+              <li class="fragment fade-up">Prosjecna ocjena automatski izracunata</li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <!-- SLIDE 46: Tech Stack -->
-      <section data-transition="fade" data-background-color="#09090b">
-        <h2>âš™ï¸ TehnoloÅ¡ki Stack</h2>
-        <div class="section-divider mb-2"></div>
-        <div style="display: flex; justify-content: center; gap: 1.5em; flex-wrap: wrap; max-width: 800px; margin: 0 auto;">
-          <div class="glass-card fragment scale-in" style="min-width: 180px; text-align: center;">
-            <div style="font-size: 2em;">â–²</div>
-            <h4 class="text-purple" style="font-size: 0.8em;">Next.js 15</h4>
-            <p class="text-xs text-muted">React framework</p>
+      <!-- ==================== SLIDE 19: GPA CALCULATOR ==================== -->
+      <section data-transition="convex" data-auto-animate>
+        <h2>Kalkulator Prosjeka</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Automatsko izracunavanje prosjecne ocjene</p>
+        <div class="gpa-visual fragment scale-in" style="margin-top: 32px;">
+          <div class="gpa-circle">
+            <div class="gpa-circle-inner">
+              <span class="gpa-value">4.12</span>
+              <span class="gpa-label">Prosjek</span>
+            </div>
           </div>
-          <div class="glass-card fragment scale-in" style="min-width: 180px; text-align: center;">
-            <div style="font-size: 2em;">âš¡</div>
-            <h4 class="text-green" style="font-size: 0.8em;">Supabase</h4>
-            <p class="text-xs text-muted">Baza podataka & Auth</p>
-          </div>
-          <div class="glass-card fragment scale-in" style="min-width: 180px; text-align: center;">
-            <div style="font-size: 2em;">ðŸŽ¨</div>
-            <h4 class="text-blue" style="font-size: 0.8em;">Tailwind CSS</h4>
-            <p class="text-xs text-muted">Utility-first styling</p>
-          </div>
-          <div class="glass-card fragment scale-in" style="min-width: 180px; text-align: center;">
-            <div style="font-size: 2em;">ðŸš€</div>
-            <h4 style="font-size: 0.8em; color: #fafafa;">Vercel</h4>
-            <p class="text-xs text-muted">Hosting & CDN</p>
+          <div class="gpa-details">
+            <ul>
+              <li class="fragment fade-up"><strong style="color: var(--purple);">Automatski</strong> &mdash; prosjek se racuna iz unesenih ocjena</li>
+              <li class="fragment fade-up"><strong style="color: var(--purple);">Po trimestru</strong> &mdash; zasebni prosjeci za svaki period</li>
+              <li class="fragment fade-up"><strong style="color: var(--purple);">Ukupni</strong> &mdash; generalni prosjek svih predmeta</li>
+              <li class="fragment fade-up"><strong style="color: var(--purple);">Vizuelni</strong> &mdash; graficki prikaz napretka</li>
+            </ul>
           </div>
         </div>
-        <p class="fragment fade-up text-xs text-muted mt-2" style="text-align: center;">
-          Ista tehnologija koju koriste kompanije poput Netflix, TikTok, Twitch
-        </p>
       </section>
 
-      <!-- SLIDE 47: Thank You â€” small -->
-      <section data-auto-animate data-auto-animate-easing="cubic-bezier(0.68, -0.15, 0.27, 1.15)" data-background-color="#09090b">
-        <div data-id="ty-emoji" style="font-size: 2em;" class="float">ðŸŽ“</div>
-        <h2 data-id="ty-title" style="font-size: 1em; color: #a1a1aa;">Hvala na paÅ¾nji</h2>
-      </section>
-
-      <!-- SLIDE 48: Thank You â€” full -->
-      <section data-auto-animate data-auto-animate-easing="cubic-bezier(0.68, -0.15, 0.27, 1.15)" data-background-color="#09090b">
-        <div data-id="ty-emoji" style="font-size: 4em;" class="float">ðŸŽ“</div>
-        <h1 data-id="ty-title" class="gradient-text" style="font-size: 2.2em; line-height: 1.2;">
-          Hvala na paÅ¾nji
-        </h1>
-        <div class="section-divider" style="margin: 0.6em auto;"></div>
-        <div class="fragment fade-up" style="margin-top: 1em;">
-          <p class="text-sm text-muted">Projekat kreirao</p>
-          <p style="font-size: 1em; font-weight: 700; color: #fafafa; margin-top: 0.3em;">
-            Dmitrij IvaÅ¡cenko
-          </p>
-          <p class="text-sm text-muted">UÄenik 2-1, Gimnazija "Niko RoloviÄ‡"</p>
-        </div>
-        <div class="fragment fade-up mt-2">
-          <div class="dark-card-sm" style="display: inline-block;">
-            <span class="text-sm">ðŸŒ</span>
-            <a href="https://niko-rolovic-site.vercel.app" target="_blank" style="font-size: 0.7em; color: #a78bfa; text-decoration: none;">
-              niko-rolovic-site.vercel.app
-            </a>
+      <!-- ==================== SLIDE 20: PROFILE ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-content">
+            <h2 data-id="profile-title">&#x1F464; Profil Ucenika</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Licna stranica svakog učenika:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Profilna fotografija i licni podaci</li>
+              <li class="fragment fade-up">Razred i odjeljenje</li>
+              <li class="fragment fade-up">Broj zavrsenih kvizova</li>
+              <li class="fragment fade-up">Datum registracije i aktivnost</li>
+              <li class="fragment fade-up">Uloga u sistemu (student, moderator...)</li>
+            </ul>
+          </div>
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/profile.jpg" alt="Profil">
+            </div>
           </div>
         </div>
-        <p class="fragment fade-up text-xs text-muted mt-2" style="opacity: 0.5;">
-          Bar, 2025/2026
-        </p>
       </section>
 
-    </div><!-- /slides -->
-  </div><!-- /reveal -->
+      <!-- ==================== SLIDE 21: ROLES ==================== -->
+      <section data-transition="zoom" data-auto-animate>
+        <h2>Sistem Uloga</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Cetiri nivoa pristupa za razlicite potrebe</p>
+        <div class="role-grid" style="margin-top: 28px;">
+          <div class="role-card student fragment fade-up">
+            <span class="role-icon">&#x1F393;</span>
+            <h4>Student</h4>
+            <p>Pristup svim funkcijama portala, kvizovima, ocjenama i rasporedu</p>
+          </div>
+          <div class="role-card moderator fragment fade-up">
+            <span class="role-icon">&#x1F6E1;&#xFE0F;</span>
+            <h4>Moderator</h4>
+            <p>Pregled prijavljenog sadrzaja i moderacija komentara</p>
+          </div>
+          <div class="role-card admin fragment fade-up">
+            <span class="role-icon">&#x1F527;</span>
+            <h4>Admin</h4>
+            <p>Upravljanje korisnicima, sadrzajem i podesavanjima sistema</p>
+          </div>
+          <div class="role-card creator fragment fade-up">
+            <span class="role-icon">&#x1F451;</span>
+            <h4>Creator</h4>
+            <p>Potpuna kontrola nad platformom, ukljucujuci role i strukturu</p>
+          </div>
+        </div>
+      </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+      <!-- ==================== SLIDE 22: NAV CUSTOMIZATION ==================== -->
+      <section data-transition="convex" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/nav-customization.jpg" alt="Navigacija">
+            </div>
+          </div>
+          <div class="split-content">
+            <h2 data-id="nav-title">&#x1F3AF; Prilagodjena Navigacija</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Svaki učenik bira svoj raspored menija:</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Drag-and-drop preuredjivanje stavki</li>
+              <li class="fragment fade-up">Sakrijte stranice koje ne koristite</li>
+              <li class="fragment fade-up">Donja navigacijska traka sa 5 ikonica</li>
+              <li class="fragment fade-up">Personalizovano iskustvo za svakog korisnika</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 23: SETTINGS & THEMES ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-content">
+            <h2 data-id="settings-title">&#x2699;&#xFE0F; Podešavanja i Teme</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Potpuna kontrola nad izgledom portala:</p>
+            <div class="theme-grid fragment fade-up" style="max-width: 560px; margin-top: 20px;">
+              <div class="theme-swatch theme-purple"><h4>Purple</h4></div>
+              <div class="theme-swatch theme-blue"><h4>Blue</h4></div>
+              <div class="theme-swatch theme-green"><h4>Green</h4></div>
+              <div class="theme-swatch theme-rose"><h4>Rose</h4></div>
+              <div class="theme-swatch theme-amber"><h4>Amber</h4></div>
+              <div class="theme-swatch theme-cyan"><h4>Cyan</h4></div>
+            </div>
+            <p class="small-text fragment fade-up" style="margin-top: 16px;">6 razlicitih tema &bull; Promjena u realnom vremenu</p>
+          </div>
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/settings.jpg" alt="Podešavanja">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 24: ABOUT SCHOOL ==================== -->
+      <section data-transition="fade" data-auto-animate>
+        <div class="split-layout">
+          <div class="split-visual fragment scale-in">
+            <div class="phone-frame">
+              <img src="screenshots/about.jpg" alt="O školi">
+            </div>
+          </div>
+          <div class="split-content">
+            <h2 data-id="about-title">&#x1F3EB; O Skoli</h2>
+            <div class="divider fragment fade-up" style="margin: 16px 0;"></div>
+            <p class="fragment fade-up">Informacije o Gimnaziji "Niko Rolović":</p>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Istorija skole i tradicija</li>
+              <li class="fragment fade-up">Kontakt informacije i lokacija</li>
+              <li class="fragment fade-up">Broj učenika i odjeljenja</li>
+              <li class="fragment fade-up">Skolski moto i vrijednosti</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 25: ADMIN OVERVIEW ==================== -->
+      <section data-transition="zoom" data-auto-animate data-background="#0c1220">
+        <h2 style="background: linear-gradient(135deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">&#x1F6E0;&#xFE0F; Admin Panel</h2>
+        <div class="divider fragment fade-up" style="background: linear-gradient(90deg, #3b82f6, #60a5fa);"></div>
+        <p class="subtitle fragment fade-up">Potpuna kontrola nad sadrzajem portala</p>
+        <div class="admin-grid" style="margin-top: 28px;">
+          <div class="admin-feature fragment fade-up">
+            <span class="icon">&#x1F4F0;</span>
+            <h4>Vijesti</h4>
+            <p>Kreiranje, uredjivanje i brisanje vijesti</p>
+          </div>
+          <div class="admin-feature fragment fade-up">
+            <span class="icon">&#x1F4C5;</span>
+            <h4>Kalendar</h4>
+            <p>Upravljanje dogadjajima i aktivnostima</p>
+          </div>
+          <div class="admin-feature fragment fade-up">
+            <span class="icon">&#x1F4DA;</span>
+            <h4>Lekcije</h4>
+            <p>Editor za nastavne materijale</p>
+          </div>
+          <div class="admin-feature fragment fade-up">
+            <span class="icon">&#x1F465;</span>
+            <h4>Učenici</h4>
+            <p>Upravljanje bazom učenika</p>
+          </div>
+          <div class="admin-feature fragment fade-up">
+            <span class="icon">&#x1F510;</span>
+            <h4>Uloge</h4>
+            <p>Dodjela i upravljanje rolama</p>
+          </div>
+          <div class="admin-feature fragment fade-up">
+            <span class="icon">&#x1F4F7;</span>
+            <h4>Fotografije</h4>
+            <p>Moderacija galerije i sadrzaja</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 26: NEWS & CALENDAR MANAGEMENT ==================== -->
+      <section data-transition="slide" data-auto-animate data-background="#0c1220">
+        <div class="split-layout">
+          <div class="split-content">
+            <h2 style="background: linear-gradient(135deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Upravljanje Vijestima i Kalendarom</h2>
+            <div class="divider fragment fade-up" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); margin: 16px 0;"></div>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Kreiranje vijesti sa slikama i formatiranim tekstom</li>
+              <li class="fragment fade-up">Dodavanje dogadjaja u kalendar sa detaljima</li>
+              <li class="fragment fade-up">Uredjivanje i brisanje postojeceg sadrzaja</li>
+              <li class="fragment fade-up">Pregled statistike citanosti</li>
+            </ul>
+          </div>
+          <div class="split-visual fragment scale-in">
+            <div class="browser-frame">
+              <div class="browser-bar">
+                <div class="browser-dot red"></div>
+                <div class="browser-dot yellow"></div>
+                <div class="browser-dot green"></div>
+                <div class="browser-url">admin.nikorolovic.me/news</div>
+              </div>
+              <img src="screenshots/admin-news.png" alt="Admin vijesti">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 27: LECTURE EDITOR ==================== -->
+      <section data-transition="convex" data-auto-animate data-background="#0c1220">
+        <div class="split-layout">
+          <div class="split-visual fragment scale-in">
+            <div class="browser-frame">
+              <div class="browser-bar">
+                <div class="browser-dot red"></div>
+                <div class="browser-dot yellow"></div>
+                <div class="browser-dot green"></div>
+                <div class="browser-url">admin.nikorolovic.me/lectures</div>
+              </div>
+              <img src="screenshots/admin-lectures.png" alt="Admin lekcije">
+            </div>
+          </div>
+          <div class="split-content">
+            <h2 style="background: linear-gradient(135deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Editor Lekcija</h2>
+            <div class="divider fragment fade-up" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); margin: 16px 0;"></div>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Rich text editor za sadrzaj lekcija</li>
+              <li class="fragment fade-up">Dodavanje slika i medijskih fajlova</li>
+              <li class="fragment fade-up">Kreiranje kvizova uz svaku lekciju</li>
+              <li class="fragment fade-up">Organizacija po predmetima i razredima</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 28: STUDENT MANAGEMENT ==================== -->
+      <section data-transition="fade" data-auto-animate data-background="#0c1220">
+        <div class="split-layout">
+          <div class="split-content">
+            <h2 style="background: linear-gradient(135deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Upravljanje Učenicima</h2>
+            <div class="divider fragment fade-up" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); margin: 16px 0;"></div>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Pregled svih registrovanih učenika</li>
+              <li class="fragment fade-up">Filtriranje po razredu i odjeljenju</li>
+              <li class="fragment fade-up">Status verifikacije naloga</li>
+              <li class="fragment fade-up">Mogucnost deaktivacije naloga</li>
+              <li class="fragment fade-up">Uvoz novih učenika na pocetku godine</li>
+            </ul>
+          </div>
+          <div class="split-visual fragment scale-in">
+            <div class="browser-frame">
+              <div class="browser-bar">
+                <div class="browser-dot red"></div>
+                <div class="browser-dot yellow"></div>
+                <div class="browser-dot green"></div>
+                <div class="browser-url">admin.nikorolovic.me/students</div>
+              </div>
+              <img src="screenshots/admin-students.png" alt="Admin ucenici">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 29: ROLE MANAGEMENT ==================== -->
+      <section data-transition="slide" data-auto-animate data-background="#0c1220">
+        <div class="split-layout">
+          <div class="split-visual fragment scale-in">
+            <div class="browser-frame">
+              <div class="browser-bar">
+                <div class="browser-dot red"></div>
+                <div class="browser-dot yellow"></div>
+                <div class="browser-dot green"></div>
+                <div class="browser-url">admin.nikorolovic.me/roles</div>
+              </div>
+              <img src="screenshots/admin-roles.png" alt="Admin uloge">
+            </div>
+          </div>
+          <div class="split-content">
+            <h2 style="background: linear-gradient(135deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Upravljanje Ulogama</h2>
+            <div class="divider fragment fade-up" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); margin: 16px 0;"></div>
+            <ul style="margin-top: 16px;">
+              <li class="fragment fade-up">Dodjela uloga pojedinim ucenicima</li>
+              <li class="fragment fade-up">Pregled svih moderatora i admina</li>
+              <li class="fragment fade-up">Promjena nivoa pristupa u realnom vremenu</li>
+              <li class="fragment fade-up">Revizija svih promjena uloga</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 30: PHOTO GALLERY - DUMBS ==================== -->
+      <section data-transition="zoom" data-auto-animate>
+        <h2 style="background: linear-gradient(135deg, var(--pink), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">&#x1F4F7; Dumbs &mdash; Galerija Fotografija</h2>
+        <div class="divider fragment fade-up" style="background: linear-gradient(90deg, var(--pink), var(--purple));"></div>
+        <p class="subtitle fragment fade-up">Dijeli trenutke sa školskim drustvom</p>
+        <div class="gallery-features" style="margin-top: 28px;">
+          <div class="gallery-card fragment fade-up">
+            <span class="icon">&#x1F4F8;</span>
+            <h4>Postavi fotografiju</h4>
+            <p>Jednostavno uploadovanje sa telefona ili racunara</p>
+          </div>
+          <div class="gallery-card fragment fade-up">
+            <span class="icon">&#x1F5BC;&#xFE0F;</span>
+            <h4>Pregledaj galeriju</h4>
+            <p>Grid prikaz svih fotografija skole</p>
+          </div>
+          <div class="gallery-card fragment fade-up">
+            <span class="icon">&#x2764;&#xFE0F;</span>
+            <h4>Lajkuj sadrzaj</h4>
+            <p>Pokazi podrsku duplim tapom</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 31: PHOTO MODERATION ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <h2>Moderacija Fotografija</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Automatski sistem za kontrolu sadrzaja</p>
+        <div style="display: flex; gap: 32px; margin-top: 28px; justify-content: center; align-items: center;">
+          <div class="card fragment scale-in" style="padding: 28px; text-align: center; max-width: 280px;">
+            <span style="font-size: 3em; display: block; margin-bottom: 12px;">&#x1F4F8;</span>
+            <h4 style="color: var(--text-primary); font-weight: 600;">Ucenik salje fotografiju</h4>
+            <p class="small-text">Upload na platformu</p>
+          </div>
+          <span class="arrow fragment fade-up">&#x27A1;&#xFE0F;</span>
+          <div class="card fragment scale-in" style="padding: 28px; text-align: center; max-width: 280px; border-color: rgba(96, 165, 250, 0.3);">
+            <span style="font-size: 3em; display: block; margin-bottom: 12px;">&#x1F916;</span>
+            <h4 style="color: var(--blue); font-weight: 600;">Telegram Bot obavjestenje</h4>
+            <p class="small-text">Admin dobija notifikaciju</p>
+          </div>
+          <span class="arrow fragment fade-up">&#x27A1;&#xFE0F;</span>
+          <div class="card fragment scale-in" style="padding: 28px; text-align: center; max-width: 280px; border-color: rgba(74, 222, 128, 0.3);">
+            <span style="font-size: 3em; display: block; margin-bottom: 12px;">&#x2705;</span>
+            <h4 style="color: var(--green); font-weight: 600;">Odobrenje / Odbijanje</h4>
+            <p class="small-text">Jedan klik u Telegramu</p>
+          </div>
+        </div>
+        <p class="small-text fragment fade-up" style="margin-top: 24px;">Sve fotografije prolaze kroz moderaciju prije objavljivanja</p>
+      </section>
+
+      <!-- ==================== SLIDE 32: DOUBLE TAP LIKE ==================== -->
+      <section data-transition="convex" data-auto-animate>
+        <h2>Dupli Tap &mdash; Lajk</h2>
+        <div class="divider fragment fade-up"></div>
+        <div style="display: flex; gap: 60px; align-items: center; justify-content: center; margin-top: 32px;">
+          <div class="fragment scale-in" style="text-align: center;">
+            <div style="font-size: 8em; line-height: 1;">&#x2764;&#xFE0F;</div>
+            <p class="subtitle" style="margin-top: 16px;">Dupli tap na fotografiju</p>
+            <p class="small-text">Kao na Instagramu &mdash; intuitivna interakcija</p>
+          </div>
+          <div class="fragment fade-up" style="text-align: left; max-width: 500px;">
+            <ul>
+              <li class="fragment fade-up">Animirano srce pri lajkovanju</li>
+              <li class="fragment fade-up">Brojac lajkova na svakoj fotografiji</li>
+              <li class="fragment fade-up">Pregled ko je lajkovao</li>
+              <li class="fragment fade-up">Poznato korisnicko iskustvo</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 33: BENEFITS FOR STUDENTS ==================== -->
+      <section data-transition="slide" data-auto-animate>
+        <h2 data-id="benefits-s">Prednosti za Ucenike</h2>
+        <div class="divider fragment fade-up"></div>
+        <div class="benefits-grid" style="margin-top: 24px;">
+          <div class="benefit-item fragment fade-up">
+            <span class="icon">&#x1F4F1;</span>
+            <div>
+              <h4>Sve na jednom mjestu</h4>
+              <p>Raspored, ocjene, vijesti, lekcije &mdash; bez pretrazivanja</p>
+            </div>
+          </div>
+          <div class="benefit-item fragment fade-up">
+            <span class="icon">&#x23F0;</span>
+            <div>
+              <h4>Usteda vremena</h4>
+              <p>Brz pristup svim informacijama bilo kada, bilo gdje</p>
+            </div>
+          </div>
+          <div class="benefit-item fragment fade-up">
+            <span class="icon">&#x1F3AE;</span>
+            <div>
+              <h4>Interaktivno ucenje</h4>
+              <p>Kvizovi pretvaraju ucenje u zabavno iskustvo</p>
+            </div>
+          </div>
+          <div class="benefit-item fragment fade-up">
+            <span class="icon">&#x1F4CA;</span>
+            <div>
+              <h4>Praćenje napretka</h4>
+              <p>Ocjene i prosjek uvijek dostupni</p>
+            </div>
+          </div>
+          <div class="benefit-item fragment fade-up">
+            <span class="icon">&#x1F3A8;</span>
+            <div>
+              <h4>Personalizacija</h4>
+              <p>Teme, navigacija, profil &mdash; portal po vasoj mjeri</p>
+            </div>
+          </div>
+          <div class="benefit-item fragment fade-up">
+            <span class="icon">&#x1F91D;</span>
+            <div>
+              <h4>Zajednica</h4>
+              <p>Galerija fotografija povezuje učenike van ucionice</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 34: BENEFITS FOR ADMINISTRATION ==================== -->
+      <section data-transition="fade" data-auto-animate>
+        <h2 data-id="benefits-a">Prednosti za Administraciju</h2>
+        <div class="divider fragment fade-up"></div>
+        <div class="benefits-grid" style="margin-top: 24px;">
+          <div class="benefit-item fragment fade-up">
+            <span class="icon">&#x1F4E2;</span>
+            <div>
+              <h4>Efikasna komunikacija</h4>
+              <p>Obavještenja stizu direktno do svih učenika</p>
+            </div>
+          </div>
+          <div class="benefit-item fragment fade-up">
+            <span class="icon">&#x1F4CA;</span>
+            <div>
+              <h4>Digitalizacija procesa</h4>
+              <p>Manje papira, vise efikasnosti u svakodnevnom radu</p>
+            </div>
+          </div>
+          <div class="benefit-item fragment fade-up">
+            <span class="icon">&#x1F5C2;&#xFE0F;</span>
+            <div>
+              <h4>Centralizovani sadrzaj</h4>
+              <p>Sve vijesti, dogadjaji i materijali na jednoj platformi</p>
+            </div>
+          </div>
+          <div class="benefit-item fragment fade-up">
+            <span class="icon">&#x1F310;</span>
+            <div>
+              <h4>Moderan imidz skole</h4>
+              <p>Digitalna platforma pozicionira skolu kao inovativnu</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 35: FUTURE ROADMAP ==================== -->
+      <section data-transition="convex" data-auto-animate>
+        <h2>Buduci Razvoj</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Plan za nadogradnju portala</p>
+        <div class="roadmap-grid" style="margin-top: 28px;">
+          <div class="roadmap-item fragment fade-up">
+            <div class="phase">Faza 1 &mdash; Q3 2025</div>
+            <h4>Prosireni kvizovi</h4>
+            <p>Novi tipovi pitanja: da/ne, pogodi odgovor, spoji parove. Bodovni sistem i rang-lista.</p>
+          </div>
+          <div class="roadmap-item fragment fade-up">
+            <div class="phase">Faza 2 &mdash; Q4 2025</div>
+            <h4>Notifikacije</h4>
+            <p>Push obavještenja za nove vijesti, dogadjaje i ocjene. Email digest sedmicno.</p>
+          </div>
+          <div class="roadmap-item fragment fade-up">
+            <div class="phase">Faza 3 &mdash; Q1 2026</div>
+            <h4>Mobilna aplikacija</h4>
+            <p>Nativna Android i iOS aplikacija za jos brzi pristup portalu.</p>
+          </div>
+          <div class="roadmap-item fragment fade-up">
+            <div class="phase">Faza 4 &mdash; Q2 2026</div>
+            <h4>AI Asistent</h4>
+            <p>Pametni asistent za pomoc sa ucenjem, pitanjima i navigacijom portala.</p>
+          </div>
+          <div class="roadmap-item fragment fade-up">
+            <div class="phase">Faza 5 &mdash; Q3 2026</div>
+            <h4>Integracije</h4>
+            <p>Povezivanje sa Google Classroom-om, Zoom-om i drugim obrazovnim alatima.</p>
+          </div>
+          <div class="roadmap-item fragment fade-up">
+            <div class="phase">Faza 6 &mdash; 2027</div>
+            <h4>Skaliranje</h4>
+            <p>Mogucnost koristenja platforme od strane drugih škola u Crnoj Gori.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 36: TECH STACK ==================== -->
+      <section data-transition="zoom" data-auto-animate>
+        <h2>Tehnoloski Stek</h2>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up">Moderne tehnologije za modernu platformu</p>
+        <div class="tech-grid" style="margin-top: 28px;">
+          <div class="tech-item fragment fade-up">
+            <span class="icon">&#x269B;&#xFE0F;</span>
+            <h4>React + Next.js</h4>
+            <p>Frontend framework za brze i interaktivne stranice</p>
+          </div>
+          <div class="tech-item fragment fade-up">
+            <span class="icon">&#x1F4A8;</span>
+            <h4>Tailwind CSS</h4>
+            <p>Utility-first CSS za konzistentan dizajn</p>
+          </div>
+          <div class="tech-item fragment fade-up">
+            <span class="icon">&#x26A1;</span>
+            <h4>Supabase</h4>
+            <p>Backend: baza podataka, autentifikacija, storage</p>
+          </div>
+          <div class="tech-item fragment fade-up">
+            <span class="icon">&#x1F4DC;</span>
+            <h4>TypeScript</h4>
+            <p>Tipiziran kod za manje gresaka</p>
+          </div>
+          <div class="tech-item fragment fade-up">
+            <span class="icon">&#x25B2;</span>
+            <h4>Vercel</h4>
+            <p>Hosting sa globalnim CDN-om</p>
+          </div>
+          <div class="tech-item fragment fade-up">
+            <span class="icon">&#x1F916;</span>
+            <h4>Telegram Bot API</h4>
+            <p>Automatska moderacija fotografija</p>
+          </div>
+          <div class="tech-item fragment fade-up">
+            <span class="icon">&#x1F512;</span>
+            <h4>JWT + RLS</h4>
+            <p>Viseslojni sistem sigurnosti</p>
+          </div>
+          <div class="tech-item fragment fade-up">
+            <span class="icon">&#x1F4F1;</span>
+            <h4>PWA Ready</h4>
+            <p>Instalacija na telefon kao aplikacija</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SLIDE 37: THANK YOU ==================== -->
+      <section data-transition="zoom" data-auto-animate class="thank-you">
+        <h1 style="font-size: 3.6em;">Hvala na paznji!</h1>
+        <div class="divider fragment fade-up"></div>
+        <p class="subtitle fragment fade-up" style="margin-top: 16px;">Digitalna Transformacija Gimnazije "Niko Rolović"</p>
+        <div class="contact-grid fragment scale-in" style="margin-top: 32px;">
+          <div class="contact-card">
+            <span class="icon">&#x1F468;&#x200D;&#x1F4BB;</span>
+            <h4>Autor</h4>
+            <p>Dmitrij Ivascenko<br>Razred II-1</p>
+          </div>
+          <div class="contact-card">
+            <span class="icon">&#x1F3EB;</span>
+            <h4>Škola</h4>
+            <p>Gimnazija "Niko Rolović"<br>Bar, Crna Gora</p>
+          </div>
+          <div class="contact-card">
+            <span class="icon">&#x1F4C5;</span>
+            <h4>Skolska godina</h4>
+            <p>2025 / 2026</p>
+          </div>
+        </div>
+        <p class="small-text fragment fade-up" style="margin-top: 32px;">Pitanja? &bull; Sugestije? &bull; Ideje za unapredjenje?</p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
   <script>
     Reveal.initialize({
       width: 1920,
       height: 1080,
+      center: true,
       hash: true,
       transition: 'slide',
       transitionSpeed: 'default',
       backgroundTransition: 'fade',
-      center: true,
-      controls: true,
-      progress: true,
-      slideNumber: 'c/t',
       autoAnimateDuration: 0.8,
-      autoAnimateEasing: 'ease',
-      autoAnimateUnmatched: true,
-      width: 1280,
-      height: 720,
+      autoAnimateEasing: 'ease-in-out',
       margin: 0.04,
       minScale: 0.2,
       maxScale: 2.0,
+      controls: true,
+      controlsLayout: 'bottom-right',
+      progress: true,
+      slideNumber: 'c/t',
+      keyboard: true,
+      overview: true,
+      mouseWheel: false,
+      hideAddressBar: true,
+      previewLinks: false,
+      viewDistance: 3,
+      display: 'flex'
     });
-
-    // Counter animation
-    function animateCounters() {
-      const counters = document.querySelectorAll('[data-count]');
-      counters.forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-count'));
-        const duration = 1500;
-        const step = target / (duration / 16);
-        let current = 0;
-        
-        const update = () => {
-          current += step;
-          if (current < target) {
-            counter.textContent = Math.floor(current);
-            requestAnimationFrame(update);
-          } else {
-            counter.textContent = target;
-          }
-        };
-        
-        // Reset and start when slide becomes visible
-        counter.textContent = '0';
-        
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              current = 0;
-              update();
-            }
-          });
-        }, { threshold: 0.5 });
-        
-        observer.observe(counter);
-      });
-    }
-
-    // Run counter animation on slide change
-    Reveal.on('slidechanged', () => {
-      const currentSlide = Reveal.getCurrentSlide();
-      const counters = currentSlide.querySelectorAll('[data-count]');
-      counters.forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-count'));
-        const duration = 1500;
-        const step = target / (duration / 16);
-        let current = 0;
-        
-        counter.textContent = '0';
-        
-        const update = () => {
-          current += step;
-          if (current < target) {
-            counter.textContent = Math.floor(current);
-            requestAnimationFrame(update);
-          } else {
-            counter.textContent = target;
-          }
-        };
-        
-        setTimeout(update, 300);
-      });
-    });
-
-    // Initialize counters on first load
-    animateCounters();
   </script>
 </body>
 </html>
