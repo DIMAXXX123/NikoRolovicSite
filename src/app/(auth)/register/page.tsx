@@ -82,17 +82,16 @@ export default function RegisterPage() {
       return
     }
 
-    // DON'T create profile yet - wait for email verification
-    // DON'T mark as used yet - only after verification
-    // Store verified_student_id for later
+    // 2FA DISABLED FOR NOW — create profile immediately
+    // TODO: Re-enable OTP verification before full launch
     if (authData.user) {
-      localStorage.setItem('pending_verified_id', verified.id)
-      localStorage.setItem('pending_class', classNumber)
-      localStorage.setItem('pending_section', sectionNumber)
-    }
+      // Mark student as used
+      await supabase
+        .from('verified_students')
+        .update({ used: true })
+        .eq('id', verified.id)
 
-    // Old code kept for reference - profile creation moved to verify page
-    if (false && authData.user) {
+      // Create profile directly
       await supabase.from('profiles').insert({
         id: authData.user.id,
         first_name: firstName.trim(),
@@ -104,22 +103,9 @@ export default function RegisterPage() {
       })
     }
 
-    // Step 5: Send OTP code via signInWithOtp (sends a 6-digit code, not a link)
-    const { error: otpError } = await supabase.auth.signInWithOtp({ email: email.trim().toLowerCase() })
-
-    if (otpError) {
-      if (otpError.message.includes('rate limit') || otpError.message.includes('limit exceed')) {
-        // Rate limited but account was created - skip OTP, go to verify page
-        setError('')
-      } else {
-        // Non-critical - account created, just OTP failed
-        console.error('OTP error:', otpError.message)
-      }
-    }
-
-    // Save email for verify page
-    localStorage.setItem('verify_email', email.trim().toLowerCase())
-    router.push('/verify')
+    // Go straight to main page
+    router.push('/gallery')
+    router.refresh()
   }
 
   return (
