@@ -32,10 +32,6 @@ export default function GalleryPage() {
   useEffect(() => {
     loadPhotos()
     loadCurrentUser()
-    const saved = localStorage.getItem('photo_likes')
-    if (saved) setLikedPhotos(JSON.parse(saved))
-    const savedCounts = localStorage.getItem('photo_like_counts')
-    if (savedCounts) setLikeCounts(JSON.parse(savedCounts))
   }, [])
 
   // Realtime subscription — new approved photos appear at top
@@ -82,7 +78,32 @@ export default function GalleryPage() {
 
   async function loadCurrentUser() {
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) setCurrentUserId(user.id)
+    if (user) {
+      setCurrentUserId(user.id)
+      // Load user's likes from DB
+      const { data: userLikes } = await supabase
+        .from('photo_likes')
+        .select('photo_id')
+        .eq('user_id', user.id)
+      if (userLikes) {
+        const liked: Record<string, boolean> = {}
+        userLikes.forEach((l: any) => { liked[l.photo_id] = true })
+        setLikedPhotos(liked)
+      }
+    }
+  }
+
+  async function loadLikeCounts(photoIds: string[]) {
+    // Load like counts for all photos
+    const counts: Record<string, number> = {}
+    for (const id of photoIds) {
+      const { count } = await supabase
+        .from('photo_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('photo_id', id)
+      counts[id] = count || 0
+    }
+    setLikeCounts(counts)
   }
 
   async function loadPhotos() {
@@ -92,30 +113,29 @@ export default function GalleryPage() {
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
       .limit(50)
-    if (data) setPhotos(data as any)
+    if (data) {
+      setPhotos(data as any)
+      loadLikeCounts(data.map((p: any) => p.id))
+    }
     setLoading(false)
   }
 
-  function toggleLike(photoId: string) {
+  async function toggleLike(photoId: string) {
+    if (!currentUserId) return
     const wasLiked = !!likedPhotos[photoId]
+
+    // Optimistic update
     const updated = { ...likedPhotos }
-    if (wasLiked) {
-      delete updated[photoId]
-    } else {
-      updated[photoId] = true
-    }
+    if (wasLiked) { delete updated[photoId] } else { updated[photoId] = true }
     setLikedPhotos(updated)
-    localStorage.setItem('photo_likes', JSON.stringify(updated))
+    setLikeCounts((prev) => ({ ...prev, [photoId]: Math.max(0, (prev[photoId] || 0) + (wasLiked ? -1 : 1)) }))
 
-    // Update count
-    setLikeCounts((prev) => ({
-      ...prev,
-      [photoId]: Math.max(0, (prev[photoId] || 0) + (wasLiked ? -1 : 1)),
-    }))
-
-    // Save counts
-    const newCounts = { ...likeCounts, [photoId]: Math.max(0, (likeCounts[photoId] || 0) + (wasLiked ? -1 : 1)) }
-    localStorage.setItem('photo_like_counts', JSON.stringify(newCounts))
+    // DB update
+    if (wasLiked) {
+      await supabase.from('photo_likes').delete().eq('photo_id', photoId).eq('user_id', currentUserId)
+    } else {
+      await supabase.from('photo_likes').upsert({ photo_id: photoId, user_id: currentUserId }, { onConflict: 'photo_id,user_id' })
+    }
   }
 
   async function handleReport(photoId: string) {
