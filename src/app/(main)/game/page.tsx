@@ -109,6 +109,7 @@ export default function BlockBlastPage() {
   const [shaking, setShaking] = useState(false)
   const [popups, setPopups] = useState<ScorePopup[]>([])
   const [leaderboard, setLeaderboard] = useState<LeaderEntry[]>([])
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
   const [hoverPos, setHoverPos] = useState<{ row: number; col: number } | null>(null)
   const [clearingCells, setClearingCells] = useState<Set<string>>(new Set())
@@ -415,9 +416,10 @@ export default function BlockBlastPage() {
   // ── Render ───────────────────────────────────────────────────────────
   return (
     <div
-      className={`min-h-screen select-none ${shaking ? 'animate-shake' : ''}`}
+      className={`fixed inset-0 top-14 bottom-20 overflow-hidden select-none flex flex-col ${shaking ? 'animate-shake' : ''}`}
       onTouchMove={handleTouchMove as any}
       onTouchEnd={handleTouchEnd}
+      style={{ touchAction: 'none' }}
     >
       <style jsx global>{`
         @keyframes shake {
@@ -481,8 +483,43 @@ export default function BlockBlastPage() {
             <p className="text-[10px] uppercase tracking-wider text-zinc-500">Best</p>
             <p className="text-lg font-semibold text-zinc-400 tabular-nums">{highScore}</p>
           </div>
+          <button
+            onClick={() => { setShowLeaderboard(!showLeaderboard); if (!showLeaderboard) loadLeaderboard(score) }}
+            className="p-2 rounded-xl bg-amber-500/15 border border-amber-500/30 active:scale-90 transition-all"
+            title="Tabela lidera"
+          >
+            <Trophy className="w-4 h-4 text-amber-400" />
+          </button>
         </div>
       </div>
+
+      {/* Leaderboard overlay */}
+      {showLeaderboard && !gameOver && (
+        <div className="absolute inset-0 z-40 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowLeaderboard(false)}>
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-4 w-full max-w-sm space-y-3 animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2"><Trophy className="w-5 h-5" /> Tabela lidera</h3>
+              <button onClick={() => setShowLeaderboard(false)} className="text-zinc-500 hover:text-white text-sm">✕</button>
+            </div>
+            {leaderboard.length === 0 ? (
+              <p className="text-center text-zinc-500 py-4">Nema rezultata</p>
+            ) : (
+              <div className="space-y-1.5 max-h-60 overflow-y-auto">
+                {leaderboard.map((e, i) => (
+                  <div key={i} className={`flex items-center gap-3 px-3 py-2 rounded-lg ${i === 0 ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-zinc-800/50'}`}>
+                    <span className={`text-sm font-bold w-6 ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-zinc-300' : i === 2 ? 'text-orange-400' : 'text-zinc-500'}`}>#{i+1}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{e.name}</p>
+                      <p className="text-[10px] text-zinc-500">{e.classInfo}</p>
+                    </div>
+                    <span className="text-sm font-bold text-zinc-300">{e.score}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Grid */}
       <div className="relative mx-auto" style={{ maxWidth: 'min(100%, 360px)' }}>

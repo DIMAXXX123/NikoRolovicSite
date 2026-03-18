@@ -50,7 +50,16 @@ export default function MainLayout({
             </div>
             <span className="font-semibold text-sm gradient-text">Niko Rolović</span>
           </button>
-          <ThemeSwitcher />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push('/game')}
+              className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-orange-500 to-red-600 active:scale-90 transition-transform shadow-lg shadow-orange-500/20"
+              title="Block Blast"
+            >
+              <span className="text-xs">🎮</span>
+            </button>
+            <ThemeSwitcher />
+          </div>
         </div>
       </header>
       <ProfileGuard />
