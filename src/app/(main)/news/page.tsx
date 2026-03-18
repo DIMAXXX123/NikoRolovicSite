@@ -57,32 +57,61 @@ export default function NewsPage() {
     setLoading(false)
   }
 
+  const [likingIds, setLikingIds] = useState<Set<string>>(new Set())
+
   async function toggleLike(newsId: string, currentlyLiked: boolean) {
     if (!userId) return
+    if (likingIds.has(newsId)) return // prevent double-click
 
-    if (currentlyLiked) {
-      await supabase
-        .from('news_likes')
-        .delete()
-        .eq('news_id', newsId)
-        .eq('user_id', userId)
-    } else {
-      await supabase
-        .from('news_likes')
-        .insert({ news_id: newsId, user_id: userId })
-    }
+    setLikingIds((prev) => new Set(prev).add(newsId))
 
+    // Optimistic update
     setNews((prev) =>
       prev.map((item) =>
         item.id === newsId
           ? {
               ...item,
               user_liked: !currentlyLiked,
-              likes_count: (item.likes_count || 0) + (currentlyLiked ? -1 : 1),
+              likes_count: Math.max(0, (item.likes_count || 0) + (currentlyLiked ? -1 : 1)),
             }
           : item
       )
     )
+
+    try {
+      if (currentlyLiked) {
+        const { error } = await supabase
+          .from('news_likes')
+          .delete()
+          .eq('news_id', newsId)
+          .eq('user_id', userId)
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('news_likes')
+          .upsert({ news_id: newsId, user_id: userId }, { onConflict: 'news_id,user_id' })
+        if (error) throw error
+      }
+    } catch {
+      // Revert on error
+      setNews((prev) =>
+        prev.map((item) =>
+          item.id === newsId
+            ? {
+                ...item,
+                user_liked: currentlyLiked,
+                likes_count: Math.max(0, (item.likes_count || 0) + (currentlyLiked ? 1 : -1)),
+              }
+            : item
+        )
+      )
+    } finally {
+      setLikingIds((prev) => {
+        const next = new Set(prev)
+        next.delete(newsId)
+        return next
+      })
+    }
   }
 
   if (loading) {
