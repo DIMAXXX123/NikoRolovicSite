@@ -375,7 +375,6 @@ export default function GalleryPage() {
                         {/* Photo with double-tap like */}
                         <div
                           className="relative select-none"
-                          onTouchEnd={() => handleDoubleTap(photo.id)}
                           onClick={() => handleDoubleTap(photo.id)}
                         >
                           <img
