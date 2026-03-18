@@ -550,6 +550,12 @@ html.font-large { font-size: 18px; }
   animation: heartPop 0.5s ease-out forwards;
 }
 
+/* Block Blast icon pulse animation */
+@keyframes blockPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
 /* Smooth color transitions for ALL interactive elements */
 button, a, [role="button"], .card-hover, input, select, label, span, div, svg, badge {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform, fill, stroke;

@@ -53,14 +53,19 @@ export default function MainLayout({
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push('/game')}
-              className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-orange-500 to-red-600 active:scale-90 transition-transform shadow-lg shadow-orange-500/20 overflow-hidden"
+              className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 active:scale-90 transition-transform shadow-lg shadow-blue-500/30 overflow-hidden animate-[blockPulse_2s_ease-in-out_infinite]"
               title="Block Blast"
             >
-              <div className="grid grid-cols-2 gap-[1px] w-5 h-5">
-                <div className="rounded-[2px] bg-yellow-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.4),transparent 60%)'}} />
-                <div className="rounded-[2px] bg-cyan-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.4),transparent 60%)'}} />
-                <div className="rounded-[2px] bg-purple-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.4),transparent 60%)'}} />
-                <div className="rounded-[2px] bg-pink-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.4),transparent 60%)'}} />
+              <div className="grid grid-cols-3 gap-[1px] w-6 h-6">
+                <div className="rounded-[2px] bg-red-500" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
+                <div className="rounded-[2px] bg-red-600" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
+                <div className="rounded-[2px]" />
+                <div className="rounded-[2px]" />
+                <div className="rounded-[2px] bg-yellow-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
+                <div className="rounded-[2px] bg-orange-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
+                <div className="rounded-[2px] bg-green-500" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
+                <div className="rounded-[2px] bg-green-600" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
+                <div className="rounded-[2px] bg-blue-500" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
               </div>
             </button>
             <ThemeSwitcher />
