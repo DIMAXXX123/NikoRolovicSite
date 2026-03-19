@@ -427,16 +427,30 @@ export default function BlockBlastPage() {
   }, [])
 
   // ── Grid cell position ───────────────────────────────────────────────
-  const getCellFromPoint = useCallback((clientX: number, clientY: number): { row: number; col: number } | null => {
+  const getCellFromPoint = useCallback((clientX: number, clientY: number, clamp = false): { row: number; col: number } | null => {
     if (!gridRef.current) return null
     const rect = gridRef.current.getBoundingClientRect()
     const x = clientX - rect.left
     const y = clientY - rect.top
     const cellSize = rect.width / GRID
-    const col = Math.floor(x / cellSize)
-    const row = Math.floor(y / cellSize)
-    if (row < 0 || row >= GRID || col < 0 || col >= GRID) return null
+    let col = Math.floor(x / cellSize)
+    let row = Math.floor(y / cellSize)
+    if (clamp) {
+      row = Math.max(0, Math.min(GRID - 1, row))
+      col = Math.max(0, Math.min(GRID - 1, col))
+    } else {
+      if (row < 0 || row >= GRID || col < 0 || col >= GRID) return null
+    }
     return { row, col }
+  }, [])
+
+  // ── Clamp shape so it stays within grid bounds ──────────────────────
+  const clampShapePos = useCallback((row: number, col: number, shape: Shape) => {
+    const bounds = getShapeBounds(shape)
+    return {
+      row: Math.max(0, Math.min(GRID - bounds.rows, row)),
+      col: Math.max(0, Math.min(GRID - bounds.cols, col)),
+    }
   }, [])
 
   // ── Touch / Mouse handlers for grid ──────────────────────────────────
@@ -461,19 +475,17 @@ export default function BlockBlastPage() {
     const shape = shapesRef.current[dragShapeIdx.current]
     if (!shape) return
     const bounds = getShapeBounds(shape)
-    // Offset touch point up so user can see the placement
-    const pos = getCellFromPoint(touch.clientX, touch.clientY - 50)
+    // Offset touch 80px up so user can see placement under finger
+    const pos = getCellFromPoint(touch.clientX, touch.clientY - 80, true)
     if (pos) {
       const adjRow = pos.row - Math.floor(bounds.rows / 2)
       const adjCol = pos.col - Math.floor(bounds.cols / 2)
-      const newPos = { row: adjRow, col: adjCol }
-      setHoverPos(newPos)
-      hoverPosRef.current = newPos
-    } else {
-      setHoverPos(null)
-      hoverPosRef.current = null
+      // Clamp so shape always stays within grid bounds
+      const clamped = clampShapePos(adjRow, adjCol, shape)
+      setHoverPos(clamped)
+      hoverPosRef.current = clamped
     }
-  }, [getCellFromPoint])
+  }, [getCellFromPoint, clampShapePos])
 
   const handleTouchEnd = useCallback(() => {
     if (!isDragging.current || dragShapeIdx.current === null) return
@@ -491,13 +503,16 @@ export default function BlockBlastPage() {
   // ── Mouse hover on grid ──────────────────────────────────────────────
   const handleGridMouseMove = useCallback((e: React.MouseEvent) => {
     if (selectedIdx === null || !shapes[selectedIdx]) return
-    const pos = getCellFromPoint(e.clientX, e.clientY)
+    const pos = getCellFromPoint(e.clientX, e.clientY, true)
     if (pos) {
       const shape = shapes[selectedIdx]!
       const bounds = getShapeBounds(shape)
-      setHoverPos({ row: pos.row - Math.floor(bounds.rows / 2), col: pos.col - Math.floor(bounds.cols / 2) })
+      const adjRow = pos.row - Math.floor(bounds.rows / 2)
+      const adjCol = pos.col - Math.floor(bounds.cols / 2)
+      const clamped = clampShapePos(adjRow, adjCol, shape)
+      setHoverPos(clamped)
     }
-  }, [selectedIdx, shapes, getCellFromPoint])
+  }, [selectedIdx, shapes, getCellFromPoint, clampShapePos])
 
   const handleGridMouseLeave = useCallback(() => {
     setHoverPos(null)
@@ -505,14 +520,15 @@ export default function BlockBlastPage() {
 
   const handleGridClick2 = useCallback((e: React.MouseEvent) => {
     if (selectedIdx === null || !shapes[selectedIdx] || gameOver) return
-    const pos = getCellFromPoint(e.clientX, e.clientY)
+    const pos = getCellFromPoint(e.clientX, e.clientY, true)
     if (!pos) return
     const shape = shapes[selectedIdx]!
     const bounds = getShapeBounds(shape)
     const adjRow = pos.row - Math.floor(bounds.rows / 2)
     const adjCol = pos.col - Math.floor(bounds.cols / 2)
-    placeBlock(selectedIdx, adjRow, adjCol)
-  }, [selectedIdx, shapes, gameOver, getCellFromPoint, placeBlock])
+    const clamped = clampShapePos(adjRow, adjCol, shape)
+    placeBlock(selectedIdx, clamped.row, clamped.col)
+  }, [selectedIdx, shapes, gameOver, getCellFromPoint, clampShapePos, placeBlock])
 
   // ── Ghost cells (preview) ────────────────────────────────────────────
   const ghostCells = useMemo(() => {
