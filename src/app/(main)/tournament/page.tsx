@@ -208,55 +208,46 @@ export default function TournamentPage() {
 
       {/* ══════ GRID/SETKA TAB ══════ */}
       {activeTab === 'grid' && (
-        <div className="animate-fade-in overflow-x-auto -mx-4 px-4">
-          <div className="min-w-[600px] relative py-4">
-            {/* Bracket visualization matching the photo */}
-            <div className="flex gap-6">
-              {/* Round 1 - 1/8 Finals */}
-              <div className="flex flex-col justify-around gap-2 w-[140px] shrink-0">
-                <h3 className="text-[10px] font-bold text-zinc-500 uppercase text-center mb-1">1/8 Finala</h3>
-                {/* Match 1: IV6 vs II1 */}
-                <BracketMatch teamA="IV6" teamB="II1" scoreA={48} scoreB={32} />
-                {/* I3 bye */}
-                <BracketMatch teamA="—" teamB="I3" isBye />
-                {/* Match: IV3 vs I6 */}
-                <BracketMatch teamA="IV3" teamB="I6" scoreA={20} scoreB={0} tech />
-                {/* Match: II6 vs II3 */}
-                <BracketMatch teamA="II6" teamB="II3" scoreA={23} scoreB={70} />
-                {/* Match: II4 vs I5 */}
-                <BracketMatch teamA="II4" teamB="I5" scoreA={36} scoreB={30} />
-                {/* Match: III5 vs II5 */}
-                <BracketMatch teamA="III5" teamB="II5" scoreA={45} scoreB={25} />
-                {/* Match: III3 vs III4 */}
-                <BracketMatch teamA="III3" teamB="III4" scoreA={28} scoreB={16} />
-                {/* Match: IV1 vs III2 */}
-                <BracketMatch teamA="IV1" teamB="III2" />
-              </div>
-
-              {/* Round 2 - Quarter Finals */}
-              <div className="flex flex-col justify-around gap-8 w-[140px] shrink-0 pt-8">
-                <h3 className="text-[10px] font-bold text-zinc-500 uppercase text-center mb-1">Četvrtfinale</h3>
-                <BracketMatch teamA="IV6" teamB="I3" date="19.3" />
-                <BracketMatch teamA="IV3" teamB="II3" date="23.3" />
-                <BracketMatch teamA="II4" teamB="III5" date="20.3" />
-                <BracketMatch teamA="III3" teamB="?" date="TBD" />
-              </div>
-
-              {/* Semi Finals */}
-              <div className="flex flex-col justify-around gap-16 w-[140px] shrink-0 pt-24">
-                <h3 className="text-[10px] font-bold text-zinc-500 uppercase text-center mb-1">Polufinale</h3>
-                <BracketMatch teamA="?" teamB="?" />
-                <BracketMatch teamA="?" teamB="?" />
-              </div>
-
-              {/* Final */}
-              <div className="flex flex-col justify-center w-[140px] shrink-0">
-                <h3 className="text-[10px] font-bold text-amber-400 uppercase text-center mb-1">🏆 Finale</h3>
-                <BracketMatch teamA="?" teamB="?" isFinal />
-              </div>
+        <div className="animate-fade-in overflow-x-auto -mx-4 px-4 pb-4">
+          {/* Column headers */}
+          <div className="min-w-[620px] flex gap-4 mb-3 px-1">
+            <div className="w-[135px] shrink-0 text-center text-[10px] font-bold text-zinc-500 uppercase">1/8 Finala</div>
+            <div className="w-[135px] shrink-0 text-center text-[10px] font-bold text-zinc-500 uppercase">Četvrtfinale</div>
+            <div className="w-[135px] shrink-0 text-center text-[10px] font-bold text-zinc-500 uppercase">Polufinale</div>
+            <div className="w-[135px] shrink-0 text-center text-[10px] font-bold text-amber-400 uppercase">🏆 Finale</div>
+          </div>
+          <div className="min-w-[620px] flex gap-4 items-stretch px-1">
+            {/* Round 1 - 1/8 Finals (8 matches) */}
+            <div className="flex flex-col gap-2 w-[135px] shrink-0">
+              <BracketMatch teamA="IV6" teamB="II1" scoreA={48} scoreB={32} />
+              <BracketMatch teamA="I3" teamB="—" isBye />
+              <BracketMatch teamA="IV3" teamB="I6" scoreA={20} scoreB={0} tech />
+              <BracketMatch teamA="II3" teamB="II6" scoreA={70} scoreB={23} />
+              <BracketMatch teamA="II4" teamB="I5" scoreA={36} scoreB={30} />
+              <BracketMatch teamA="III5" teamB="II5" scoreA={45} scoreB={25} />
+              <BracketMatch teamA="III3" teamB="III4" scoreA={28} scoreB={16} />
+              <BracketMatch teamA="III2" teamB="IV1" />
             </div>
 
-            {/* Connecting lines would be SVG overlay - simplified with CSS borders */}
+            {/* Quarter Finals (4 matches, vertically centered between pairs) */}
+            <div className="flex flex-col justify-around w-[135px] shrink-0" style={{ gap: '28px', paddingTop: '18px', paddingBottom: '18px' }}>
+              <BracketMatch teamA="IV6" teamB="I3" date="19.3" />
+              <BracketMatch teamA="IV3" teamB="II3" date="23.3" />
+              <BracketMatch teamA="II4" teamB="III5" date="20.3" />
+              <BracketMatch teamA="III3" teamB="III2/IV1" date="TBD" />
+            </div>
+
+            {/* Semi Finals (2 matches) */}
+            <div className="flex flex-col justify-around w-[135px] shrink-0" style={{ paddingTop: '50px', paddingBottom: '50px' }}>
+              <BracketMatch teamA="?" teamB="?" />
+              <div style={{ height: '40px' }} />
+              <BracketMatch teamA="?" teamB="?" />
+            </div>
+
+            {/* Final (1 match) */}
+            <div className="flex flex-col justify-center w-[135px] shrink-0">
+              <BracketMatch teamA="?" teamB="?" isFinal />
+            </div>
           </div>
         </div>
       )}

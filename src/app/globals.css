@@ -556,6 +556,13 @@ html.font-large { font-size: 18px; }
   50% { transform: scale(1.12); }
 }
 
+@keyframes basketBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(15deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-3px) rotate(-10deg); }
+}
+
 /* Smooth color transitions for ALL interactive elements */
 button, a, [role="button"], .card-hover, input, select, label, span, div, svg, badge {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform, fill, stroke;
