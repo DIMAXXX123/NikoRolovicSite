@@ -256,6 +256,8 @@ export default function BlockBlastPage() {
     resetAndSeedScores()
     setHighScore(getHighScore())
     startNewGame()
+    // Pre-load leaderboard on page enter
+    loadLeaderboard(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
