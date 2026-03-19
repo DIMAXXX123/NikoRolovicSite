@@ -61,7 +61,7 @@ function getClassColor(team: string) {
 export default function TournamentPage() {
   const router = useRouter()
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
-  const [activeTab, setActiveTab] = useState<'bracket' | 'results' | 'teams'>('bracket')
+  const [activeTab, setActiveTab] = useState<'bracket' | 'grid' | 'results' | 'teams'>('bracket')
   const [animateIn, setAnimateIn] = useState(false)
 
   useEffect(() => {
@@ -99,6 +99,7 @@ export default function TournamentPage() {
 
   const tabs = [
     { id: 'bracket' as const, label: 'Turnir', icon: '🏆' },
+    { id: 'grid' as const, label: 'Setka', icon: '📋' },
     { id: 'results' as const, label: 'Rezultati', icon: '📊' },
     { id: 'teams' as const, label: 'Timovi', icon: '👥' },
   ]
@@ -205,6 +206,61 @@ export default function TournamentPage() {
         </div>
       )}
 
+      {/* ══════ GRID/SETKA TAB ══════ */}
+      {activeTab === 'grid' && (
+        <div className="animate-fade-in overflow-x-auto -mx-4 px-4">
+          <div className="min-w-[600px] relative py-4">
+            {/* Bracket visualization matching the photo */}
+            <div className="flex gap-6">
+              {/* Round 1 - 1/8 Finals */}
+              <div className="flex flex-col justify-around gap-2 w-[140px] shrink-0">
+                <h3 className="text-[10px] font-bold text-zinc-500 uppercase text-center mb-1">1/8 Finala</h3>
+                {/* Match 1: IV6 vs II1 */}
+                <BracketMatch teamA="IV6" teamB="II1" scoreA={48} scoreB={32} />
+                {/* I3 bye */}
+                <BracketMatch teamA="—" teamB="I3" isBye />
+                {/* Match: IV3 vs I6 */}
+                <BracketMatch teamA="IV3" teamB="I6" scoreA={20} scoreB={0} tech />
+                {/* Match: II6 vs II3 */}
+                <BracketMatch teamA="II6" teamB="II3" scoreA={23} scoreB={70} />
+                {/* Match: II4 vs I5 */}
+                <BracketMatch teamA="II4" teamB="I5" scoreA={36} scoreB={30} />
+                {/* Match: III5 vs II5 */}
+                <BracketMatch teamA="III5" teamB="II5" scoreA={45} scoreB={25} />
+                {/* Match: III3 vs III4 */}
+                <BracketMatch teamA="III3" teamB="III4" scoreA={28} scoreB={16} />
+                {/* Match: IV1 vs III2 */}
+                <BracketMatch teamA="IV1" teamB="III2" />
+              </div>
+
+              {/* Round 2 - Quarter Finals */}
+              <div className="flex flex-col justify-around gap-8 w-[140px] shrink-0 pt-8">
+                <h3 className="text-[10px] font-bold text-zinc-500 uppercase text-center mb-1">Četvrtfinale</h3>
+                <BracketMatch teamA="IV6" teamB="I3" date="19.3" />
+                <BracketMatch teamA="IV3" teamB="II3" date="23.3" />
+                <BracketMatch teamA="II4" teamB="III5" date="20.3" />
+                <BracketMatch teamA="III3" teamB="?" date="TBD" />
+              </div>
+
+              {/* Semi Finals */}
+              <div className="flex flex-col justify-around gap-16 w-[140px] shrink-0 pt-24">
+                <h3 className="text-[10px] font-bold text-zinc-500 uppercase text-center mb-1">Polufinale</h3>
+                <BracketMatch teamA="?" teamB="?" />
+                <BracketMatch teamA="?" teamB="?" />
+              </div>
+
+              {/* Final */}
+              <div className="flex flex-col justify-center w-[140px] shrink-0">
+                <h3 className="text-[10px] font-bold text-amber-400 uppercase text-center mb-1">🏆 Finale</h3>
+                <BracketMatch teamA="?" teamB="?" isFinal />
+              </div>
+            </div>
+
+            {/* Connecting lines would be SVG overlay - simplified with CSS borders */}
+          </div>
+        </div>
+      )}
+
       {/* ══════ RESULTS TAB ══════ */}
       {activeTab === 'results' && (
         <div className="space-y-2 animate-fade-in">
@@ -284,6 +340,29 @@ export default function TournamentPage() {
             })}
         </div>
       )}
+    </div>
+  )
+}
+
+// ── Bracket Match Component ─────────────────────────────────────────────
+function BracketMatch({ teamA, teamB, scoreA, scoreB, date, tech, isBye, isFinal }: {
+  teamA: string; teamB: string; scoreA?: number; scoreB?: number; date?: string; tech?: boolean; isBye?: boolean; isFinal?: boolean
+}) {
+  const played = scoreA !== undefined && scoreB !== undefined
+  const aWon = played && scoreA! > scoreB!
+  const bWon = played && scoreB! > scoreA!
+  return (
+    <div className={`rounded-lg overflow-hidden border ${isFinal ? 'border-amber-500/40 bg-amber-500/5' : 'border-zinc-700/60 bg-zinc-900/60'}`}>
+      <div className={`flex items-center justify-between px-2 py-1.5 border-b border-zinc-700/40 ${aWon ? 'bg-green-500/10' : ''}`}>
+        <span className={`text-[11px] font-bold ${isBye && teamA === '—' ? 'text-zinc-600' : aWon ? 'text-green-400' : 'text-zinc-300'}`}>{teamA}</span>
+        {played && <span className={`text-[11px] font-bold tabular-nums ${aWon ? 'text-green-400' : 'text-zinc-500'}`}>{scoreA}</span>}
+      </div>
+      <div className={`flex items-center justify-between px-2 py-1.5 ${bWon ? 'bg-green-500/10' : ''}`}>
+        <span className={`text-[11px] font-bold ${bWon ? 'text-green-400' : teamB === '?' ? 'text-zinc-600' : 'text-zinc-300'}`}>{teamB}</span>
+        {played && <span className={`text-[11px] font-bold tabular-nums ${bWon ? 'text-green-400' : 'text-zinc-500'}`}>{scoreB}</span>}
+        {!played && date && <span className="text-[9px] text-zinc-600">{date}</span>}
+        {tech && <span className="text-[8px] text-red-400 font-bold">TEH</span>}
+      </div>
     </div>
   )
 }

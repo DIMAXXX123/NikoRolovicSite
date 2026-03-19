@@ -54,10 +54,10 @@ export default function MainLayout({
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push('/tournament')}
-              className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-600 active:scale-90 transition-transform shadow-lg shadow-orange-500/30 animate-[bounce_2s_ease-in-out_infinite]"
+              className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
               title="Turnir u košarci"
             >
-              <span className="text-lg">🏀</span>
+              <span className="text-xl animate-bounce">🏀</span>
             </button>
             <button
               onClick={() => router.push('/game')}
