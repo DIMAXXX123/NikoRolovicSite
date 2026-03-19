@@ -9,6 +9,15 @@ function getAdmin() {
   )
 }
 
+// Normalize Montenegrin/Serbian Latin diacritics: č→c, ć→c, š→s, ž→z, đ→dj
+function normalizeCG(str: string): string {
+  return str
+    .replace(/[čć]/gi, (m) => m === m.toUpperCase() ? 'C' : 'c')
+    .replace(/š/gi, (m) => m === m.toUpperCase() ? 'S' : 's')
+    .replace(/ž/gi, (m) => m === m.toUpperCase() ? 'Z' : 'z')
+    .replace(/đ/gi, (m) => m === m.toUpperCase() ? 'DJ' : 'dj')
+}
+
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   const rateLimitExceeded = checkRateLimit(`register:${ip}`, 5, 60_000)
@@ -29,17 +38,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Lozinka mora imati minimum 6 karaktera' }, { status: 400 })
     }
 
-    // Check verified_students
-    const { data: verified, error: verifyError } = await admin
+    // Check verified_students (with diacritics normalization: č/ć→c, š→s, ž→z, đ→dj)
+    const { data: candidates } = await admin
       .from('verified_students')
-      .select('id, used')
-      .eq('first_name', firstName.trim())
-      .eq('last_name', lastName.trim())
+      .select('id, used, first_name, last_name')
       .eq('class_number', classNumber)
       .eq('section_number', sectionNumber)
-      .single()
 
-    if (verifyError || !verified) {
+    const inputFirst = normalizeCG(firstName.trim().toLowerCase())
+    const inputLast = normalizeCG(lastName.trim().toLowerCase())
+
+    const verified = (candidates || []).find(c =>
+      normalizeCG((c.first_name || '').toLowerCase()) === inputFirst &&
+      normalizeCG((c.last_name || '').toLowerCase()) === inputLast
+    )
+
+    if (!verified) {
       return NextResponse.json({ error: 'Nismo te pronašli u bazi učenika. Proveri podatke.' }, { status: 404 })
     }
 
@@ -79,11 +93,11 @@ export async function POST(req: NextRequest) {
       .update({ used: true })
       .eq('id', verifiedId)
 
-    // Create profile
+    // Create profile — use original name from verified_students (with proper diacritics)
     await admin.from('profiles').insert({
       id: authData.user.id,
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
+      first_name: verified.first_name || firstName.trim(),
+      last_name: verified.last_name || lastName.trim(),
       email: email.trim().toLowerCase(),
       class_number: classNumber,
       section_number: sectionNumber,
