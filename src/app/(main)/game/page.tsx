@@ -104,7 +104,7 @@ function canPlaceAnywhere(grid: Grid, shape: Shape): boolean {
 }
 
 function findNearestValidPosition(
-  grid: Grid, shape: Shape, rawRow: number, rawCol: number, maxRadius = 4
+  grid: Grid, shape: Shape, rawRow: number, rawCol: number, maxRadius = GRID
 ): { row: number; col: number } | null {
   // Check the raw position first
   if (canPlace(grid, shape, rawRow, rawCol)) return { row: rawRow, col: rawCol }
@@ -344,18 +344,11 @@ export default function BlockBlastPage() {
     const near = x >= -TOUCH_EXTEND && x <= rect.width + TOUCH_EXTEND &&
                  y >= -TOUCH_EXTEND && y <= rect.height + TOUCH_EXTEND
     if (!near) return null
+    // Return extrapolated (possibly out-of-bounds) row/col so
+    // findNearestValidPosition can search from the correct direction
     const col = Math.floor(x / cellSize)
     const row = Math.floor(y / cellSize)
-    return { row, col, near }
-  }, [])
-
-  // Clamp shape position to stay within grid bounds
-  const clampShapePos = useCallback((row: number, col: number, shape: Shape) => {
-    const bounds = getShapeBounds(shape)
-    return {
-      row: Math.max(0, Math.min(GRID - bounds.rows, row)),
-      col: Math.max(0, Math.min(GRID - bounds.cols, col)),
-    }
+    return { row, col, near: true }
   }, [])
 
   // ── Place block ──────────────────────────────────────────────────────
@@ -501,12 +494,12 @@ export default function BlockBlastPage() {
     // Apply 80px vertical offset, then get grid cell (extended area included)
     const pos = getCellFromPoint(touch.clientX, touch.clientY - 80)
     if (pos) {
-      // Center shape on finger, then clamp to valid grid bounds
+      // Center shape on finger — pass raw (unclamped) position so
+      // findNearestValidPosition searches from the true finger location
       const adjRow = pos.row - Math.floor(bounds.rows / 2)
       const adjCol = pos.col - Math.floor(bounds.cols / 2)
-      const clamped = clampShapePos(adjRow, adjCol, shape)
       // Find nearest valid position (magnetic snap)
-      const snapped = findNearestValidPosition(gridStateRef.current, shape, clamped.row, clamped.col)
+      const snapped = findNearestValidPosition(gridStateRef.current, shape, adjRow, adjCol)
       if (snapped) {
         setHoverPos(snapped)
         hoverPosRef.current = snapped
@@ -519,7 +512,7 @@ export default function BlockBlastPage() {
       setHoverPos(null)
       hoverPosRef.current = null
     }
-  }, [getCellFromPoint, clampShapePos])
+  }, [getCellFromPoint])
 
   const handleTouchEnd = useCallback(() => {
     if (!isDragging.current || dragShapeIdx.current === null) return
@@ -544,13 +537,12 @@ export default function BlockBlastPage() {
       const bounds = getShapeBounds(shape)
       const adjRow = pos.row - Math.floor(bounds.rows / 2)
       const adjCol = pos.col - Math.floor(bounds.cols / 2)
-      const clamped = clampShapePos(adjRow, adjCol, shape)
-      const snapped = findNearestValidPosition(grid, shape, clamped.row, clamped.col)
+      const snapped = findNearestValidPosition(grid, shape, adjRow, adjCol)
       setHoverPos(snapped)
     } else {
       setHoverPos(null)
     }
-  }, [selectedIdx, shapes, grid, getCellFromPoint, clampShapePos])
+  }, [selectedIdx, shapes, grid, getCellFromPoint])
 
   const handleGridMouseLeave = useCallback(() => {
     setHoverPos(null)
@@ -564,12 +556,11 @@ export default function BlockBlastPage() {
     const bounds = getShapeBounds(shape)
     const adjRow = pos.row - Math.floor(bounds.rows / 2)
     const adjCol = pos.col - Math.floor(bounds.cols / 2)
-    const clamped = clampShapePos(adjRow, adjCol, shape)
-    const snapped = findNearestValidPosition(grid, shape, clamped.row, clamped.col)
+    const snapped = findNearestValidPosition(grid, shape, adjRow, adjCol)
     if (snapped) {
       placeBlock(selectedIdx, snapped.row, snapped.col)
     }
-  }, [selectedIdx, shapes, grid, gameOver, getCellFromPoint, clampShapePos, placeBlock])
+  }, [selectedIdx, shapes, grid, gameOver, getCellFromPoint, placeBlock])
 
   // ── Ghost cells (preview) ────────────────────────────────────────────
   const ghostInfo = useMemo(() => {
