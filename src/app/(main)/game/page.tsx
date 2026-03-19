@@ -398,14 +398,19 @@ export default function BlockBlastPage() {
     }
     const linesCleared = clearRows.length + clearCols.length
 
-    // Scoring: each cell placed = 1pt + line clear bonus
-    let pts = shape.cells.length
     let newCombo = comboRef.current
+    // Crazy scoring: base 25 per cell, combo multiplier uncapped, line bonus huge
+    const baseMultiplier = Math.max(1, newCombo * 2)
+    let pts = shape.cells.length * 25 * Math.max(1, Math.floor(baseMultiplier / 2))
 
     if (linesCleared > 0) {
-      newCombo += 1
-      const comboMultiplier = Math.min(newCombo, 5)
-      pts += calcLineScore(linesCleared) * comboMultiplier
+      newCombo += linesCleared // combo grows by lines cleared, not just +1
+      const multiplier = 5 + newCombo * 8 // starts at 13, grows fast
+      pts += linesCleared * 120 * multiplier
+      // Bonus for multi-line clears
+      if (linesCleared >= 2) pts += linesCleared * 500 * Math.floor(multiplier / 2)
+      if (linesCleared >= 3) pts += 3000 * newCombo
+      if (linesCleared >= 4) pts += 10000 * newCombo
 
       // Show combo text
       if (newCombo >= 2) {
