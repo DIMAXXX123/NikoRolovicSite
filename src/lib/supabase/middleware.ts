@@ -32,7 +32,9 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
                      request.nextUrl.pathname.startsWith('/register') ||
-                     request.nextUrl.pathname.startsWith('/verify')
+                     request.nextUrl.pathname.startsWith('/verify') ||
+                     request.nextUrl.pathname.startsWith('/reset-password') ||
+                     request.nextUrl.pathname.startsWith('/update-password')
 
   if (!user && !isAuthPage && request.nextUrl.pathname !== '/') {
     const url = request.nextUrl.clone()

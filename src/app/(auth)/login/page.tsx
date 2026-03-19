@@ -105,12 +105,17 @@ export default function LoginPage() {
               className="bg-background/50"
             />
           </div>
-          <label className="flex items-center gap-2 text-sm cursor-pointer group">
-            <div className="relative w-9 h-5 rounded-full bg-primary/80 transition-colors">
-              <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white translate-x-4 transition-transform" />
-            </div>
-            <span className="text-muted-foreground group-hover:text-foreground transition-colors">Zapamti me</span>
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 text-sm cursor-pointer group">
+              <div className="relative w-9 h-5 rounded-full bg-primary/80 transition-colors">
+                <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white translate-x-4 transition-transform" />
+              </div>
+              <span className="text-muted-foreground group-hover:text-foreground transition-colors">Zapamti me</span>
+            </label>
+            <Link href="/reset-password" className="text-xs text-primary hover:text-primary/80 transition-colors">
+              Zaboravio lozinku?
+            </Link>
+          </div>
           {error && (
             <p className="text-destructive text-sm text-center">{error}</p>
           )}
