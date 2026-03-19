@@ -309,15 +309,21 @@ export default function BlockBlastPage() {
   }, [triggerGameOver])
 
   // ── Grid cell from screen coords ───────────────────────────────────
-  const getCellFromPoint = useCallback((clientX: number, clientY: number): { row: number; col: number } | null => {
+  const TOUCH_EXTEND = 100 // px beyond grid edges that still register
+
+  const getCellFromPoint = useCallback((clientX: number, clientY: number): { row: number; col: number; near: boolean } | null => {
     if (!gridRef.current) return null
     const rect = gridRef.current.getBoundingClientRect()
     const x = clientX - rect.left
     const y = clientY - rect.top
     const cellSize = rect.width / GRID
+    // Check if within extended touch area
+    const near = x >= -TOUCH_EXTEND && x <= rect.width + TOUCH_EXTEND &&
+                 y >= -TOUCH_EXTEND && y <= rect.height + TOUCH_EXTEND
+    if (!near) return null
     const col = Math.floor(x / cellSize)
     const row = Math.floor(y / cellSize)
-    return { row, col }
+    return { row, col, near }
   }, [])
 
   // Clamp shape position to stay within grid bounds
@@ -454,6 +460,8 @@ export default function BlockBlastPage() {
   }, [generateShapes, checkGameOver, triggerGameOver])
 
   // ── Touch handlers ──────────────────────────────────────────────────
+  const [invalidFlash, setInvalidFlash] = useState<Set<string>>(new Set())
+
   const handleTouchStart = useCallback((e: React.TouchEvent, idx: number) => {
     if (gameOver || !shapes[idx]) return
     e.stopPropagation()
@@ -469,14 +477,19 @@ export default function BlockBlastPage() {
     const shape = shapesRef.current[dragShapeIdx.current]
     if (!shape) return
     const bounds = getShapeBounds(shape)
-    // Offset 80px up so user can see placement
+    // Apply 80px vertical offset, then get grid cell (extended area included)
     const pos = getCellFromPoint(touch.clientX, touch.clientY - 80)
     if (pos) {
+      // Center shape on finger, then clamp to valid grid bounds
       const adjRow = pos.row - Math.floor(bounds.rows / 2)
       const adjCol = pos.col - Math.floor(bounds.cols / 2)
       const clamped = clampShapePos(adjRow, adjCol, shape)
       setHoverPos(clamped)
       hoverPosRef.current = clamped
+    } else {
+      // Finger too far from grid — hide preview
+      setHoverPos(null)
+      hoverPosRef.current = null
     }
   }, [getCellFromPoint, clampShapePos])
 
@@ -485,7 +498,16 @@ export default function BlockBlastPage() {
     const hp = hoverPosRef.current
     const idx = dragShapeIdx.current
     if (hp !== null && idx !== null) {
-      placeBlock(idx, hp.row, hp.col)
+      const shape = shapesRef.current[idx]
+      if (shape && !canPlace(gridStateRef.current, shape, hp.row, hp.col)) {
+        // Invalid placement — show red flash then return shape to tray
+        const flashCells = new Set<string>()
+        shape.cells.forEach(([r, c]) => flashCells.add(`${hp.row + r}-${hp.col + c}`))
+        setInvalidFlash(flashCells)
+        setTimeout(() => setInvalidFlash(new Set()), 300)
+      } else {
+        placeBlock(idx, hp.row, hp.col)
+      }
     }
     isDragging.current = false
     dragShapeIdx.current = null
@@ -504,6 +526,8 @@ export default function BlockBlastPage() {
       const adjCol = pos.col - Math.floor(bounds.cols / 2)
       const clamped = clampShapePos(adjRow, adjCol, shape)
       setHoverPos(clamped)
+    } else {
+      setHoverPos(null)
     }
   }, [selectedIdx, shapes, getCellFromPoint, clampShapePos])
 
@@ -616,6 +640,12 @@ export default function BlockBlastPage() {
         }
         .combo-flash { animation: comboFlashKf 0.3s ease-out; }
 
+        @keyframes invalidFlashKf {
+          0% { background-color: rgba(239,68,68,0.5) !important; }
+          100% { background-color: transparent; }
+        }
+        .cell-invalid-flash { animation: invalidFlashKf 0.3s ease-out; }
+
         @keyframes gameOverTitle {
           0% { opacity: 0; transform: scale(0.5); }
           60% { transform: scale(1.05); }
@@ -720,6 +750,7 @@ export default function BlockBlastPage() {
               const key = `${r}-${c}`
               const isGhost = ghostInfo.cells.has(key)
               const isClearing = clearingCells.has(key)
+              const isInvalidFlash = invalidFlash.has(key)
               const showInvalid = isGhost && !ghostInfo.valid
               return (
                 <div
@@ -729,15 +760,18 @@ export default function BlockBlastPage() {
                     ${cell.filled && cell.justPlaced ? 'cell-placed' : ''}
                     ${isClearing ? 'cell-clearing' : ''}
                     ${isGhost && ghostInfo.valid ? 'ghost-cell' : ''}
+                    ${isInvalidFlash ? 'cell-invalid-flash' : ''}
                   `}
                   style={{
                     backgroundColor: cell.filled
                       ? cell.color
-                      : isGhost
-                        ? showInvalid
-                          ? 'rgba(239,68,68,0.25)'
-                          : `${ghostColor}44`
-                        : 'rgba(255,255,255,0.02)',
+                      : isInvalidFlash
+                        ? 'rgba(239,68,68,0.4)'
+                        : isGhost
+                          ? showInvalid
+                            ? 'rgba(239,68,68,0.25)'
+                            : `${ghostColor}44`
+                          : 'rgba(255,255,255,0.02)',
                     ...(cell.filled ? {
                       backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)',
                       border: `2px solid ${darkenColor(cell.color, 50)}`,
@@ -751,8 +785,8 @@ export default function BlockBlastPage() {
                       border: `1px solid ${ghostColor}66`,
                       borderRadius: '3px',
                     } : {}),
-                    ...(showInvalid ? {
-                      border: '1px solid rgba(239,68,68,0.3)',
+                    ...(showInvalid || isInvalidFlash ? {
+                      border: '1px solid rgba(239,68,68,0.5)',
                     } : {}),
                   }}
                 />
