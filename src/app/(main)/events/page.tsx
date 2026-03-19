@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, MapPin, Clock, ChevronLeft, ChevronRight, Plus, X, List, CalendarDays } from 'lucide-react'
+import { BetaDisclaimer } from '@/components/beta-disclaimer'
 import type { Event, EventType, Profile } from '@/lib/types'
 
 const EVENT_TYPE_CONFIG: Record<string, { label: string; color: string; dotColor: string }> = {
@@ -336,6 +337,7 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      <BetaDisclaimer />
       {eventToast && (
         <div className={`fixed top-16 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl text-sm font-medium shadow-lg animate-slide-down ${
           eventToast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'

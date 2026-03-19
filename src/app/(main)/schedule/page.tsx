@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Clock, Edit3, Check, X } from 'lucide-react'
+import { BetaDisclaimer } from '@/components/beta-disclaimer'
 
 const DAYS = ['Ponedeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak'] as const
 const DAY_SHORT = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet'] as const
@@ -319,6 +320,7 @@ export default function SchedulePage() {
 
   return (
     <div className="space-y-4 animate-fade-in pb-8">
+      <BetaDisclaimer />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold gradient-text">Raspored</h1>

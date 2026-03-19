@@ -49,6 +49,7 @@ export default function MainLayout({
               <span className="text-xs font-bold text-white">NR</span>
             </div>
             <span className="font-semibold text-sm gradient-text">Niko Rolović</span>
+            <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">Beta</span>
           </button>
           <div className="flex items-center gap-2">
             <button

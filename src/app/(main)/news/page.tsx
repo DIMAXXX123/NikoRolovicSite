@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Heart } from 'lucide-react'
+import { BetaDisclaimer } from '@/components/beta-disclaimer'
 import { RoleBadge } from '@/components/role-badge'
 import type { NewsItem } from '@/lib/types'
 
@@ -126,6 +127,7 @@ export default function NewsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      <BetaDisclaimer />
       {news.length === 0 ? (
         <div className="text-center py-20 text-muted-foreground">
           <Newspaper className="w-12 h-12 mx-auto mb-3 opacity-30" />
