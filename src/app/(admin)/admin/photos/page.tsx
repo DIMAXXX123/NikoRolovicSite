@@ -78,7 +78,7 @@ export default function AdminPhotosPage() {
       <div className="space-y-4">
         <h1 className="text-2xl font-bold text-white">Moderacija fotografija</h1>
         {[1, 2].map((i) => (
-          <div key={i} className="aspect-[3/4] rounded-2xl bg-slate-800 animate-pulse" />
+          <div key={i} className="aspect-[3/4] rounded-2xl bg-white/[0.04] animate-pulse" />
         ))}
       </div>
     )
@@ -92,20 +92,20 @@ export default function AdminPhotosPage() {
       <div className="flex gap-2">
         <button
           onClick={() => setActiveTab('pending')}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
             activeTab === 'pending'
-              ? 'bg-blue-500 text-white'
-              : 'bg-[#1e293b] text-slate-400 hover:text-white'
+              ? 'bg-gradient-to-r from-purple-600 to-violet-700 text-white shadow-lg shadow-purple-500/20'
+              : 'bg-white/[0.04] text-white/40 hover:text-white border border-white/[0.08] hover:border-purple-500/30'
           }`}
         >
           Na čekanju ({pendingPhotos.length})
         </button>
         <button
           onClick={() => setActiveTab('approved')}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
             activeTab === 'approved'
-              ? 'bg-blue-500 text-white'
-              : 'bg-[#1e293b] text-slate-400 hover:text-white'
+              ? 'bg-gradient-to-r from-purple-600 to-violet-700 text-white shadow-lg shadow-purple-500/20'
+              : 'bg-white/[0.04] text-white/40 hover:text-white border border-white/[0.08] hover:border-purple-500/30'
           }`}
         >
           Objavljene ({approvedPhotos.length})
@@ -115,43 +115,47 @@ export default function AdminPhotosPage() {
       {activeTab === 'pending' && (
         <>
           {pendingPhotos.length === 0 ? (
-            <div className="text-center py-20 text-slate-500">
+            <div className="text-center py-20 text-white/30">
               <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>Nema fotografija na čekanju</p>
             </div>
           ) : (
-            pendingPhotos.map((photo) => (
-              <div key={photo.id} className="rounded-xl bg-[#1e293b] border border-slate-700/50 overflow-hidden animate-slide-up">
+            pendingPhotos.map((photo, index) => (
+              <div
+                key={photo.id}
+                className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] overflow-hidden hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300"
+                style={{ animationDelay: `${index * 80}ms` }}
+              >
                 <div className="relative">
                   <img
                     src={photo.image_url}
                     alt={photo.caption || ''}
                     className="w-full aspect-[3/4] object-cover"
                   />
-                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1">
+                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/10">
                     <p className="text-white text-sm font-medium">
                       {photo.user?.first_name} {photo.user?.last_name}
                     </p>
-                    <p className="text-white/60 text-xs">
+                    <p className="text-white/50 text-xs">
                       {photo.user?.class_number}-{photo.user?.section_number}
                     </p>
                   </div>
                 </div>
                 <div className="p-4">
                   {photo.caption && (
-                    <p className="text-sm text-slate-300 mb-3">{photo.caption}</p>
+                    <p className="text-sm text-white/60 mb-3">{photo.caption}</p>
                   )}
                   <div className="flex gap-3">
                     <Button
                       onClick={() => moderate(photo.id, 'approved')}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white rounded-xl shadow-lg shadow-green-500/20"
                     >
                       <Check className="w-4 h-4 mr-2" />
                       Odobri
                     </Button>
                     <Button
                       onClick={() => moderate(photo.id, 'rejected')}
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                      className="flex-1 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white rounded-xl shadow-lg shadow-red-500/20"
                     >
                       <X className="w-4 h-4 mr-2" />
                       Odbij
@@ -167,20 +171,24 @@ export default function AdminPhotosPage() {
       {activeTab === 'approved' && (
         <>
           {approvedPhotos.length === 0 ? (
-            <div className="text-center py-20 text-slate-500">
+            <div className="text-center py-20 text-white/30">
               <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>Nema objavljenih fotografija</p>
             </div>
           ) : (
-            approvedPhotos.map((photo) => (
-              <div key={photo.id} className="rounded-xl bg-[#1e293b] border border-slate-700/50 overflow-hidden">
+            approvedPhotos.map((photo, index) => (
+              <div
+                key={photo.id}
+                className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] overflow-hidden hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300"
+                style={{ animationDelay: `${index * 80}ms` }}
+              >
                 <div className="relative">
                   <img
                     src={photo.image_url}
                     alt={photo.caption || ''}
                     className="w-full aspect-[3/4] object-cover"
                   />
-                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1">
+                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/10">
                     <p className="text-white text-sm font-medium">
                       {photo.user?.first_name} {photo.user?.last_name}
                     </p>
@@ -188,12 +196,12 @@ export default function AdminPhotosPage() {
                 </div>
                 <div className="p-4">
                   {photo.caption && (
-                    <p className="text-sm text-slate-300 mb-3">{photo.caption}</p>
+                    <p className="text-sm text-white/60 mb-3">{photo.caption}</p>
                   )}
                   {userRole === 'creator' && (
                     <Button
                       onClick={() => deleteApprovedPhoto(photo.id)}
-                      className="w-full bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded-xl"
+                      className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/40 rounded-xl transition-all"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Obriši fotografiju

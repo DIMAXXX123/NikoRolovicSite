@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Heart } from 'lucide-react'
 import { BetaDisclaimer } from '@/components/beta-disclaimer'
@@ -11,6 +11,9 @@ export default function NewsPage() {
   const [news, setNews] = useState<NewsItem[]>([])
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [likingIds, setLikingIds] = useState<Set<string>>(new Set())
+  const [heartAnimId, setHeartAnimId] = useState<string | null>(null)
+  const lastTapRef = useRef<Record<string, number>>({})
   const supabase = createClient()
 
   useEffect(() => {
@@ -56,8 +59,6 @@ export default function NewsPage() {
     }
     setLoading(false)
   }
-
-  const [likingIds, setLikingIds] = useState<Set<string>>(new Set())
 
   async function toggleLike(newsId: string, currentlyLiked: boolean) {
     if (!userId) return
@@ -114,6 +115,39 @@ export default function NewsPage() {
     }
   }
 
+  function handleDoubleTap(newsId: string) {
+    const now = Date.now()
+    const lastTap = lastTapRef.current[newsId] || 0
+
+    if (now - lastTap < 300) {
+      // Double tap detected
+      const item = news.find((n) => n.id === newsId)
+      if (item && !item.user_liked) {
+        toggleLike(newsId, false)
+      }
+      setHeartAnimId(newsId)
+      setTimeout(() => setHeartAnimId(null), 600)
+      lastTapRef.current[newsId] = 0
+    } else {
+      lastTapRef.current[newsId] = now
+    }
+  }
+
+  function formatDate(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString('sr-Latn', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
+
+  function formatDateShort(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString('sr-Latn', {
+      day: 'numeric',
+      month: 'short',
+    })
+  }
+
   if (loading) {
     return (
       <div className="space-y-4 pt-2">
@@ -135,14 +169,17 @@ export default function NewsPage() {
     )
   }
 
+  const heroItem = news.length > 0 ? news[0] : null
+  const restItems = news.length > 1 ? news.slice(1) : []
+
   return (
-    <div className="space-y-5 animate-fade-in pb-4">
+    <div className="space-y-6 animate-fade-in pb-4">
       <BetaDisclaimer />
 
       {/* Page header */}
-      <div className="pt-1 pb-2">
-        <h1 className="text-2xl font-bold gradient-text">Novosti</h1>
-        <p className="text-xs text-muted-foreground mt-1">Najnovije vijesti iz škole</p>
+      <div className="pt-1 pb-1">
+        <h1 className="text-3xl font-bold text-white tracking-tight">Novosti</h1>
+        <p className="text-sm text-muted-foreground mt-1">Najnovije vijesti iz skole</p>
       </div>
 
       {news.length === 0 ? (
@@ -150,53 +187,238 @@ export default function NewsPage() {
           <div className="w-16 h-16 rounded-3xl bg-muted/30 flex items-center justify-center mx-auto mb-4">
             <Newspaper className="w-8 h-8 text-muted-foreground/30" />
           </div>
-          <p className="text-muted-foreground text-sm">Još nema novosti</p>
+          <p className="text-muted-foreground text-sm">Jos nema novosti</p>
         </div>
       ) : (
         <div className="space-y-4 animate-stagger">
-          {news.map((item) => (
+          {/* Hero card - first news item */}
+          {heroItem && (
+            <article
+              key={heroItem.id}
+              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none"
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(12px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(12px) saturate(150%)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05) inset',
+                transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
+              onClick={() => handleDoubleTap(heroItem.id)}
+            >
+              {heroItem.image_url && (
+                <div className="relative h-72 overflow-hidden">
+                  <img
+                    src={heroItem.image_url}
+                    alt={heroItem.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+
+                  {/* Heart animation overlay */}
+                  {heartAnimId === heroItem.id && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                      <Heart
+                        className="w-20 h-20 fill-red-500 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.6)] absolute top-1/2 left-1/2 animate-heart-pop"
+                      />
+                    </div>
+                  )}
+
+                  {/* Overlaid content at bottom of image */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="px-2.5 py-1 rounded-xl bg-white/10 backdrop-blur-md text-[11px] text-white/80 font-medium">
+                        {formatDateShort(heroItem.created_at)}
+                      </span>
+                    </div>
+                    <h2 className="text-xl font-bold text-white leading-snug mb-3 drop-shadow-lg">
+                      {heroItem.title}
+                    </h2>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        {heroItem.author && (
+                          <>
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white shadow-lg">
+                              {heroItem.author.first_name?.[0]}{heroItem.author.last_name?.[0]}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-white/90">
+                                {heroItem.author.first_name} {heroItem.author.last_name}
+                              </span>
+                              <RoleBadge role={heroItem.author.role || 'student'} />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleLike(heroItem.id, heroItem.user_liked || false)
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md transition-all duration-200 active:scale-110 hover:bg-red-500/20"
+                      >
+                        <Heart
+                          className={`w-5 h-5 transition-all duration-300 ${
+                            heroItem.user_liked
+                              ? 'fill-red-500 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+                              : 'text-white/70'
+                          }`}
+                        />
+                        <span className={`text-sm font-medium ${heroItem.user_liked ? 'text-red-400' : 'text-white/70'}`}>
+                          {heroItem.likes_count || 0}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* If no image, show content in card body */}
+              {!heroItem.image_url && (
+                <div className="relative p-5 space-y-3">
+                  {/* Heart animation overlay for no-image hero */}
+                  {heartAnimId === heroItem.id && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                      <Heart
+                        className="w-20 h-20 fill-red-500 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.6)] absolute top-1/2 left-1/2 animate-heart-pop"
+                      />
+                    </div>
+                  )}
+                  <span className="text-xs text-muted-foreground">{formatDate(heroItem.created_at)}</span>
+                  <h2 className="text-xl font-bold text-white leading-snug">{heroItem.title}</h2>
+                  <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">{heroItem.content}</p>
+                  <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+                    <div className="flex items-center gap-2.5">
+                      {heroItem.author && (
+                        <>
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white">
+                            {heroItem.author.first_name?.[0]}{heroItem.author.last_name?.[0]}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-foreground/80">
+                              {heroItem.author.first_name} {heroItem.author.last_name}
+                            </span>
+                            <RoleBadge role={heroItem.author.role || 'student'} />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleLike(heroItem.id, heroItem.user_liked || false)
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-110 hover:bg-red-500/10"
+                    >
+                      <Heart
+                        className={`w-5 h-5 transition-all duration-300 ${
+                          heroItem.user_liked
+                            ? 'fill-red-500 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+                            : 'text-muted-foreground'
+                        }`}
+                      />
+                      <span className={`text-sm font-medium ${heroItem.user_liked ? 'text-red-400' : 'text-muted-foreground'}`}>
+                        {heroItem.likes_count || 0}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Content preview below image for hero */}
+              {heroItem.image_url && heroItem.content && (
+                <div className="px-5 py-4">
+                  <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2">{heroItem.content}</p>
+                </div>
+              )}
+            </article>
+          )}
+
+          {/* Regular cards */}
+          {restItems.map((item) => (
             <article
               key={item.id}
-              className="group rounded-2xl overflow-hidden bg-card/40 backdrop-blur-sm border border-white/[0.04] transition-all duration-300 hover:border-purple-500/15 hover:shadow-[0_8px_32px_-8px_rgba(167,139,250,0.12)] active:scale-[0.98]"
+              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none"
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(12px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(12px) saturate(150%)',
+                boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05) inset',
+                transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget
+                el.style.transform = 'translateY(-2px)'
+                el.style.boxShadow = '0 8px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(167, 139, 250, 0.15) inset'
+                el.style.borderColor = 'rgba(167, 139, 250, 0.2)'
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget
+                el.style.transform = 'translateY(0)'
+                el.style.boxShadow = '0 4px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05) inset'
+                el.style.borderColor = 'rgba(255, 255, 255, 0.08)'
+              }}
+              onClick={() => handleDoubleTap(item.id)}
             >
+              {/* Heart animation overlay */}
+              {heartAnimId === item.id && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                  <Heart
+                    className="w-16 h-16 fill-red-500 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.6)] absolute top-1/2 left-1/2 animate-heart-pop"
+                  />
+                </div>
+              )}
+
               {item.image_url && (
-                <div className="relative h-52 overflow-hidden">
+                <div className="relative h-48 overflow-hidden">
                   <img
                     src={item.image_url}
                     alt={item.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                   {/* Date badge on image */}
                   <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-black/50 backdrop-blur-md text-[10px] text-white/80 font-medium">
-                    {new Date(item.created_at).toLocaleDateString('sr-Latn', { day: 'numeric', month: 'short' })}
+                    {formatDateShort(item.created_at)}
                   </div>
                 </div>
               )}
+
               <div className="p-5 space-y-3">
-                <h2 className="text-lg font-bold leading-snug">{item.title}</h2>
+                <h2 className="text-lg font-bold text-white leading-snug">{item.title}</h2>
                 <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">{item.content}</p>
-                <div className="flex items-center justify-between pt-3 border-t border-white/[0.04]">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+
+                <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+                  <div className="flex items-center gap-2.5">
                     {item.author && (
                       <>
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500/20 to-violet-600/20 flex items-center justify-center text-[10px] font-bold text-purple-300">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-[10px] font-bold text-white shadow-md">
                           {item.author.first_name?.[0]}{item.author.last_name?.[0]}
                         </div>
-                        <span className="font-medium text-foreground/70">{item.author.first_name} {item.author.last_name}</span>
-                        <RoleBadge role={item.author.role || 'student'} />
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-foreground/70">
+                            {item.author.first_name} {item.author.last_name}
+                          </span>
+                          <RoleBadge role={item.author.role || 'student'} />
+                        </div>
                       </>
                     )}
                     {!item.image_url && (
-                      <span className="text-muted-foreground/50">· {new Date(item.created_at).toLocaleDateString('sr-Latn')}</span>
+                      <span className="text-xs text-muted-foreground/50">
+                        {formatDate(item.created_at)}
+                      </span>
                     )}
                   </div>
                   <button
-                    onClick={() => toggleLike(item.id, item.user_liked || false)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleLike(item.id, item.user_liked || false)
+                    }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-110 hover:bg-red-500/10"
                   >
                     <Heart
-                      className={`w-4.5 h-4.5 transition-all duration-300 ${
+                      className={`w-4 h-4 transition-all duration-300 ${
                         item.user_liked
                           ? 'fill-red-500 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]'
                           : 'text-muted-foreground'

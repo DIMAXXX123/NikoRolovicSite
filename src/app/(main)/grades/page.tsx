@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronDown, Plus, X, Trash2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { ChevronDown, Plus, X, Trash2 } from 'lucide-react'
 
 const DEFAULT_SUBJECTS = [
   'Matematika', 'Fizika', 'Hemija', 'Biologija', 'Istorija',
@@ -138,7 +137,6 @@ export default function GradesPage() {
   const [editingCell, setEditingCell] = useState<string | null>(null)
   const [showAddSubject, setShowAddSubject] = useState(false)
   const [expandedSubject, setExpandedSubject] = useState<string | null>(null)
-  const router = useRouter()
 
   useEffect(() => {
     setGrades(loadGrades())
@@ -254,9 +252,6 @@ export default function GradesPage() {
     <div className="space-y-5 animate-fade-in pb-8 -mx-4 px-3">
       {/* Header */}
       <div className="flex items-center gap-3 pt-1">
-        <button onClick={() => router.back()} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
-          <ChevronLeft className="w-4 h-4" />
-        </button>
         <h1 className="text-2xl font-bold gradient-text">Moje ocjene</h1>
       </div>
 
@@ -303,8 +298,12 @@ export default function GradesPage() {
                   strokeLinecap="round"
                   strokeDasharray={circumference}
                   strokeDashoffset={offset}
-                  className="transition-all duration-1000 ease-out"
-                  style={{ filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.3))' }}
+                  className="animate-circular-progress"
+                  style={{
+                    filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.3))',
+                    ['--circumference' as string]: circumference,
+                    ['--offset' as string]: offset,
+                  }}
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -325,7 +324,9 @@ export default function GradesPage() {
           return (
             <div
               key={subject}
-              className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm overflow-hidden transition-all duration-300"
+              className={`rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm overflow-hidden transition-all duration-300 ${
+                isExpanded ? 'gradient-overlay' : ''
+              }`}
             >
               {/* Collapsed header */}
               <button

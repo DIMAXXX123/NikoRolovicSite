@@ -9,7 +9,7 @@ import { Search, ShieldAlert, Plus, X, Trash2 } from 'lucide-react'
 import type { Profile, UserRole } from '@/lib/types'
 
 const STANDARD_ROLES: { value: UserRole; label: string; color: string }[] = [
-  { value: 'student', label: 'Student', color: 'bg-slate-500/20 text-slate-300' },
+  { value: 'student', label: 'Student', color: 'bg-white/10 text-white/60' },
   { value: 'moderator', label: 'Moderator', color: 'bg-blue-500/20 text-blue-300' },
   { value: 'admin', label: 'Admin', color: 'bg-amber-500/20 text-amber-300' },
   { value: 'creator', label: 'Creator', color: 'bg-purple-500/20 text-purple-300' },
@@ -129,7 +129,7 @@ export default function AdminRolesPage() {
     if (standard) return { label: standard.label, color: standard.color, icon: '' }
     const custom = customRoles.find(r => r.name === role)
     if (custom) return { label: custom.name, color: '', icon: custom.icon, customColor: custom.color }
-    return { label: role, color: 'bg-slate-500/20 text-slate-300', icon: '' }
+    return { label: role, color: 'bg-white/10 text-white/50', icon: '' }
   }
 
   const allRoleOptions = [
@@ -137,14 +137,14 @@ export default function AdminRolesPage() {
     ...customRoles.map(r => r.name),
   ]
 
-  const selectClass = "flex h-9 w-full rounded-lg border border-slate-600 bg-slate-800 px-2 py-1 text-xs text-white focus:border-blue-500 focus:outline-none transition-colors"
+  const selectClass = "flex h-9 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-xs text-white focus:border-purple-500 focus:outline-none transition-colors"
 
   if (loading) {
     return (
       <div className="space-y-4">
         <h1 className="text-2xl font-bold text-white">Upravljanje ulogama</h1>
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-16 rounded-xl bg-slate-800 animate-pulse" />
+          <div key={i} className="h-16 rounded-2xl bg-white/[0.04] animate-pulse" />
         ))}
       </div>
     )
@@ -157,19 +157,21 @@ export default function AdminRolesPage() {
       {/* Search & Filter */}
       <div className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Pretraži po imenu ili emailu..."
-            className="pl-10 rounded-xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-blue-500"
+            className="pl-10 rounded-xl bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/30 focus:border-purple-500 focus:ring-purple-500/20"
           />
         </div>
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setRoleFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              roleFilter === 'all' ? 'bg-blue-500 text-white' : 'bg-[#1e293b] text-slate-400 hover:text-white'
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+              roleFilter === 'all'
+                ? 'bg-gradient-to-r from-purple-600 to-violet-700 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-white/[0.04] text-white/40 hover:text-white border border-white/[0.08] hover:border-purple-500/30'
             }`}
           >
             Svi ({users.length})
@@ -180,8 +182,10 @@ export default function AdminRolesPage() {
               <button
                 key={r.value}
                 onClick={() => setRoleFilter(r.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  roleFilter === r.value ? 'bg-blue-500 text-white' : 'bg-[#1e293b] text-slate-400 hover:text-white'
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                  roleFilter === r.value
+                    ? 'bg-gradient-to-r from-purple-600 to-violet-700 text-white shadow-lg shadow-purple-500/20'
+                    : 'bg-white/[0.04] text-white/40 hover:text-white border border-white/[0.08] hover:border-purple-500/30'
                 }`}
               >
                 {r.label} ({count})
@@ -192,12 +196,12 @@ export default function AdminRolesPage() {
       </div>
 
       {/* Custom Roles Section */}
-      <div className="rounded-xl bg-[#1e293b] border border-slate-700/50 p-4 space-y-3">
+      <div className="rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-white">Prilagođene uloge</h3>
           <button
             onClick={() => setShowCustomRoleForm(!showCustomRoleForm)}
-            className="text-blue-400 hover:text-blue-300 text-xs flex items-center gap-1"
+            className="text-purple-400 hover:text-purple-300 text-xs flex items-center gap-1 transition-colors"
           >
             {showCustomRoleForm ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
             {showCustomRoleForm ? 'Otkaži' : 'Nova uloga'}
@@ -205,35 +209,35 @@ export default function AdminRolesPage() {
         </div>
 
         {showCustomRoleForm && (
-          <div className="space-y-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+          <div className="space-y-3 p-4 rounded-xl bg-white/[0.04] border border-white/[0.08]">
             <div className="space-y-2">
-              <Label className="text-slate-300 text-xs">Naziv uloge</Label>
+              <Label className="text-white/50 text-xs">Naziv uloge</Label>
               <Input
                 value={newRoleName}
                 onChange={(e) => setNewRoleName(e.target.value)}
                 placeholder="npr. urednik"
-                className="rounded-lg bg-slate-800 border-slate-600 text-white text-sm focus:border-blue-500"
+                className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white text-sm focus:border-purple-500 focus:ring-purple-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300 text-xs">Emoji ikona</Label>
+              <Label className="text-white/50 text-xs">Emoji ikona</Label>
               <Input
                 value={newRoleIcon}
                 onChange={(e) => setNewRoleIcon(e.target.value)}
                 placeholder="npr. ✏️"
-                className="rounded-lg bg-slate-800 border-slate-600 text-white text-sm focus:border-blue-500"
+                className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white text-sm focus:border-purple-500 focus:ring-purple-500/20"
                 maxLength={2}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300 text-xs">Boja</Label>
+              <Label className="text-white/50 text-xs">Boja</Label>
               <div className="flex gap-2 flex-wrap">
                 {ROLE_COLORS.map(color => (
                   <button
                     key={color}
                     type="button"
                     onClick={() => setNewRoleColor(color)}
-                    className={`w-7 h-7 rounded-full transition-transform ${newRoleColor === color ? 'scale-125 ring-2 ring-white ring-offset-2 ring-offset-slate-800' : 'hover:scale-110'}`}
+                    className={`w-7 h-7 rounded-full transition-transform ${newRoleColor === color ? 'scale-125 ring-2 ring-white ring-offset-2 ring-offset-[#0f1729]' : 'hover:scale-110'}`}
                     style={{ backgroundColor: color }}
                   />
                 ))}
@@ -242,7 +246,7 @@ export default function AdminRolesPage() {
             <Button
               onClick={addCustomRole}
               disabled={!newRoleName.trim()}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm"
+              className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl text-sm shadow-lg shadow-purple-500/20"
             >
               Kreiraj ulogu
             </Button>
@@ -250,18 +254,18 @@ export default function AdminRolesPage() {
         )}
 
         {customRoles.length === 0 ? (
-          <p className="text-xs text-slate-500">Nema prilagođenih uloga</p>
+          <p className="text-xs text-white/25">Nema prilagođenih uloga</p>
         ) : (
           <div className="flex gap-2 flex-wrap">
             {customRoles.map((role, i) => (
               <div
                 key={i}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-slate-600"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-white/[0.08]"
                 style={{ backgroundColor: role.color + '20', color: role.color }}
               >
                 {role.icon && <span>{role.icon}</span>}
                 <span>{role.name}</span>
-                <button onClick={() => deleteCustomRole(i)} className="ml-1 hover:text-red-400">
+                <button onClick={() => deleteCustomRole(i)} className="ml-1 hover:text-red-400 transition-colors">
                   <X className="w-3 h-3" />
                 </button>
               </div>
@@ -271,25 +275,29 @@ export default function AdminRolesPage() {
       </div>
 
       {/* Users List */}
-      <p className="text-sm text-slate-400">{filteredUsers.length} korisnika</p>
+      <p className="text-sm text-white/40">{filteredUsers.length} korisnika</p>
 
       {filteredUsers.length === 0 ? (
-        <div className="text-center py-12 text-slate-500">
+        <div className="text-center py-12 text-white/30">
           <ShieldAlert className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>Nema korisnika</p>
         </div>
       ) : (
-        filteredUsers.map((user) => {
+        filteredUsers.map((user, index) => {
           const roleDisplay = getRoleDisplay(user.role)
           return (
-            <div key={user.id} className="rounded-xl bg-[#1e293b] border border-slate-700/50 p-3 flex items-center justify-between gap-3">
+            <div
+              key={user.id}
+              className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] p-3 flex items-center justify-between gap-3 hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300 group"
+              style={{ animationDelay: `${index * 40}ms` }}
+            >
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-sm text-white truncate">
+                <p className="font-medium text-sm text-white truncate group-hover:text-purple-200 transition-colors">
                   {user.first_name} {user.last_name}
                 </p>
-                <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                <p className="text-xs text-white/30 truncate">{user.email}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10px] text-slate-500">{user.class_number}-{user.section_number}</span>
+                  <span className="text-[10px] text-white/20">{user.class_number}-{user.section_number}</span>
                   <span
                     className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${roleDisplay.color || ''}`}
                     style={roleDisplay.customColor ? { backgroundColor: roleDisplay.customColor + '20', color: roleDisplay.customColor } : undefined}
@@ -306,7 +314,7 @@ export default function AdminRolesPage() {
                   className={selectClass}
                 >
                   {allRoleOptions.map(r => (
-                    <option key={r} value={r}>{r}</option>
+                    <option key={r} value={r} className="bg-[#1a1f35] text-white">{r}</option>
                   ))}
                 </select>
               </div>

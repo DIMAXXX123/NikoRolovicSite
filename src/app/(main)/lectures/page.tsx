@@ -44,7 +44,7 @@ function SubjectIcon({ name, emoji, size = 'lg' }: { name: string; emoji: string
     const dims = size === 'lg' ? 'w-10 h-7' : 'w-6 h-4'
     return <img src={flagUrl} alt={name} className={`${dims} object-contain`} />
   }
-  return <span className={size === 'lg' ? 'text-4xl' : 'text-xl'}>{emoji}</span>
+  return <span className={size === 'lg' ? 'text-5xl' : 'text-xl'}>{emoji}</span>
 }
 
 type ViewState = 'subjects' | 'lectures' | 'lecture' | 'quiz'
@@ -836,13 +836,15 @@ export default function LecturesPage() {
         {allSubjects.map((subject) => (
           <button
             key={subject.name}
-            className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm cursor-pointer hover:bg-white/[0.05] hover:border-purple-500/15 transition-all duration-300 active:scale-[0.96] overflow-hidden group p-5 flex flex-col items-center text-center gap-3"
+            className="relative rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm cursor-pointer hover:bg-white/[0.05] hover:border-purple-500/15 transition-all duration-300 active:scale-[0.96] overflow-hidden group p-5 flex flex-col items-center text-center gap-3"
             onClick={() => handleSubjectTap(subject.name)}
           >
-            <div className="transition-transform duration-300 group-hover:scale-110">
+            {/* Subtle gradient bg */}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/[0.03] to-violet-600/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative transition-transform duration-300 group-hover:scale-110">
               <SubjectIcon name={subject.name} emoji={subject.emoji} size="lg" />
             </div>
-            <h3 className="font-semibold text-sm">{subject.name}</h3>
+            <h3 className="relative font-semibold text-sm">{subject.name}</h3>
           </button>
         ))}
       </div>

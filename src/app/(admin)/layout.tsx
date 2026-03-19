@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0f1729] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -55,14 +55,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex items-center justify-between mb-5">
           <Link
             href={isSubPage ? '/admin' : '/profile'}
-            className="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+            className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors group"
           >
-            <ArrowLeft className="w-4 h-4" />
-            {isSubPage ? 'Admin panel' : 'Nazad'}
+            <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center group-hover:border-purple-500/30 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="font-medium">{isSubPage ? 'Admin panel' : 'Nazad'}</span>
           </Link>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20">
-            <ShieldCheck className="w-4 h-4 text-blue-400" />
-            <span className="text-xs font-semibold text-blue-300 tracking-wide uppercase">Admin Panel</span>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08]">
+            <ShieldCheck className="w-4 h-4 text-purple-400" />
+            <span className="text-xs font-semibold text-purple-300 tracking-wide uppercase">Admin Panel</span>
           </div>
         </div>
         <div className="admin-content">

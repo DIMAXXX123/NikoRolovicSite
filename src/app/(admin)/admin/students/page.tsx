@@ -89,7 +89,7 @@ export default function AdminStudentsPage() {
     )
   }, [students, searchQuery])
 
-  const selectClass = "flex h-11 w-full rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+  const selectClass = "flex h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/20 transition-colors"
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -98,56 +98,56 @@ export default function AdminStudentsPage() {
         <Button
           size="sm"
           onClick={() => setShowForm(!showForm)}
-          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl"
+          className="bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all"
         >
           {showForm ? <X className="w-4 h-4" /> : <><Plus className="w-4 h-4 mr-1" />Dodaj</>}
         </Button>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
         <Input
           placeholder="Pretraži po imenu, prezimenu ili emailu..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 rounded-xl bg-slate-800 border-slate-600 text-white focus:border-blue-500 placeholder:text-slate-500"
+          className="pl-10 rounded-xl bg-white/[0.04] border-white/[0.08] text-white focus:border-purple-500 focus:ring-purple-500/20 placeholder:text-white/30"
         />
       </div>
 
-      <p className="text-sm text-slate-400">{filteredStudents.length} od {students.length} učenika</p>
+      <p className="text-sm text-white/40">{filteredStudents.length} od {students.length} učenika</p>
 
       {showForm && (
-        <div className="rounded-xl bg-[#1e293b] border border-blue-500/30 p-4 animate-slide-up">
-          <form onSubmit={addStudent} className="space-y-3">
+        <div className="rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-purple-500/20 p-5 animate-slide-up">
+          <form onSubmit={addStudent} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-slate-200">Ime</Label>
-                <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="rounded-xl bg-slate-800 border-slate-600 text-white focus:border-blue-500" />
+                <Label className="text-white/70 text-sm">Ime</Label>
+                <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white focus:border-purple-500 focus:ring-purple-500/20" />
               </div>
               <div className="space-y-2">
-                <Label className="text-slate-200">Prezime</Label>
-                <Input value={lastName} onChange={(e) => setLastName(e.target.value)} required className="rounded-xl bg-slate-800 border-slate-600 text-white focus:border-blue-500" />
+                <Label className="text-white/70 text-sm">Prezime</Label>
+                <Input value={lastName} onChange={(e) => setLastName(e.target.value)} required className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white focus:border-purple-500 focus:ring-purple-500/20" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-slate-200">Razred</Label>
+                <Label className="text-white/70 text-sm">Razred</Label>
                 <select value={classNumber} onChange={(e) => setClassNumber(e.target.value)} className={selectClass}>
-                  {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}. razred</option>)}
+                  {[1, 2, 3, 4].map((n) => <option key={n} value={n} className="bg-[#1a1f35] text-white">{n}. razred</option>)}
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-slate-200">Odjeljenje</Label>
+                <Label className="text-white/70 text-sm">Odjeljenje</Label>
                 <select value={sectionNumber} onChange={(e) => setSectionNumber(e.target.value)} className={selectClass}>
-                  {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}. odjeljenje</option>)}
+                  {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n} className="bg-[#1a1f35] text-white">{n}. odjeljenje</option>)}
                 </select>
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-200">Email</Label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="rounded-xl bg-slate-800 border-slate-600 text-white focus:border-blue-500" />
+              <Label className="text-white/70 text-sm">Email</Label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white focus:border-purple-500 focus:ring-purple-500/20" />
             </div>
-            <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl">
+            <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-purple-500/20">
               {loading ? 'Dodaje se...' : 'Dodaj učenika'}
             </Button>
           </form>
@@ -155,24 +155,28 @@ export default function AdminStudentsPage() {
       )}
 
       {filteredStudents.length === 0 ? (
-        <div className="text-center py-20 text-slate-500">
+        <div className="text-center py-20 text-white/30">
           <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>{searchQuery ? 'Nema rezultata' : 'Nema učenika u bazi'}</p>
         </div>
       ) : (
-        filteredStudents.map((student) => (
-          <div key={student.id} className="rounded-xl bg-[#1e293b] border border-slate-700/50 p-3 flex items-center justify-between">
+        filteredStudents.map((student, index) => (
+          <div
+            key={student.id}
+            className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] p-3 flex items-center justify-between hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300 group"
+            style={{ animationDelay: `${index * 40}ms` }}
+          >
             <div>
-              <p className="font-medium text-sm text-white">{student.first_name} {student.last_name}</p>
-              <p className="text-xs text-slate-400">
+              <p className="font-medium text-sm text-white group-hover:text-purple-200 transition-colors">{student.first_name} {student.last_name}</p>
+              <p className="text-xs text-white/30">
                 {student.class_number}-{student.section_number}{student.email && !student.email.includes('@pending.local') && !student.email.includes('@temp.com') ? ` · ${student.email}` : ''}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${student.used ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
+              <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${student.used ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'bg-white/[0.04] text-white/30 border border-white/[0.08]'}`}>
                 {student.used ? 'Registrovan' : 'Čeka'}
               </span>
-              <button onClick={() => deleteStudent(student.id, student)} className="text-red-400 p-1 hover:text-red-300">
+              <button onClick={() => deleteStudent(student.id, student)} className="text-red-400/60 p-1 hover:text-red-400 transition-colors">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>

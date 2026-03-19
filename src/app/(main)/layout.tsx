@@ -45,25 +45,25 @@ export default function MainLayout({
             }}
             className="flex items-center gap-3 active:scale-95 transition-transform press-ripple rounded-2xl py-1.5 px-1 -ml-1"
           >
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/20">
-              <span className="text-xs font-black text-white tracking-tight">NR</span>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/25">
+              <span className="text-sm font-black text-white tracking-tight">NR</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm gradient-text">Niko Rolović</span>
-              <span className="px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-widest rounded-md bg-purple-500/15 text-purple-400 border border-purple-500/20 backdrop-blur-sm">Beta</span>
+              <span className="font-bold text-[15px] text-white tracking-tight">Niko Rolović</span>
+              <span className="px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-widest rounded-md bg-purple-500/15 text-purple-400 border border-purple-500/20">Beta</span>
             </div>
           </button>
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push('/tournament')}
-              className="w-10 h-10 rounded-2xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-600 active:scale-90 transition-transform shadow-lg shadow-orange-500/20 btn-press"
+              className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/[0.06] border border-white/[0.08] active:scale-90 transition-all hover:bg-white/[0.1] btn-press"
               title="Turnir u košarci"
             >
-              <span className="text-base animate-[basketBounce_1.5s_ease-in-out_infinite]">🏀</span>
+              <span className="text-sm">🏀</span>
             </button>
             <button
               onClick={() => router.push('/game')}
-              className="w-10 h-10 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 active:scale-90 transition-transform shadow-lg shadow-blue-500/25 overflow-hidden animate-[blockPulse_2s_ease-in-out_infinite] btn-press"
+              className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/[0.06] border border-white/[0.08] active:scale-90 transition-all hover:bg-white/[0.1] overflow-hidden btn-press"
               title="Block Blast"
             >
               <div className="grid grid-cols-3 gap-[1px] w-6 h-6">

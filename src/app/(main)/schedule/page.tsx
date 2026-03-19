@@ -39,12 +39,40 @@ const SUBJECT_COLORS: Record<string, string> = {
   'Psihologija': 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/20',
 }
 
+// Map subject to a left-border color for daily view
+const SUBJECT_BORDER_COLORS: Record<string, string> = {
+  'Matematika': 'border-l-blue-400',
+  'Srpski': 'border-l-red-400',
+  'Engleski': 'border-l-purple-400',
+  'Fizika': 'border-l-cyan-400',
+  'Hemija': 'border-l-green-400',
+  'Biologija': 'border-l-emerald-400',
+  'Istorija': 'border-l-amber-400',
+  'Geografija': 'border-l-orange-400',
+  'Informatika': 'border-l-violet-400',
+  'Filozofija': 'border-l-pink-400',
+  'Muzička': 'border-l-rose-400',
+  'Likovna': 'border-l-yellow-400',
+  'Fizičko': 'border-l-lime-400',
+  'Latinski': 'border-l-teal-400',
+  'Sociologija': 'border-l-indigo-400',
+  'Psihologija': 'border-l-fuchsia-400',
+}
+
 function getSubjectColor(subject: string): string {
   if (!subject) return ''
   for (const [key, val] of Object.entries(SUBJECT_COLORS)) {
     if (subject.toLowerCase().includes(key.toLowerCase())) return val
   }
   return 'bg-primary/10 text-primary border-primary/20'
+}
+
+function getSubjectBorderColor(subject: string): string {
+  if (!subject) return 'border-l-transparent'
+  for (const [key, val] of Object.entries(SUBJECT_BORDER_COLORS)) {
+    if (subject.toLowerCase().includes(key.toLowerCase())) return val
+  }
+  return 'border-l-purple-400'
 }
 
 type ScheduleData = Record<string, string>
@@ -396,7 +424,7 @@ export default function SchedulePage() {
               onClick={() => setActiveDay(i)}
               className={`flex-1 min-w-0 py-2.5 px-2 rounded-2xl text-xs font-semibold transition-all duration-300 relative ${
                 activeDay === i
-                  ? 'bg-gradient-to-br from-purple-500 to-violet-700 text-white shadow-lg shadow-purple-500/25'
+                  ? 'bg-gradient-to-br from-purple-500 to-violet-700 text-white shadow-lg shadow-purple-500/25 shadow-[0_0_12px_rgba(167,139,250,0.4)]'
                   : 'bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground'
               }`}
             >
@@ -476,12 +504,15 @@ export default function SchedulePage() {
             const subject = schedule[key] || ''
             const isEditing = editCell === key
             const colorClass = getSubjectColor(subject)
+            const borderColor = getSubjectBorderColor(subject)
 
             return (
               <div
                 key={period}
                 onClick={() => startEdit(activeDay, period)}
-                className={`flex items-center gap-4 px-5 py-3.5 transition-all ${
+                className={`flex items-center gap-4 px-5 py-3.5 transition-all border-l-[3px] ${
+                  subject ? borderColor : 'border-l-transparent'
+                } ${
                   editing ? 'cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04]' : ''
                 }`}
               >
@@ -523,8 +554,15 @@ export default function SchedulePage() {
                       {subject}
                     </div>
                   ) : (
-                    <div className="text-sm text-muted-foreground/30 italic">
-                      {editing ? 'Dodaj predmet...' : '—'}
+                    <div className="text-sm text-muted-foreground/30 italic flex items-center gap-2">
+                      {editing ? (
+                        'Dodaj predmet...'
+                      ) : (
+                        <>
+                          <div className="w-6 h-[2px] rounded-full bg-white/[0.06]" />
+                          <span className="text-muted-foreground/20">Slobodan čas</span>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

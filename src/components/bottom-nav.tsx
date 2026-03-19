@@ -37,32 +37,32 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav-premium">
-      <div className="flex items-center justify-around h-20 max-w-lg mx-auto px-3">
+      <div className="flex items-center justify-around h-18 max-w-lg mx-auto px-3">
         {items.map((item) => {
           const isActive = pathname.startsWith(item.href)
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex flex-col items-center gap-1 px-3.5 py-2 rounded-2xl transition-all duration-300 ${
+              className={`relative flex flex-col items-center gap-1 px-4 py-2 transition-all duration-300 ${
                 isActive
                   ? 'text-purple-400'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              {/* Active indicator pill */}
-              {isActive && (
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-purple-500/15 to-violet-600/10 border border-purple-500/20 animate-scale-in" />
-              )}
-              <item.IconComponent className={`relative w-6 h-6 transition-all duration-300 ${
-                isActive ? 'drop-shadow-[0_0_12px_rgba(167,139,250,0.7)] scale-110' : ''
-              }`} />
+              <item.IconComponent
+                className={`relative w-[22px] h-[22px] transition-all duration-300 ${
+                  isActive ? 'text-purple-400' : ''
+                }`}
+                strokeWidth={isActive ? 2.5 : 1.5}
+                fill={isActive ? 'currentColor' : 'none'}
+              />
               <span className={`relative text-[10px] font-medium transition-all duration-300 ${
                 isActive ? 'text-purple-300' : ''
               }`}>{item.label}</span>
-              {/* Active dot */}
+              {/* Active dot indicator */}
               {isActive && (
-                <div className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-purple-400 shadow-[0_0_6px_rgba(167,139,250,0.8)] animate-pop-in" />
+                <div className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.9)] animate-pop-in" />
               )}
             </Link>
           )

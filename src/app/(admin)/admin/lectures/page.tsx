@@ -231,7 +231,7 @@ export default function AdminLecturesPage() {
 
   const toolbarBtnClass = "p-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-colors active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
 
-  // Quiz step UI
+  // Quiz step UI (kept as-is per instructions)
   if (showQuizStep) {
     return (
       <div className="space-y-4 animate-fade-in">
@@ -311,7 +311,7 @@ export default function AdminLecturesPage() {
     )
   }
 
-  // ========== FULLSCREEN EDITOR ==========
+  // ========== FULLSCREEN EDITOR (kept exactly as-is) ==========
   if (showForm) {
     return (
       <div className="fixed inset-0 z-50 bg-[#f8f9fa] flex flex-col">
@@ -437,11 +437,14 @@ export default function AdminLecturesPage() {
     )
   }
 
+  // ========== MAIN LIST VIEW (restyled with glassmorphism) ==========
   return (
     <div className="space-y-4 animate-fade-in">
       {toast && (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl text-sm font-medium shadow-lg animate-slide-down ${
-          toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-2xl text-sm font-medium shadow-lg backdrop-blur-sm animate-slide-down border ${
+          toast.type === 'success'
+            ? 'bg-green-500/90 text-white border-green-400/30'
+            : 'bg-red-500/90 text-white border-red-400/30'
         }`}>
           {toast.message}
         </div>
@@ -451,25 +454,29 @@ export default function AdminLecturesPage() {
         <Button
           size="sm"
           onClick={() => { setShowForm(true); setPreview(false) }}
-          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl"
+          className="bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all"
         >
           <Plus className="w-4 h-4 mr-1" />Nova
         </Button>
       </div>
 
       {lectures.length === 0 ? (
-        <div className="text-center py-20 text-slate-500">
+        <div className="text-center py-20 text-white/30">
           <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>Nema lekcija</p>
         </div>
       ) : (
-        lectures.map((lecture) => (
-          <div key={lecture.id} className="rounded-xl bg-[#1e293b] border border-slate-700/50 p-4 flex items-start justify-between">
+        lectures.map((lecture, index) => (
+          <div
+            key={lecture.id}
+            className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] p-4 flex items-start justify-between hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300 group"
+            style={{ animationDelay: `${index * 60}ms` }}
+          >
             <div>
-              <h3 className="font-medium text-white">{lecture.title}</h3>
-              <p className="text-xs text-slate-400">{lecture.subject} · {lecture.class_number}. razred</p>
+              <h3 className="font-semibold text-white group-hover:text-purple-200 transition-colors">{lecture.title}</h3>
+              <p className="text-xs text-white/40 mt-1">{lecture.subject} · {lecture.class_number}. razred</p>
             </div>
-            <button onClick={() => deleteLecture(lecture.id)} className="text-red-400 p-2 hover:text-red-300">
+            <button onClick={() => deleteLecture(lecture.id)} className="text-red-400/60 p-2 hover:text-red-400 transition-colors">
               <Trash2 className="w-4 h-4" />
             </button>
           </div>

@@ -22,10 +22,10 @@ const EVENT_TYPE_OPTIONS: { value: EventType; label: string }[] = [
 const EVENT_TYPE_COLORS: Record<string, string> = {
   test: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
   ispit: 'bg-red-500/20 text-red-300 border-red-500/30',
-  dogadjaj: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  dogadjaj: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
   domaci: 'bg-green-500/20 text-green-300 border-green-500/30',
   pismeni: 'bg-red-500/20 text-red-300 border-red-500/30',
-  drugo: 'bg-slate-500/20 text-slate-300 border-slate-500/30',
+  drugo: 'bg-white/10 text-white/50 border-white/[0.08]',
 }
 
 export default function AdminEventsPage() {
@@ -99,8 +99,10 @@ export default function AdminEventsPage() {
   return (
     <div className="space-y-4 animate-fade-in">
       {toast && (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl text-sm font-medium shadow-lg animate-slide-down ${
-          toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-2xl text-sm font-medium shadow-lg backdrop-blur-sm animate-slide-down border ${
+          toast.type === 'success'
+            ? 'bg-green-500/90 text-white border-green-400/30'
+            : 'bg-red-500/90 text-white border-red-400/30'
         }`}>
           {toast.message}
         </div>
@@ -110,70 +112,70 @@ export default function AdminEventsPage() {
         <Button
           size="sm"
           onClick={() => setShowForm(!showForm)}
-          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl"
+          className="bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all"
         >
           {showForm ? <X className="w-4 h-4" /> : <><Plus className="w-4 h-4 mr-1" />Novi</>}
         </Button>
       </div>
 
       {showForm && (
-        <div className="rounded-xl bg-[#1e293b] border border-blue-500/30 p-4 animate-slide-up">
-          <form onSubmit={createEvent} className="space-y-3">
+        <div className="rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-purple-500/20 p-5 animate-slide-up">
+          <form onSubmit={createEvent} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-slate-200">Naslov</Label>
+              <Label className="text-white/70 text-sm">Naslov</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="rounded-xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-blue-500"
+                className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/30 focus:border-purple-500 focus:ring-purple-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-200">Tip događaja</Label>
+              <Label className="text-white/70 text-sm">Tip događaja</Label>
               <select
                 value={eventType}
                 onChange={(e) => setEventType(e.target.value as EventType)}
-                className="flex h-11 w-full rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                className="flex h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/20 transition-colors"
               >
                 {EVENT_TYPE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <option key={opt.value} value={opt.value} className="bg-[#1a1f35] text-white">{opt.label}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-200">Opis</Label>
+              <Label className="text-white/70 text-sm">Opis</Label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="flex min-h-[80px] w-full rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                className="flex min-h-[80px] w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/20 transition-colors"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-slate-200">Datum</Label>
+                <Label className="text-white/70 text-sm">Datum</Label>
                 <Input
                   type="date"
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
                   required
-                  className="rounded-xl bg-slate-800 border-slate-600 text-white focus:border-blue-500"
+                  className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white focus:border-purple-500 focus:ring-purple-500/20"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-slate-200">Vrijeme (opciono)</Label>
+                <Label className="text-white/70 text-sm">Vrijeme (opciono)</Label>
                 <Input
                   type="time"
                   value={eventTime}
                   onChange={(e) => setEventTime(e.target.value)}
-                  className="rounded-xl bg-slate-800 border-slate-600 text-white focus:border-blue-500"
+                  className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white focus:border-purple-500 focus:ring-purple-500/20"
                 />
               </div>
             </div>
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl"
+              className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-purple-500/20"
             >
               {loading ? 'Kreiranje...' : 'Kreiraj'}
             </Button>
@@ -182,26 +184,30 @@ export default function AdminEventsPage() {
       )}
 
       {events.length === 0 ? (
-        <div className="text-center py-20 text-slate-500">
+        <div className="text-center py-20 text-white/30">
           <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>Nema događaja</p>
         </div>
       ) : (
-        events.map((event) => (
-          <div key={event.id} className="rounded-xl bg-[#1e293b] border border-slate-700/50 p-4 flex items-start justify-between">
-            <div className="space-y-1">
+        events.map((event, index) => (
+          <div
+            key={event.id}
+            className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] p-4 flex items-start justify-between hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300 group"
+            style={{ animationDelay: `${index * 60}ms` }}
+          >
+            <div className="space-y-1.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-medium text-white">{event.title}</h3>
+                <h3 className="font-semibold text-white group-hover:text-purple-200 transition-colors">{event.title}</h3>
                 {event.event_type && (
-                  <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${EVENT_TYPE_COLORS[event.event_type] || EVENT_TYPE_COLORS.drugo}`}>
+                  <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${EVENT_TYPE_COLORS[event.event_type] || EVENT_TYPE_COLORS.drugo}`}>
                     {EVENT_TYPE_OPTIONS.find(o => o.value === event.event_type)?.label || event.event_type}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400">{event.event_date} {event.event_time && `· ${event.event_time.slice(0,5)}`}</p>
-              {event.location && <p className="text-xs text-slate-500">{event.location}</p>}
+              <p className="text-xs text-white/40">{event.event_date} {event.event_time && `· ${event.event_time.slice(0,5)}`}</p>
+              {event.location && <p className="text-xs text-white/25">{event.location}</p>}
             </div>
-            <button onClick={() => deleteEvent(event.id)} className="text-red-400 p-2 hover:text-red-300">
+            <button onClick={() => deleteEvent(event.id)} className="text-red-400/60 p-2 hover:text-red-400 transition-colors">
               <Trash2 className="w-4 h-4" />
             </button>
           </div>

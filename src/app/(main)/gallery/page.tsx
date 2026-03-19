@@ -288,69 +288,80 @@ export default function GalleryPage() {
 
   function formatTime(dateStr: string) {
     const d = new Date(dateStr)
-    return d.toLocaleTimeString('sr-Latn', { hour: '2-digit', minute: '2-digit' })
-  }
+    const now = new Date()
+    const diffMs = now.getTime() - d.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
 
-  function formatDate(dateStr: string) {
-    const d = new Date(dateStr)
-    const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
-    if (d.toDateString() === today.toDateString()) return 'Danas'
-    if (d.toDateString() === yesterday.toDateString()) return 'Juče'
+    if (diffMins < 1) return 'upravo'
+    if (diffMins < 60) return `pre ${diffMins} min`
+    if (diffHours < 24) return `pre ${diffHours}h`
+    if (diffDays < 7) return `pre ${diffDays}d`
     return d.toLocaleDateString('sr-Latn', { day: 'numeric', month: 'short' })
   }
 
-  // Sender colors
-  const senderColors = [
-    'text-purple-400', 'text-emerald-400', 'text-sky-400', 'text-amber-400',
-    'text-rose-400', 'text-teal-400', 'text-indigo-400', 'text-orange-400',
-  ]
-
-  function getSenderColor(userId: string) {
-    let hash = 0
-    for (let i = 0; i < userId.length; i++) {
-      hash = ((hash << 5) - hash) + userId.charCodeAt(i)
-      hash |= 0
-    }
-    return senderColors[Math.abs(hash) % senderColors.length]
+  function getInitials(photo: any) {
+    if (isAnon(photo) || !photo.user) return '?'
+    const first = photo.user.first_name?.[0] || ''
+    const last = photo.user.last_name?.[0] || ''
+    return (first + last).toUpperCase()
   }
 
-  // Group photos by date (newest first — photos already sorted desc)
-  function groupByDate(photos: (Photo & { user?: Profile })[]) {
-    const groups: { date: string; photos: (Photo & { user?: Profile })[] }[] = []
-    for (const photo of photos) {
-      const dateKey = new Date(photo.created_at).toDateString()
-      const last = groups[groups.length - 1]
-      if (last && last.date === dateKey) {
-        last.photos.push(photo)
-      } else {
-        groups.push({ date: dateKey, photos: [photo] })
-      }
-    }
-    return groups
+  function getDisplayName(photo: any) {
+    if (isAnon(photo)) return 'Anonimno'
+    if (!photo.user) return 'Nepoznat'
+    return `${photo.user.first_name} ${photo.user.last_name}`
   }
 
+  function getRoleBadge(role: string | undefined) {
+    if (!role || role === 'student') return null
+    const config: Record<string, { label: string; bg: string; text: string }> = {
+      creator: { label: '👑 Creator', bg: 'bg-amber-500/15', text: 'text-amber-400' },
+      admin: { label: 'Admin', bg: 'bg-purple-500/15', text: 'text-purple-400' },
+      moderator: { label: 'Mod', bg: 'bg-blue-500/15', text: 'text-blue-400' },
+    }
+    const c = config[role] || { label: role, bg: 'bg-green-500/15', text: 'text-green-400' }
+    return (
+      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${c.bg} ${c.text}`}>
+        {c.label}
+      </span>
+    )
+  }
+
+  // Loading skeleton — Instagram-style card skeletons
   if (loading) {
     return (
-      <div className="flex flex-col gap-4 p-4 pt-2">
+      <div className="px-4 py-3 space-y-6 pb-24">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="mx-auto max-w-[85%]">
-            <div className="rounded-2xl p-3 space-y-2.5" style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <div className="h-3 w-24 skeleton" />
-              <div className={`rounded-2xl skeleton ${i === 1 ? 'w-56 h-64' : i === 2 ? 'w-48 h-52' : 'w-60 h-72'}`} />
-              <div className="flex items-center justify-between">
-                <div className="h-3 w-8 skeleton" />
-                <div className="h-3 w-12 skeleton" />
+          <div
+            key={i}
+            className="rounded-2xl overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            {/* Header skeleton */}
+            <div className="flex items-center gap-3 p-4">
+              <div className="w-10 h-10 rounded-full skeleton" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3.5 w-28 skeleton rounded-lg" />
+                <div className="h-2.5 w-16 skeleton rounded-lg" />
               </div>
+            </div>
+            {/* Image skeleton */}
+            <div className={`w-full skeleton ${i === 1 ? 'aspect-[4/5]' : i === 2 ? 'aspect-square' : 'aspect-[4/5]'}`} style={{ borderRadius: 0 }} />
+            {/* Actions skeleton */}
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-4">
+                <div className="h-6 w-6 skeleton rounded-full" />
+                <div className="h-6 w-6 skeleton rounded-full" />
+              </div>
+              <div className="h-3 w-16 skeleton rounded-lg" />
             </div>
           </div>
         ))}
       </div>
     )
   }
-
-  const groups = groupByDate(photos)
 
   return (
     <>
@@ -429,8 +440,8 @@ export default function GalleryPage() {
         document.body
       )}
 
-      {/* Photo feed — newest on top, scroll down for older */}
-      <div className="px-3 py-2 space-y-1 pb-24">
+      {/* Instagram-style photo feed */}
+      <div className="px-4 py-3 space-y-6 pb-24">
         {photos.length === 0 ? (
           <div className="h-[60vh] flex flex-col items-center justify-center text-muted-foreground">
             <div className="w-16 h-16 rounded-3xl bg-white/[0.03] flex items-center justify-center mb-4">
@@ -439,105 +450,111 @@ export default function GalleryPage() {
             <p className="text-sm">Još nema fotografija</p>
           </div>
         ) : (
-          groups.map((group) => (
-            <div key={group.date}>
-              {/* Date separator */}
-              <div className="flex justify-center my-4">
-                <span className="text-[11px] text-muted-foreground/60 px-4 py-1 rounded-full font-medium backdrop-blur-sm"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                  {formatDate(group.photos[0].created_at)}
-                </span>
-              </div>
+          photos.map((photo) => {
+            const anon = isAnon(photo)
 
-              {/* Photos */}
-              <div className="space-y-3">
-                {group.photos.map((photo) => {
-                  const anon = isAnon(photo)
+            return (
+              <div
+                key={photo.id}
+                className={`rounded-2xl overflow-hidden ${(photo as any)._new ? 'animate-slide-down' : 'animate-fade-in'}`}
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
+                {/* Card header — user info */}
+                <div className="flex items-center gap-3 px-4 py-3">
+                  {/* Avatar */}
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center flex-shrink-0">
+                    <span className="text-[11px] font-bold text-white leading-none">
+                      {getInitials(photo)}
+                    </span>
+                  </div>
 
-                  return (
-                    <div key={photo.id} className={`mx-auto max-w-[85%] ${(photo as any)._new ? 'animate-slide-down' : 'animate-fade-in'}`}>
-                      <div className="relative rounded-2xl bg-card/60 backdrop-blur-sm p-2.5 border border-white/[0.04] transition-all hover:border-white/[0.08]">
-                        {/* Sender name */}
-                        {!anon && photo.user && (
-                          <p className={`${getSenderColor(photo.user_id)} text-xs font-semibold px-1.5 pb-1.5 flex items-center gap-1.5`}>
-                            {photo.user.first_name} {photo.user.last_name}
-                            {photo.user.role && photo.user.role !== 'student' && (
-                              <span className={`text-[9px] px-1.5 py-0.5 rounded-lg font-bold ${
-                                photo.user.role === 'creator' ? 'bg-amber-500/15 text-amber-400' :
-                                photo.user.role === 'admin' ? 'bg-purple-500/15 text-purple-400' :
-                                photo.user.role === 'moderator' ? 'bg-blue-500/15 text-blue-400' :
-                                'bg-green-500/15 text-green-400'
-                              }`}>
-                                {photo.user.role === 'creator' ? '👑 Creator' :
-                                 photo.user.role === 'admin' ? 'Admin' :
-                                 photo.user.role === 'moderator' ? 'Mod' : photo.user.role}
-                              </span>
-                            )}
-                          </p>
-                        )}
-
-                        {/* Photo with double-tap like */}
-                        <div
-                          className="relative select-none"
-                          onClick={() => handleDoubleTap(photo.id)}
-                        >
-                          <img
-                            src={photo.image_url}
-                            alt={photo.caption || ''}
-                            className="rounded-xl w-full object-cover aspect-[3/4]"
-                            draggable={false}
-                          />
-
-                          {heartAnimId === photo.id && (
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                              <Heart
-                                className="w-20 h-20 fill-red-500 text-red-500 animate-heart-pop"
-                                style={{ filter: 'drop-shadow(0 4px 16px rgba(239, 68, 68, 0.5))' }}
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Caption */}
-                        {photo.caption && (
-                          <p className="text-sm text-foreground/80 px-1.5 pt-2 leading-snug">
-                            {photo.caption}
-                          </p>
-                        )}
-
-                        {/* Actions: like + time + report */}
-                        <div className="flex items-center justify-between px-1.5 pt-2">
-                          {/* Like button */}
-                          <button
-                            onClick={() => toggleLike(photo.id)}
-                            className="flex items-center gap-1.5 active:scale-90 transition-all px-2 py-1 -ml-2 rounded-lg hover:bg-red-500/10"
-                          >
-                            <Heart className={`w-4 h-4 transition-all duration-300 ${likedPhotos[photo.id] ? 'fill-red-500 text-red-500 drop-shadow-[0_0_6px_rgba(239,68,68,0.4)]' : 'text-muted-foreground'}`} />
-                            <span className={`text-[11px] font-medium ${likedPhotos[photo.id] ? 'text-red-400' : 'text-muted-foreground'}`}>
-                              {likeCounts[photo.id] || 0}
-                            </span>
-                          </button>
-
-                          {/* Time */}
-                          <span className="text-[10px] text-muted-foreground/60 font-medium">
-                            {formatTime(photo.created_at)}
-                          </span>
-
-                          {/* Report button */}
-                          <button
-                            onClick={() => setShowReportConfirm(photo.id)}
-                            className="p-1.5 -mr-1.5 active:scale-90 transition-all rounded-lg hover:bg-orange-500/10"
-                          >
-                            <Flag className="w-3 h-3 text-muted-foreground/40 hover:text-orange-400 transition-colors" />
-                          </button>
-                        </div>
-                      </div>
+                  {/* Name + time */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-semibold text-foreground truncate">
+                        {getDisplayName(photo)}
+                      </span>
+                      {!anon && photo.user && getRoleBadge(photo.user.role)}
                     </div>
-                  )
-                })}
+                    <span className="text-[11px] text-muted-foreground/60">
+                      {formatTime(photo.created_at)}
+                    </span>
+                  </div>
+
+                  {/* Report button in header */}
+                  <button
+                    onClick={() => setShowReportConfirm(photo.id)}
+                    className="p-2 -mr-2 active:scale-90 transition-all rounded-lg hover:bg-orange-500/10"
+                  >
+                    <Flag className="w-3.5 h-3.5 text-muted-foreground/40 hover:text-orange-400 transition-colors" />
+                  </button>
+                </div>
+
+                {/* Photo with double-tap like */}
+                <div
+                  className="relative select-none w-full"
+                  onClick={() => handleDoubleTap(photo.id)}
+                >
+                  <img
+                    src={photo.image_url}
+                    alt={photo.caption || ''}
+                    className="w-full object-cover"
+                    style={{ maxHeight: '600px' }}
+                    draggable={false}
+                  />
+
+                  {/* Heart animation overlay */}
+                  {heartAnimId === photo.id && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <Heart
+                        className="w-20 h-20 fill-red-500 text-red-500 animate-heart-pop"
+                        style={{ filter: 'drop-shadow(0 4px 16px rgba(239, 68, 68, 0.5))' }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Action row + caption */}
+                <div className="px-4 pt-3 pb-3.5">
+                  {/* Actions */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => toggleLike(photo.id)}
+                      className="flex items-center gap-1.5 active:scale-90 transition-all px-2 py-1.5 -ml-2 rounded-xl hover:bg-red-500/10"
+                    >
+                      <Heart
+                        className={`w-[22px] h-[22px] transition-all duration-300 ${
+                          likedPhotos[photo.id]
+                            ? 'fill-red-500 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+                            : 'text-foreground/80'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Like count */}
+                  {(likeCounts[photo.id] || 0) > 0 && (
+                    <p className="text-[13px] font-semibold text-foreground mt-1.5">
+                      {likeCounts[photo.id]} {likeCounts[photo.id] === 1 ? 'lajk' : 'lajkova'}
+                    </p>
+                  )}
+
+                  {/* Caption */}
+                  {photo.caption && (
+                    <p className="text-[13px] text-foreground/80 mt-1.5 leading-snug">
+                      <span className="font-semibold text-foreground mr-1.5">
+                        {getDisplayName(photo)}
+                      </span>
+                      {photo.caption}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 

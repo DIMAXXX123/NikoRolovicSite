@@ -338,6 +338,24 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Stats row */}
+      <div className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm p-4">
+        <div className="grid grid-cols-3 divide-x divide-white/[0.06]">
+          <div className="flex flex-col items-center gap-1 px-2">
+            <span className="text-xs text-muted-foreground">Razred</span>
+            <span className="text-base font-bold">{profile.class_number}-{profile.section_number}</span>
+          </div>
+          <div className="flex flex-col items-center gap-1 px-2">
+            <span className="text-xs text-muted-foreground">Uloga</span>
+            <span className="text-base font-bold">{roleLabel[profile.role] || profile.role}</span>
+          </div>
+          <div className="flex flex-col items-center gap-1 px-2">
+            <span className="text-xs text-muted-foreground">Član od</span>
+            <span className="text-base font-bold">{new Date(profile.created_at).toLocaleDateString('sr-Latn', { month: 'short', year: 'numeric' })}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Avatar picker */}
       {showAvatarPicker && (
         <div className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm animate-fade-in p-4">
