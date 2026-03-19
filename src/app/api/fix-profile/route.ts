@@ -8,12 +8,15 @@ import { createClient } from '@supabase/supabase-js'
 // - Supabase handles all password hashing (bcrypt) server-side.
 // - CSRF: Next.js validates Origin headers on API routes in production.
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   try {
-  const { searchParams } = new URL(request.url)
-  const secret = searchParams.get('secret')
+  const { secret } = await request.json().catch(() => ({ secret: '' }))
 
-  if (!secret || secret !== (process.env.ADMIN_SECRET || 'xK9$mP2vL7nQ4wR8jF5bY3hT6dA1cE0')) {
+  if (!process.env.ADMIN_SECRET) {
+    return NextResponse.json({ error: 'Server configuration error: ADMIN_SECRET not set' }, { status: 500 })
+  }
+
+  if (!secret || secret !== process.env.ADMIN_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

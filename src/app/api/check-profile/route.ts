@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { isValidUUID } from '@/lib/api-auth'
-
-// Rate limiting: Consider adding middleware-level rate limiting (e.g., 20 req/min per IP)
+import { getCallerProfile, isValidUUID } from '@/lib/api-auth'
 
 export async function POST(request: Request) {
   try {
+    const caller = await getCallerProfile()
+    if (!caller) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { userId } = body
 

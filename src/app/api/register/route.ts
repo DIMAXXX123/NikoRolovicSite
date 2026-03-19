@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 function getAdmin() {
   return createClient(
@@ -9,6 +10,12 @@ function getAdmin() {
 }
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const rateLimitExceeded = checkRateLimit(`register:${ip}`, 5, 60_000)
+  if (rateLimitExceeded) {
+    return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
+  }
+
   const admin = getAdmin()
 
   try {

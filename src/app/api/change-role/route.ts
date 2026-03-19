@@ -18,8 +18,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid userId' }, { status: 400 })
     }
 
-    if (!newRole || typeof newRole !== 'string' || newRole.length > 50) {
-      return NextResponse.json({ error: 'Invalid newRole' }, { status: 400 })
+    const VALID_ROLES = ['student', 'moderator', 'admin', 'creator']
+
+    if (!newRole || typeof newRole !== 'string' || !VALID_ROLES.includes(newRole)) {
+      return NextResponse.json({ error: 'Invalid role. Must be one of: ' + VALID_ROLES.join(', ') }, { status: 400 })
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -31,20 +33,6 @@ export async function POST(request: Request) {
 
     const supabase = createClient(supabaseUrl, serviceKey)
 
-    // Standard roles go in 'role' column, custom roles stored as 'student' + custom in display
-    const standardRoles = ['student', 'moderator', 'admin', 'creator']
-    const isStandard = standardRoles.includes(newRole)
-
-    // First try to drop and recreate constraint to allow custom roles
-    if (!isStandard) {
-      try {
-        await supabase.rpc('exec_sql', { query: `ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check` })
-        await supabase.rpc('exec_sql', { query: `ALTER TABLE profiles ADD CONSTRAINT profiles_role_check CHECK (role IN ('student', 'moderator', 'admin', 'creator', '${newRole.replace(/'/g, "''")}'))` })
-      } catch {
-        // RPC not available, try direct update anyway
-      }
-    }
-
     const { data, error } = await supabase
       .from('profiles')
       .update({ role: newRole })
@@ -52,11 +40,6 @@ export async function POST(request: Request) {
       .select()
 
     if (error) {
-      if (error.message.includes('profiles_role_check')) {
-        return NextResponse.json({
-          error: 'Korisnička uloga nije podržana u bazi. Pokreni SQL u Supabase: ALTER TABLE profiles DROP CONSTRAINT profiles_role_check; ALTER TABLE profiles ADD CONSTRAINT profiles_role_check CHECK (role IS NOT NULL);'
-        }, { status: 400 })
-      }
       return NextResponse.json({ error: 'Failed to update role' }, { status: 400 })
     }
 

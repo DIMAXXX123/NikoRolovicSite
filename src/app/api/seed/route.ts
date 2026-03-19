@@ -12,12 +12,19 @@ import { createClient } from '@supabase/supabase-js'
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   try {
-  const { searchParams } = new URL(request.url)
-  const secret = searchParams.get('secret')
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Seed endpoint disabled in production' }, { status: 403 })
+  }
 
-  if (!secret || secret !== (process.env.ADMIN_SECRET || 'xK9$mP2vL7nQ4wR8jF5bY3hT6dA1cE0')) {
+  const { secret } = await request.json().catch(() => ({ secret: '' }))
+
+  if (!process.env.ADMIN_SECRET) {
+    return NextResponse.json({ error: 'Server configuration error: ADMIN_SECRET not set' }, { status: 500 })
+  }
+
+  if (!secret || secret !== process.env.ADMIN_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

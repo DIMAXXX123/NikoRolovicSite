@@ -1,15 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getCallerProfile } from '@/lib/api-auth'
+import { checkRateLimit } from '@/lib/rate-limit'
 
-// Temporary admin endpoint — reset user password via service_role
-// Protected by admin secret (Telegram admin ID)
+// Admin endpoint — reset user password via service_role
+// Protected by session-based admin/creator role check
 export async function POST(req: NextRequest) {
-  const { email, newPassword, adminSecret } = await req.json()
-
-  // Only allow Dima's telegram ID as secret
-  if (adminSecret !== '6829550617') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const rateLimitError = checkRateLimit(`admin-reset-pw:${ip}`, 3, 60_000)
+  if (rateLimitError) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
+
+  const caller = await getCallerProfile()
+  if (!caller || !['admin', 'creator'].includes(caller.role)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
+
+  const { email, newPassword } = await req.json()
 
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
