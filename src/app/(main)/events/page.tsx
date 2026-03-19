@@ -62,6 +62,14 @@ export default function EventsPage() {
       if (profileData) setProfile(profileData)
     }
 
+    // Auto-delete past events (yesterday and older)
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    await supabase
+      .from('events')
+      .delete()
+      .lt('event_date', yesterday.toISOString().split('T')[0])
+
     // Load upcoming for list view
     const { data } = await supabase
       .from('events')
