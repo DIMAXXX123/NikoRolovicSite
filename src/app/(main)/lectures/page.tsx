@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { BookOpen, ChevronRight, ChevronLeft, Plus, X, Play, Brain, RotateCcw, ThumbsUp, Trophy, CheckCircle2, XCircle, Zap } from 'lucide-react'
 import { LikeBurst } from '@/components/like-burst'
+import { BetaDisclaimer } from '@/components/beta-disclaimer'
 import type { Lecture, Profile } from '@/lib/types'
 
 const FLAG_SUBJECTS: Record<string, string> = {
@@ -804,6 +805,7 @@ export default function LecturesPage() {
   // ========== SUBJECTS GRID VIEW ==========
   return (
     <div className="space-y-4 animate-fade-in">
+      <BetaDisclaimer />
       {profile && (
         <Badge variant="secondary" className="text-xs">
           Tvoj razred: {profile.class_number}-{profile.section_number}

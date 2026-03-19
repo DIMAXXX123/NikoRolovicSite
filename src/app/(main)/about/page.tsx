@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { MapPin, Phone, Mail, Clock, GraduationCap, BookOpen, Users, Building2, Globe } from 'lucide-react'
+import { BetaDisclaimer } from '@/components/beta-disclaimer'
 
 export default function AboutPage() {
   const sectionsRef = useRef<(HTMLDivElement | null)[]>([])
@@ -28,6 +29,7 @@ export default function AboutPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-8">
+      <BetaDisclaimer />
       {/* Hero */}
       <div className="relative -mx-4 -mt-4 overflow-hidden rounded-b-3xl">
         <div className="relative h-56">
