@@ -122,7 +122,12 @@ function getYouTubeId(url: string): string | null {
 }
 
 function stripQuizData(html: string): string {
-  return html.replace(/\n*QUIZ_DATA:[\s\S]*?:QUIZ_DATA\n*/g, '')
+  // Remove QUIZ_DATA blocks (with or without proper closing)
+  let result = html.replace(/\n*QUIZ_DATA:[\s\S]*?:QUIZ_DATA\n*/g, '')
+  // Fallback: if QUIZ_DATA: is still present (broken closing), strip everything after it
+  const idx = result.indexOf('QUIZ_DATA:')
+  if (idx !== -1) result = result.substring(0, idx).trim()
+  return result
 }
 
 export default function LecturesPage() {
