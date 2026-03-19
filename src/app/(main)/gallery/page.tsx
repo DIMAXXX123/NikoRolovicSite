@@ -62,13 +62,22 @@ export default function GalleryPage() {
         async (payload: any) => {
           const updated = payload.new as Photo
           if (updated.status === 'approved') {
-            // Photo just got approved — add to top if not already there
+            // Photo just got approved — fetch profile and add to top with animation
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('first_name, last_name, class_number, section_number, role')
+              .eq('id', updated.user_id)
+              .single()
+            const photoWithUser = { ...updated, user: profile || undefined, _new: true } as any
             setPhotos((prev) => {
               if (prev.some((p) => p.id === updated.id)) return prev
-              return [updated, ...prev]
+              return [photoWithUser, ...prev]
             })
-            // Reload to get full data with user
-            loadPhotos()
+            // Load like count for new photo
+            loadLikeCounts([updated.id])
+          } else if (updated.status === 'rejected') {
+            // Remove rejected photos
+            setPhotos((prev) => prev.filter(p => p.id !== updated.id))
           }
         }
       )
@@ -436,7 +445,7 @@ export default function GalleryPage() {
                   const anon = isAnon(photo)
 
                   return (
-                    <div key={photo.id} className="mx-auto max-w-[85%] animate-fade-in">
+                    <div key={photo.id} className={`mx-auto max-w-[85%] ${(photo as any)._new ? 'animate-slide-down' : 'animate-fade-in'}`}>
                       <div className="relative rounded-2xl bg-card/80 p-2">
                         {/* Sender name */}
                         {!anon && photo.user && (
