@@ -21,22 +21,22 @@ const PERIOD_TIMES = [
 ]
 
 const SUBJECT_COLORS: Record<string, string> = {
-  'Matematika': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  'Srpski': 'bg-red-500/20 text-red-300 border-red-500/30',
-  'Engleski': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-  'Fizika': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-  'Hemija': 'bg-green-500/20 text-green-300 border-green-500/30',
-  'Biologija': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  'Istorija': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  'Geografija': 'bg-orange-500/20 text-orange-300 border-orange-500/30',
-  'Informatika': 'bg-violet-500/20 text-violet-300 border-violet-500/30',
-  'Filozofija': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
-  'Muzička': 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-  'Likovna': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-  'Fizičko': 'bg-lime-500/20 text-lime-300 border-lime-500/30',
-  'Latinski': 'bg-teal-500/20 text-teal-300 border-teal-500/30',
-  'Sociologija': 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-  'Psihologija': 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30',
+  'Matematika': 'bg-blue-500/15 text-blue-300 border-blue-500/20',
+  'Srpski': 'bg-red-500/15 text-red-300 border-red-500/20',
+  'Engleski': 'bg-purple-500/15 text-purple-300 border-purple-500/20',
+  'Fizika': 'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',
+  'Hemija': 'bg-green-500/15 text-green-300 border-green-500/20',
+  'Biologija': 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
+  'Istorija': 'bg-amber-500/15 text-amber-300 border-amber-500/20',
+  'Geografija': 'bg-orange-500/15 text-orange-300 border-orange-500/20',
+  'Informatika': 'bg-violet-500/15 text-violet-300 border-violet-500/20',
+  'Filozofija': 'bg-pink-500/15 text-pink-300 border-pink-500/20',
+  'Muzička': 'bg-rose-500/15 text-rose-300 border-rose-500/20',
+  'Likovna': 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20',
+  'Fizičko': 'bg-lime-500/15 text-lime-300 border-lime-500/20',
+  'Latinski': 'bg-teal-500/15 text-teal-300 border-teal-500/20',
+  'Sociologija': 'bg-indigo-500/15 text-indigo-300 border-indigo-500/20',
+  'Psihologija': 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/20',
 }
 
 function getSubjectColor(subject: string): string {
@@ -44,7 +44,7 @@ function getSubjectColor(subject: string): string {
   for (const [key, val] of Object.entries(SUBJECT_COLORS)) {
     if (subject.toLowerCase().includes(key.toLowerCase())) return val
   }
-  return 'bg-primary/15 text-primary border-primary/30'
+  return 'bg-primary/10 text-primary border-primary/20'
 }
 
 type ScheduleData = Record<string, string>
@@ -243,7 +243,7 @@ export default function SchedulePage() {
   useEffect(() => {
     const today = new Date().getDay()
     setActiveDay(today >= 1 && today <= 5 ? today - 1 : 0)
-    
+
     // Load user's class from profile
     async function loadProfile() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -318,207 +318,221 @@ export default function SchedulePage() {
     setEditValue('')
   }
 
+  // Count classes for today
+  const todayClasses = PERIODS.filter(p => schedule[cellKey(activeDay, p)]).length
+
   return (
-    <div className="space-y-4 animate-fade-in pb-8">
+    <div className="space-y-5 animate-fade-in pb-8">
       <BetaDisclaimer />
-      <div className="flex items-center justify-between">
+
+      {/* Header */}
+      <div className="flex items-center justify-between pt-1">
         <div>
           <h1 className="text-2xl font-bold gradient-text">Raspored</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Raspored časova</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {classNum}. razred, {sectionNum}. odjeljenje · {todayClasses} časova
+          </p>
         </div>
         <Button
           variant={editing ? 'default' : 'outline'}
           size="sm"
           onClick={() => { setEditing(!editing); cancelEdit() }}
-          className="gap-1.5"
+          className={`gap-1.5 rounded-xl ${editing ? 'bg-gradient-to-r from-purple-600 to-violet-700 border-0' : ''}`}
         >
           <Edit3 className="w-3.5 h-3.5" />
           {editing ? 'Gotovo' : 'Uredi'}
         </Button>
       </div>
 
-      {/* Class selector */}
-      <Card className="border-border/30 bg-card/50 backdrop-blur">
-        <CardContent className="p-3">
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <label className="text-xs text-muted-foreground">Razred</label>
-              <div className="flex gap-1 mt-1">
-                {[1, 2, 3, 4].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setClassNum(n)}
-                    className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      classNum === n
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted/50 text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {n}.
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex-1">
-              <label className="text-xs text-muted-foreground">Odjeljenje</label>
-              <div className="flex gap-1 mt-1">
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setSectionNum(n)}
-                    className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      sectionNum === n
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted/50 text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {n}.
-                  </button>
-                ))}
-              </div>
+      {/* Class/section selector */}
+      <div className="rounded-2xl bg-card/40 backdrop-blur-sm border border-white/[0.04] p-4 space-y-3">
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-2 block">Razred</label>
+            <div className="flex gap-1.5">
+              {[1, 2, 3, 4].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setClassNum(n)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                    classNum === n
+                      ? 'bg-gradient-to-br from-purple-500 to-violet-700 text-white shadow-lg shadow-purple-500/20'
+                      : 'bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground'
+                  }`}
+                >
+                  {n}.
+                </button>
+              ))}
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex-1">
+            <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-2 block">Odjeljenje</label>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setSectionNum(n)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                    sectionNum === n
+                      ? 'bg-gradient-to-br from-purple-500 to-violet-700 text-white shadow-lg shadow-purple-500/20'
+                      : 'bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground'
+                  }`}
+                >
+                  {n}.
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Day selector pills */}
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {DAY_SHORT.map((day, i) => {
+          const isToday = new Date().getDay() === i + 1
+          return (
+            <button
+              key={day}
+              onClick={() => setActiveDay(i)}
+              className={`flex-1 min-w-0 py-2.5 px-2 rounded-2xl text-xs font-semibold transition-all duration-300 relative ${
+                activeDay === i
+                  ? 'bg-gradient-to-br from-purple-500 to-violet-700 text-white shadow-lg shadow-purple-500/25'
+                  : 'bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground'
+              }`}
+            >
+              {day}
+              {isToday && activeDay !== i && (
+                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-purple-400" />
+              )}
+            </button>
+          )
+        })}
+      </div>
 
       {/* Weekly overview grid */}
-      <Card className="border-border/30 bg-card/50 backdrop-blur overflow-hidden">
-        <CardContent className="p-0">
-          <div className="px-4 py-3 border-b border-border/20">
-            <h3 className="text-sm font-semibold">Sedmični pregled</h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border/20">
-                  <th className="p-2 text-left text-muted-foreground font-medium w-8">#</th>
-                  {DAY_SHORT.map((d, di) => (
-                    <th
-                      key={d}
-                      onClick={() => setActiveDay(di)}
-                      className={`p-2 text-center font-medium cursor-pointer transition-colors ${
-                        activeDay === di ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {d}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {PERIODS.map((period) => (
-                  <tr key={period} className="border-b border-border/5">
-                    <td className="p-1.5 text-muted-foreground font-medium text-[11px]">{period}</td>
-                    {DAYS.map((_, di) => {
-                      const subj = schedule[cellKey(di, period)] || ''
-                      const color = getSubjectColor(subj)
-                      return (
-                        <td
-                          key={di}
-                          className={`p-1 cursor-pointer ${activeDay === di ? 'bg-primary/5' : ''}`}
-                          onClick={() => { setActiveDay(di); if (editing) startEdit(di, period) }}
-                        >
-                          {subj ? (
-                            <div className={`px-1.5 py-0.5 rounded text-center truncate border text-[10px] ${color}`}>
-                              {subj.length > 5 ? subj.slice(0, 5) + '.' : subj}
-                            </div>
-                          ) : (
-                            <div className="text-center text-muted-foreground/20">·</div>
-                          )}
-                        </td>
-                      )
-                    })}
-                  </tr>
+      <div className="rounded-2xl bg-card/40 backdrop-blur-sm border border-white/[0.04] overflow-hidden">
+        <div className="px-4 py-3 border-b border-white/[0.04]">
+          <h3 className="text-sm font-semibold">Sedmični pregled</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-white/[0.04]">
+                <th className="p-2 text-left text-muted-foreground font-medium w-8">#</th>
+                {DAY_SHORT.map((d, di) => (
+                  <th
+                    key={d}
+                    onClick={() => setActiveDay(di)}
+                    className={`p-2 text-center font-medium cursor-pointer transition-colors ${
+                      activeDay === di ? 'text-purple-400' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {d}
+                  </th>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Day tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-1">
-        {DAY_SHORT.map((day, i) => (
-          <button
-            key={day}
-            onClick={() => setActiveDay(i)}
-            className={`flex-1 min-w-0 py-2 px-1 rounded-xl text-xs font-medium transition-all ${
-              activeDay === i
-                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                : 'bg-muted/40 text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {day}
-          </button>
-        ))}
+              </tr>
+            </thead>
+            <tbody>
+              {PERIODS.map((period) => (
+                <tr key={period} className="border-b border-white/[0.02]">
+                  <td className="p-1.5 text-muted-foreground font-medium text-[11px]">{period}</td>
+                  {DAYS.map((_, di) => {
+                    const subj = schedule[cellKey(di, period)] || ''
+                    const color = getSubjectColor(subj)
+                    return (
+                      <td
+                        key={di}
+                        className={`p-1 cursor-pointer transition-colors ${activeDay === di ? 'bg-purple-500/5' : ''}`}
+                        onClick={() => { setActiveDay(di); if (editing) startEdit(di, period) }}
+                      >
+                        {subj ? (
+                          <div className={`px-1.5 py-0.5 rounded-lg text-center truncate border text-[10px] ${color}`}>
+                            {subj.length > 5 ? subj.slice(0, 5) + '.' : subj}
+                          </div>
+                        ) : (
+                          <div className="text-center text-muted-foreground/15">·</div>
+                        )}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Schedule for active day */}
-      <Card className="border-border/30 bg-card/50 backdrop-blur overflow-hidden">
-        <CardContent className="p-0">
-          <div className="px-4 py-3 border-b border-border/20">
-            <h3 className="text-sm font-semibold">{DAYS[activeDay]}</h3>
-          </div>
-          <div className="divide-y divide-border/10">
-            {PERIODS.map((period) => {
-              const key = cellKey(activeDay, period)
-              const subject = schedule[key] || ''
-              const isEditing = editCell === key
-              const colorClass = getSubjectColor(subject)
+      <div className="rounded-2xl bg-card/40 backdrop-blur-sm border border-white/[0.04] overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
+          <h3 className="text-base font-bold">{DAYS[activeDay]}</h3>
+          <span className="text-xs text-muted-foreground px-2.5 py-1 rounded-lg bg-white/[0.04]">
+            {todayClasses} časova
+          </span>
+        </div>
+        <div className="divide-y divide-white/[0.03]">
+          {PERIODS.map((period) => {
+            const key = cellKey(activeDay, period)
+            const subject = schedule[key] || ''
+            const isEditing = editCell === key
+            const colorClass = getSubjectColor(subject)
 
-              return (
-                <div
-                  key={period}
-                  onClick={() => startEdit(activeDay, period)}
-                  className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                    editing ? 'cursor-pointer hover:bg-muted/30 active:bg-muted/50' : ''
-                  }`}
-                >
-                  <div className="flex-shrink-0 w-12 text-center">
-                    <div className="text-sm font-bold text-foreground">{period}.</div>
-                    <div className="flex items-center justify-center gap-0.5 text-[10px] text-muted-foreground">
-                      <Clock className="w-2.5 h-2.5" />
-                      {PERIOD_TIMES[period - 1].split(' - ')[0]}
-                    </div>
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    {isEditing ? (
-                      <div className="flex items-center gap-2">
-                        <input
-                          autoFocus
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') confirmEdit()
-                            if (e.key === 'Escape') cancelEdit()
-                          }}
-                          placeholder="Naziv predmeta..."
-                          className="flex-1 bg-muted/50 rounded-lg px-3 py-1.5 text-sm outline-none border border-border/30 focus:border-primary/50"
-                        />
-                        <button onClick={confirmEdit} className="p-1.5 rounded-lg bg-primary/20 text-primary hover:bg-primary/30">
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <button onClick={cancelEdit} className="p-1.5 rounded-lg bg-muted hover:bg-muted/80">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : subject ? (
-                      <div className={`inline-block px-3 py-1 rounded-lg text-sm font-medium border ${colorClass}`}>
-                        {subject}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-muted-foreground/40 italic">
-                        {editing ? 'Dodaj predmet...' : '—'}
-                      </div>
-                    )}
+            return (
+              <div
+                key={period}
+                onClick={() => startEdit(activeDay, period)}
+                className={`flex items-center gap-4 px-5 py-3.5 transition-all ${
+                  editing ? 'cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04]' : ''
+                }`}
+              >
+                {/* Period number & time */}
+                <div className="flex-shrink-0 w-14 text-center">
+                  <div className="text-base font-bold text-foreground/90">{period}.</div>
+                  <div className="flex items-center justify-center gap-0.5 text-[10px] text-muted-foreground/70">
+                    <Clock className="w-2.5 h-2.5" />
+                    {PERIOD_TIMES[period - 1].split(' - ')[0]}
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+
+                {/* Divider line */}
+                <div className="w-px h-10 bg-white/[0.06] flex-shrink-0" />
+
+                <div className="flex-1 min-w-0">
+                  {isEditing ? (
+                    <div className="flex items-center gap-2 animate-fade-in">
+                      <input
+                        autoFocus
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') confirmEdit()
+                          if (e.key === 'Escape') cancelEdit()
+                        }}
+                        placeholder="Naziv predmeta..."
+                        className="flex-1 bg-white/[0.04] rounded-xl px-3.5 py-2 text-sm outline-none border border-white/[0.08] focus:border-purple-500/40 transition-colors"
+                      />
+                      <button onClick={confirmEdit} className="p-2 rounded-xl bg-purple-500/15 text-purple-400 hover:bg-purple-500/25 transition-colors">
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button onClick={cancelEdit} className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors">
+                        <X className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </div>
+                  ) : subject ? (
+                    <div className={`inline-block px-4 py-1.5 rounded-xl text-sm font-medium border backdrop-blur-sm ${colorClass}`}>
+                      {subject}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground/30 italic">
+                      {editing ? 'Dodaj predmet...' : '—'}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

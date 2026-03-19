@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent } from '@/components/ui/card'
 import { Heart } from 'lucide-react'
 import { BetaDisclaimer } from '@/components/beta-disclaimer'
 import { RoleBadge } from '@/components/role-badge'
@@ -117,67 +116,101 @@ export default function NewsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 pt-2">
+        <div className="space-y-1 mb-6">
+          <div className="h-8 w-32 skeleton" />
+          <div className="h-4 w-48 skeleton" />
+        </div>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-48 rounded-2xl bg-muted animate-pulse" />
+          <div key={i} className="rounded-2xl overflow-hidden">
+            <div className="h-48 skeleton" />
+            <div className="p-4 space-y-3 bg-card/30 rounded-b-2xl">
+              <div className="h-5 w-3/4 skeleton" />
+              <div className="h-4 w-full skeleton" />
+              <div className="h-4 w-2/3 skeleton" />
+            </div>
+          </div>
         ))}
       </div>
     )
   }
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-5 animate-fade-in pb-4">
       <BetaDisclaimer />
+
+      {/* Page header */}
+      <div className="pt-1 pb-2">
+        <h1 className="text-2xl font-bold gradient-text">Novosti</h1>
+        <p className="text-xs text-muted-foreground mt-1">Najnovije vijesti iz škole</p>
+      </div>
+
       {news.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <Newspaper className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Još nema novosti</p>
+        <div className="text-center py-24">
+          <div className="w-16 h-16 rounded-3xl bg-muted/30 flex items-center justify-center mx-auto mb-4">
+            <Newspaper className="w-8 h-8 text-muted-foreground/30" />
+          </div>
+          <p className="text-muted-foreground text-sm">Još nema novosti</p>
         </div>
       ) : (
-        news.map((item) => (
-          <Card key={item.id} className="border-border/30 bg-card/50 backdrop-blur overflow-hidden animate-slide-up card-hover gradient-overlay glow-hover">
-            {item.image_url && (
-              <div className="relative h-48 overflow-hidden">
-                <img
-                  src={item.image_url}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
-              </div>
-            )}
-            <CardContent className="p-4 space-y-2">
-              <h2 className="text-lg font-semibold">{item.title}</h2>
-              <p className="text-muted-foreground text-sm line-clamp-3">{item.content}</p>
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  {item.author && (
-                    <>
-                      <span>{item.author.first_name} {item.author.last_name}</span>
-                      <RoleBadge role={item.author.role || 'student'} />
-                    </>
-                  )}
-                  <span>· {new Date(item.created_at).toLocaleDateString('sr-Latn')}</span>
-                </div>
-                <button
-                  onClick={() => toggleLike(item.id, item.user_liked || false)}
-                  className="flex items-center gap-1 text-sm transition-all duration-200 active:scale-110"
-                >
-                  <Heart
-                    className={`w-5 h-5 transition-all ${
-                      item.user_liked
-                        ? 'fill-red-500 text-red-500'
-                        : 'text-muted-foreground'
-                    }`}
+        <div className="space-y-4 animate-stagger">
+          {news.map((item) => (
+            <article
+              key={item.id}
+              className="group rounded-2xl overflow-hidden bg-card/40 backdrop-blur-sm border border-white/[0.04] transition-all duration-300 hover:border-purple-500/15 hover:shadow-[0_8px_32px_-8px_rgba(167,139,250,0.12)] active:scale-[0.98]"
+            >
+              {item.image_url && (
+                <div className="relative h-52 overflow-hidden">
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <span className={item.user_liked ? 'text-red-500' : 'text-muted-foreground'}>
-                    {item.likes_count || 0}
-                  </span>
-                </button>
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+                  {/* Date badge on image */}
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-black/50 backdrop-blur-md text-[10px] text-white/80 font-medium">
+                    {new Date(item.created_at).toLocaleDateString('sr-Latn', { day: 'numeric', month: 'short' })}
+                  </div>
+                </div>
+              )}
+              <div className="p-5 space-y-3">
+                <h2 className="text-lg font-bold leading-snug">{item.title}</h2>
+                <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">{item.content}</p>
+                <div className="flex items-center justify-between pt-3 border-t border-white/[0.04]">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {item.author && (
+                      <>
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500/20 to-violet-600/20 flex items-center justify-center text-[10px] font-bold text-purple-300">
+                          {item.author.first_name?.[0]}{item.author.last_name?.[0]}
+                        </div>
+                        <span className="font-medium text-foreground/70">{item.author.first_name} {item.author.last_name}</span>
+                        <RoleBadge role={item.author.role || 'student'} />
+                      </>
+                    )}
+                    {!item.image_url && (
+                      <span className="text-muted-foreground/50">· {new Date(item.created_at).toLocaleDateString('sr-Latn')}</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => toggleLike(item.id, item.user_liked || false)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-110 hover:bg-red-500/10"
+                  >
+                    <Heart
+                      className={`w-4.5 h-4.5 transition-all duration-300 ${
+                        item.user_liked
+                          ? 'fill-red-500 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+                          : 'text-muted-foreground'
+                      }`}
+                    />
+                    <span className={`text-sm font-medium ${item.user_liked ? 'text-red-400' : 'text-muted-foreground'}`}>
+                      {item.likes_count || 0}
+                    </span>
+                  </button>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        ))
+            </article>
+          ))}
+        </div>
       )}
     </div>
   )

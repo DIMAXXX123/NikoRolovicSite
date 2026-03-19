@@ -333,13 +333,16 @@ export default function GalleryPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-3 p-4 pt-2">
+      <div className="flex flex-col gap-4 p-4 pt-2">
         {[1, 2, 3].map((i) => (
           <div key={i} className="mx-auto max-w-[85%]">
-            <div className="rounded-2xl p-2.5 space-y-2" style={{ background: 'rgba(255,255,255,0.04)' }}>
-              <div className="h-3 w-20 rounded-full bg-muted animate-shimmer" />
-              <div className={`rounded-xl bg-muted animate-shimmer ${i === 1 ? 'w-56 h-64' : i === 2 ? 'w-48 h-52' : 'w-60 h-72'}`} />
-              <div className="h-2.5 w-10 rounded-full bg-muted animate-shimmer ml-auto" />
+            <div className="rounded-2xl p-3 space-y-2.5" style={{ background: 'rgba(255,255,255,0.03)' }}>
+              <div className="h-3 w-24 skeleton" />
+              <div className={`rounded-2xl skeleton ${i === 1 ? 'w-56 h-64' : i === 2 ? 'w-48 h-52' : 'w-60 h-72'}`} />
+              <div className="flex items-center justify-between">
+                <div className="h-3 w-8 skeleton" />
+                <div className="h-3 w-12 skeleton" />
+              </div>
             </div>
           </div>
         ))}
@@ -353,28 +356,31 @@ export default function GalleryPage() {
     <>
       {/* Toast */}
       {toast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-xl bg-green-500 text-white text-sm font-medium shadow-lg animate-slide-down">
+        <div className="fixed top-18 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-medium shadow-xl shadow-green-500/20 animate-slide-down backdrop-blur-sm">
           {toast}
         </div>
       )}
 
       {/* Upload modal — Portal to body to escape transform stacking context */}
       {showUpload && typeof document !== 'undefined' && createPortal(
-        <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }} className="bg-background/95 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
-          <div className="bg-card w-full max-w-lg rounded-2xl p-5 space-y-4 animate-scale-in" onClick={e => e.stopPropagation()}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }} className="bg-black/80 backdrop-blur-xl flex items-end sm:items-center justify-center" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
+          <div className="bg-card/95 backdrop-blur-xl w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 space-y-5 animate-slide-up border-t border-white/[0.08] sm:border sm:border-white/[0.06]" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold">Nova fotografija</h2>
-              <button onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }} className="p-1 rounded-full hover:bg-muted transition-colors">
+              <h2 className="font-bold text-lg">Nova fotografija</h2>
+              <button onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }} className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
+            {/* Drag handle for bottom sheet feel */}
+            <div className="sm:hidden absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-white/20" />
+
             {previewUrl ? (
-              <div className="relative aspect-square max-h-[50vh] rounded-xl overflow-hidden">
+              <div className="relative aspect-square max-h-[50vh] rounded-2xl overflow-hidden border border-white/[0.06]">
                 <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                 <button
                   onClick={() => { setSelectedFile(null); setPreviewUrl(null) }}
-                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center"
+                  className="absolute top-3 right-3 w-8 h-8 rounded-xl bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/10"
                 >
                   <X className="w-4 h-4 text-white" />
                 </button>
@@ -382,10 +388,12 @@ export default function GalleryPage() {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full aspect-square max-h-[50vh] rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary transition-colors"
+                className="w-full aspect-square max-h-[50vh] rounded-2xl border-2 border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-purple-500/30 hover:bg-purple-500/5 transition-all"
               >
-                <Camera className="w-8 h-8" />
-                <span className="text-sm">Izaberi fotografiju</span>
+                <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                  <Camera className="w-7 h-7 text-purple-400" />
+                </div>
+                <span className="text-sm font-medium">Izaberi fotografiju</span>
               </button>
             )}
 
@@ -395,7 +403,7 @@ export default function GalleryPage() {
               placeholder="Opis (opciono)"
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="bg-background/50 rounded-xl"
+              className="bg-white/[0.04] rounded-xl border-white/[0.06] focus:border-purple-500/40 h-11"
             />
 
             <label className="flex items-center justify-between text-sm">
@@ -403,16 +411,16 @@ export default function GalleryPage() {
               <button
                 type="button"
                 onClick={() => setAnonymous(!anonymous)}
-                className={`relative w-10 h-5 rounded-full transition-colors ${anonymous ? 'bg-primary' : 'bg-muted'}`}
+                className={`relative w-11 h-6 rounded-full transition-all duration-300 ${anonymous ? 'bg-gradient-to-r from-purple-500 to-violet-600' : 'bg-white/[0.08]'}`}
               >
-                <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${anonymous ? 'translate-x-5' : ''}`} />
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${anonymous ? 'translate-x-5' : ''}`} />
               </button>
             </label>
 
             <Button
               onClick={handleUpload}
               disabled={!selectedFile || uploading}
-              className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 active:scale-[0.98] transition-transform"
+              className="w-full h-12 rounded-2xl bg-gradient-to-r from-purple-600 to-violet-700 active:scale-[0.98] transition-transform text-base font-semibold shadow-lg shadow-purple-500/20 border-0"
             >
               {uploading ? 'Šalje se...' : <><Send className="w-4 h-4 mr-2" />Pošalji</>}
             </Button>
@@ -425,38 +433,40 @@ export default function GalleryPage() {
       <div className="px-3 py-2 space-y-1 pb-24">
         {photos.length === 0 ? (
           <div className="h-[60vh] flex flex-col items-center justify-center text-muted-foreground">
-            <Camera className="w-12 h-12 mb-3 opacity-30" />
-            <p>Još nema fotografija</p>
+            <div className="w-16 h-16 rounded-3xl bg-white/[0.03] flex items-center justify-center mb-4">
+              <Camera className="w-8 h-8 opacity-30" />
+            </div>
+            <p className="text-sm">Još nema fotografija</p>
           </div>
         ) : (
           groups.map((group) => (
             <div key={group.date}>
               {/* Date separator */}
-              <div className="flex justify-center my-3">
-                <span className="text-[11px] text-muted-foreground/70 px-3 py-0.5 rounded-full"
-                      style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <div className="flex justify-center my-4">
+                <span className="text-[11px] text-muted-foreground/60 px-4 py-1 rounded-full font-medium backdrop-blur-sm"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.04)' }}>
                   {formatDate(group.photos[0].created_at)}
                 </span>
               </div>
 
               {/* Photos */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {group.photos.map((photo) => {
                   const anon = isAnon(photo)
 
                   return (
                     <div key={photo.id} className={`mx-auto max-w-[85%] ${(photo as any)._new ? 'animate-slide-down' : 'animate-fade-in'}`}>
-                      <div className="relative rounded-2xl bg-card/80 p-2">
+                      <div className="relative rounded-2xl bg-card/60 backdrop-blur-sm p-2.5 border border-white/[0.04] transition-all hover:border-white/[0.08]">
                         {/* Sender name */}
                         {!anon && photo.user && (
-                          <p className={`${getSenderColor(photo.user_id)} text-xs font-medium px-1 pb-1 flex items-center gap-1.5`}>
+                          <p className={`${getSenderColor(photo.user_id)} text-xs font-semibold px-1.5 pb-1.5 flex items-center gap-1.5`}>
                             {photo.user.first_name} {photo.user.last_name}
                             {photo.user.role && photo.user.role !== 'student' && (
-                              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
-                                photo.user.role === 'creator' ? 'bg-amber-500/20 text-amber-400' :
-                                photo.user.role === 'admin' ? 'bg-purple-500/20 text-purple-400' :
-                                photo.user.role === 'moderator' ? 'bg-blue-500/20 text-blue-400' :
-                                'bg-green-500/20 text-green-400'
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded-lg font-bold ${
+                                photo.user.role === 'creator' ? 'bg-amber-500/15 text-amber-400' :
+                                photo.user.role === 'admin' ? 'bg-purple-500/15 text-purple-400' :
+                                photo.user.role === 'moderator' ? 'bg-blue-500/15 text-blue-400' :
+                                'bg-green-500/15 text-green-400'
                               }`}>
                                 {photo.user.role === 'creator' ? '👑 Creator' :
                                  photo.user.role === 'admin' ? 'Admin' :
@@ -482,7 +492,7 @@ export default function GalleryPage() {
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                               <Heart
                                 className="w-20 h-20 fill-red-500 text-red-500 animate-heart-pop"
-                                style={{ filter: 'drop-shadow(0 4px 12px rgba(239, 68, 68, 0.5))' }}
+                                style={{ filter: 'drop-shadow(0 4px 16px rgba(239, 68, 68, 0.5))' }}
                               />
                             </div>
                           )}
@@ -490,35 +500,35 @@ export default function GalleryPage() {
 
                         {/* Caption */}
                         {photo.caption && (
-                          <p className="text-sm text-foreground/80 px-1 pt-1.5 leading-snug">
+                          <p className="text-sm text-foreground/80 px-1.5 pt-2 leading-snug">
                             {photo.caption}
                           </p>
                         )}
 
                         {/* Actions: like + time + report */}
-                        <div className="flex items-center justify-between px-1 pt-1.5">
+                        <div className="flex items-center justify-between px-1.5 pt-2">
                           {/* Like button */}
                           <button
                             onClick={() => toggleLike(photo.id)}
-                            className="flex items-center gap-1 active:scale-90 transition-transform"
+                            className="flex items-center gap-1.5 active:scale-90 transition-all px-2 py-1 -ml-2 rounded-lg hover:bg-red-500/10"
                           >
-                            <Heart className={`w-4 h-4 transition-colors ${likedPhotos[photo.id] ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
-                            <span className={`text-[11px] ${likedPhotos[photo.id] ? 'text-red-500' : 'text-muted-foreground'}`}>
+                            <Heart className={`w-4 h-4 transition-all duration-300 ${likedPhotos[photo.id] ? 'fill-red-500 text-red-500 drop-shadow-[0_0_6px_rgba(239,68,68,0.4)]' : 'text-muted-foreground'}`} />
+                            <span className={`text-[11px] font-medium ${likedPhotos[photo.id] ? 'text-red-400' : 'text-muted-foreground'}`}>
                               {likeCounts[photo.id] || 0}
                             </span>
                           </button>
 
                           {/* Time */}
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-[10px] text-muted-foreground/60 font-medium">
                             {formatTime(photo.created_at)}
                           </span>
 
                           {/* Report button */}
                           <button
                             onClick={() => setShowReportConfirm(photo.id)}
-                            className="p-0.5 active:scale-90 transition-transform"
+                            className="p-1.5 -mr-1.5 active:scale-90 transition-all rounded-lg hover:bg-orange-500/10"
                           >
-                            <Flag className="w-3 h-3 text-muted-foreground/50 hover:text-orange-400 transition-colors" />
+                            <Flag className="w-3 h-3 text-muted-foreground/40 hover:text-orange-400 transition-colors" />
                           </button>
                         </div>
                       </div>
@@ -533,21 +543,21 @@ export default function GalleryPage() {
 
       {/* Report confirmation modal */}
       {showReportConfirm && typeof document !== 'undefined' && createPortal(
-        <div style={{ position: 'fixed', inset: 0, zIndex: 99998 }} className="bg-black/60 backdrop-blur-sm flex items-center justify-center p-6" onClick={() => setShowReportConfirm(null)}>
-          <div className="bg-card rounded-2xl p-5 max-w-sm w-full space-y-4 animate-scale-in" onClick={e => e.stopPropagation()}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99998 }} className="bg-black/70 backdrop-blur-xl flex items-center justify-center p-6" onClick={() => setShowReportConfirm(null)}>
+          <div className="bg-card/95 backdrop-blur-xl rounded-3xl p-6 max-w-sm w-full space-y-4 animate-scale-in border border-white/[0.06]" onClick={e => e.stopPropagation()}>
             {reportCooldown ? (
               <>
-                <p className="text-center text-orange-400 font-medium">⚠️ Previše prijava</p>
+                <p className="text-center text-orange-400 font-bold text-lg">⚠️ Previše prijava</p>
                 <p className="text-center text-sm text-muted-foreground">Možeš prijaviti maksimalno 5 fotografija na sat.</p>
-                <Button onClick={() => { setShowReportConfirm(null); setReportCooldown(false) }} className="w-full rounded-xl" variant="outline">Zatvori</Button>
+                <Button onClick={() => { setShowReportConfirm(null); setReportCooldown(false) }} className="w-full rounded-2xl h-11" variant="outline">Zatvori</Button>
               </>
             ) : (
               <>
-                <p className="text-center font-medium">Prijavi fotografiju?</p>
-                <p className="text-center text-sm text-muted-foreground">Da li si siguran/na da želiš prijaviti ovu fotografiju? Prijava će biti poslata administratoru.</p>
+                <p className="text-center font-bold text-lg">Prijavi fotografiju?</p>
+                <p className="text-center text-sm text-muted-foreground leading-relaxed">Da li si siguran/na da želiš prijaviti ovu fotografiju? Prijava će biti poslata administratoru.</p>
                 <div className="flex gap-3">
-                  <Button onClick={() => setShowReportConfirm(null)} className="flex-1 rounded-xl" variant="outline">Ne</Button>
-                  <Button onClick={() => handleReport(showReportConfirm)} className="flex-1 rounded-xl bg-orange-600 hover:bg-orange-500 text-white">Da, prijavi</Button>
+                  <Button onClick={() => setShowReportConfirm(null)} className="flex-1 rounded-2xl h-11" variant="outline">Ne</Button>
+                  <Button onClick={() => handleReport(showReportConfirm)} className="flex-1 rounded-2xl h-11 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white border-0">Da, prijavi</Button>
                 </div>
               </>
             )}
@@ -561,7 +571,7 @@ export default function GalleryPage() {
         <button
           onClick={() => setShowUpload(true)}
           style={{ position: 'fixed', bottom: '6rem', right: '1rem', zIndex: 9999 }}
-          className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-transform"
+          className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-700 shadow-xl shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-all hover:shadow-purple-500/40 animate-bounce-in"
         >
           <Camera className="w-6 h-6" />
         </button>,

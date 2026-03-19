@@ -44,6 +44,14 @@ const GRADE_BG: Record<number, string> = {
   1: 'bg-red-500/15 text-red-400 ring-red-500/30',
 }
 
+const GRADE_SHADOW: Record<number, string> = {
+  5: 'shadow-emerald-500/20',
+  4: 'shadow-sky-500/20',
+  3: 'shadow-amber-500/20',
+  2: 'shadow-orange-500/20',
+  1: 'shadow-red-500/20',
+}
+
 const STORAGE_KEY = 'my_grades_data_v2'
 const SUBJECTS_KEY = 'my_grades_subjects'
 
@@ -113,6 +121,14 @@ function avgLabel(avg: number): string {
   if (avg >= 2.5) return 'Dobar'
   if (avg >= 1.5) return 'Dovoljan'
   return 'Nedovoljan'
+}
+
+function avgStrokeColor(avg: number): string {
+  if (avg >= 4.5) return '#10b981'
+  if (avg >= 3.5) return '#0ea5e9'
+  if (avg >= 2.5) return '#f59e0b'
+  if (avg >= 1.5) return '#f97316'
+  return '#ef4444'
 }
 
 export default function GradesPage() {
@@ -191,12 +207,12 @@ export default function GradesPage() {
 
   function GradePicker({ onSelect }: { onSelect: (v: number) => void }) {
     return (
-      <div className="flex gap-1.5 mt-1">
+      <div className="flex gap-1.5 mt-1 animate-fade-in">
         {[5, 4, 3, 2, 1].map((v) => (
           <button
             key={v}
             onClick={() => onSelect(v)}
-            className={`w-8 h-8 rounded-xl text-xs font-bold ${GRADE_COLORS[v]} transition-all active:scale-90 shadow-sm`}
+            className={`w-9 h-9 rounded-xl text-xs font-bold ${GRADE_COLORS[v]} transition-all active:scale-90 shadow-md ${GRADE_SHADOW[v]}`}
           >
             {v}
           </button>
@@ -207,7 +223,7 @@ export default function GradesPage() {
 
   function GradeChip({ value, onRemove }: { value: number; onRemove: () => void }) {
     return (
-      <span className={`inline-flex items-center gap-0.5 px-2.5 py-1 rounded-xl text-xs font-bold ${GRADE_COLORS[value]} shadow-sm`}>
+      <span className={`inline-flex items-center gap-0.5 px-2.5 py-1 rounded-xl text-xs font-bold ${GRADE_COLORS[value]} shadow-md ${GRADE_SHADOW[value]}`}>
         {value}
         <button onClick={onRemove} className="ml-0.5 opacity-70 hover:opacity-100">
           <X className="w-3 h-3" />
@@ -218,39 +234,42 @@ export default function GradesPage() {
 
   function ZakljucnaCircle({ value }: { value: number | null }) {
     if (!value) return (
-      <div className="w-9 h-9 rounded-full bg-muted/40 border border-dashed border-border/40 flex items-center justify-center">
-        <span className="text-xs text-muted-foreground">—</span>
+      <div className="w-10 h-10 rounded-full bg-white/[0.04] border border-dashed border-white/[0.1] flex items-center justify-center">
+        <span className="text-xs text-muted-foreground/50">—</span>
       </div>
     )
     return (
-      <div className={`w-9 h-9 rounded-full ${GRADE_COLORS[value]} flex items-center justify-center shadow-md font-bold text-sm`}>
+      <div className={`w-10 h-10 rounded-full ${GRADE_COLORS[value]} flex items-center justify-center shadow-lg ${GRADE_SHADOW[value]} font-bold text-sm`}>
         {value}
       </div>
     )
   }
 
+  // Circular progress SVG for average
+  const circumference = 2 * Math.PI * 44
+  const avgPercent = overallAvg ? (overallAvg / 5) * 100 : 0
+  const offset = circumference - (avgPercent / 100) * circumference
+
   return (
     <div className="space-y-5 animate-fade-in pb-8 -mx-4 px-3">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 pt-1">
         <button onClick={() => router.back()} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-2xl font-bold gradient-text">Moje ocjene</h1>
-        </div>
+        <h1 className="text-2xl font-bold gradient-text">Moje ocjene</h1>
       </div>
 
       {/* Trimester pills */}
-      <div className="flex gap-2 p-1 bg-muted/30 rounded-2xl">
+      <div className="flex gap-2 p-1.5 bg-white/[0.03] rounded-2xl border border-white/[0.04]">
         {TRIMESTER_LABELS.map((label, i) => (
           <button
             key={i}
             onClick={() => { setActiveTrimester(i); setExpandedSubject(null) }}
             className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
               activeTrimester === i
-                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-gradient-to-br from-purple-500 to-violet-700 text-white shadow-lg shadow-purple-500/20'
+                : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.04]'
             }`}
           >
             {label} Tromj.
@@ -258,19 +277,39 @@ export default function GradesPage() {
         ))}
       </div>
 
-      {/* Overall average card */}
+      {/* Overall average card with circular progress */}
       {overallAvg !== null && (
-        <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${avgGradient(overallAvg)} p-5 shadow-xl mb-8`}>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+        <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${avgGradient(overallAvg)} p-6 shadow-xl`}>
+          {/* Decorative circles */}
+          <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+
           <div className="relative flex items-center justify-between">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <p className="text-white/70 text-sm font-medium">Ukupan prosjek</p>
-              <p className="text-white text-lg font-semibold">{avgLabel(overallAvg)}</p>
-              <p className="text-white/60 text-xs">{gradedCount}/{subjects.length} predmeta</p>
+              <p className="text-white text-lg font-bold">{avgLabel(overallAvg)}</p>
+              <p className="text-white/50 text-xs font-medium">{gradedCount}/{subjects.length} predmeta</p>
             </div>
-            <div className="text-right">
-              <p className="text-5xl font-black text-white drop-shadow-lg">{overallAvg.toFixed(2)}</p>
+
+            {/* Circular progress */}
+            <div className="relative w-24 h-24">
+              <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="6" />
+                <circle
+                  cx="50" cy="50" r="44"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                  className="transition-all duration-1000 ease-out"
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.3))' }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-2xl font-black text-white drop-shadow-lg">{overallAvg.toFixed(2)}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -286,12 +325,12 @@ export default function GradesPage() {
           return (
             <div
               key={subject}
-              className="rounded-2xl border border-border/20 bg-card/60 backdrop-blur overflow-hidden transition-all duration-300"
+              className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm overflow-hidden transition-all duration-300"
             >
-              {/* Collapsed header - always visible */}
+              {/* Collapsed header */}
               <button
                 onClick={() => setExpandedSubject(isExpanded ? null : subject)}
-                className="w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-muted/20"
+                className="w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-white/[0.02] active:bg-white/[0.04]"
               >
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-sm truncate">{subject}</h3>
@@ -301,7 +340,7 @@ export default function GradesPage() {
                     </p>
                   )}
                 </div>
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <ZakljucnaCircle value={sg.zakljucna} />
                   <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                 </div>
@@ -309,11 +348,11 @@ export default function GradesPage() {
 
               {/* Expanded content */}
               {isExpanded && (
-                <div className="px-4 pb-4 space-y-4 animate-fade-in border-t border-border/10">
+                <div className="px-4 pb-5 space-y-4 animate-fade-in border-t border-white/[0.04]">
                   {isOptional && (
                     <button
                       onClick={() => removeSubject(subject)}
-                      className="text-xs text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1 mt-2"
+                      className="text-xs text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1 mt-3"
                     >
                       <Trash2 className="w-3 h-3" /> Ukloni predmet
                     </button>
@@ -321,7 +360,7 @@ export default function GradesPage() {
 
                   {/* Test grades */}
                   <div className="mt-3">
-                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-2">Test</p>
+                    <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest mb-2.5">Test</p>
                     <div className="flex flex-wrap items-center gap-2">
                       {sg.test.map((v, idx) => (
                         <GradeChip key={idx} value={v} onRemove={() => removeMultiGrade(subject, 'test', idx)} />
@@ -331,7 +370,7 @@ export default function GradesPage() {
                       ) : (
                         <button
                           onClick={() => setEditingCell(`${activeTrimester}-${subject}-test`)}
-                          className="w-8 h-8 rounded-xl bg-muted/30 text-muted-foreground border border-dashed border-border/40 flex items-center justify-center hover:bg-muted/50 transition-colors"
+                          className="w-9 h-9 rounded-xl bg-white/[0.04] text-muted-foreground border border-dashed border-white/[0.1] flex items-center justify-center hover:bg-white/[0.08] hover:border-purple-500/30 transition-all"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -341,7 +380,7 @@ export default function GradesPage() {
 
                   {/* Pismeni grades */}
                   <div>
-                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-2">Pismeni</p>
+                    <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest mb-2.5">Pismeni</p>
                     <div className="flex flex-wrap items-center gap-2">
                       {sg.pismeni.map((v, idx) => (
                         <GradeChip key={idx} value={v} onRemove={() => removeMultiGrade(subject, 'pismeni', idx)} />
@@ -351,7 +390,7 @@ export default function GradesPage() {
                       ) : (
                         <button
                           onClick={() => setEditingCell(`${activeTrimester}-${subject}-pismeni`)}
-                          className="w-8 h-8 rounded-xl bg-muted/30 text-muted-foreground border border-dashed border-border/40 flex items-center justify-center hover:bg-muted/50 transition-colors"
+                          className="w-9 h-9 rounded-xl bg-white/[0.04] text-muted-foreground border border-dashed border-white/[0.1] flex items-center justify-center hover:bg-white/[0.08] hover:border-purple-500/30 transition-all"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -360,16 +399,16 @@ export default function GradesPage() {
                   </div>
 
                   {/* Usmeni + Zaključna in a row */}
-                  <div className="flex gap-4">
+                  <div className="flex gap-6">
                     <div className="flex-1">
-                      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-2">Usmeni</p>
+                      <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest mb-2.5">Usmeni</p>
                       {editingCell === `${activeTrimester}-${subject}-usmeni` ? (
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-1.5 animate-fade-in">
                           {[5, 4, 3, 2, 1].map((v) => (
                             <button
                               key={v}
                               onClick={() => setSingleGrade(subject, 'usmeni', v)}
-                              className={`w-8 h-8 rounded-xl text-xs font-bold ${GRADE_COLORS[v]} transition-all active:scale-90 shadow-sm`}
+                              className={`w-9 h-9 rounded-xl text-xs font-bold ${GRADE_COLORS[v]} transition-all active:scale-90 shadow-md ${GRADE_SHADOW[v]}`}
                             >
                               {v}
                             </button>
@@ -377,7 +416,7 @@ export default function GradesPage() {
                           {sg.usmeni !== null && (
                             <button
                               onClick={() => setSingleGrade(subject, 'usmeni', null)}
-                              className="w-8 h-8 rounded-xl text-[10px] bg-muted text-muted-foreground"
+                              className="w-9 h-9 rounded-xl text-[10px] bg-white/[0.04] text-muted-foreground border border-white/[0.08]"
                             >
                               ✕
                             </button>
@@ -386,10 +425,10 @@ export default function GradesPage() {
                       ) : (
                         <button
                           onClick={() => setEditingCell(`${activeTrimester}-${subject}-usmeni`)}
-                          className={`w-10 h-10 rounded-xl text-sm font-bold transition-all active:scale-90 ring-1 ${
+                          className={`w-11 h-11 rounded-xl text-sm font-bold transition-all active:scale-90 ring-1 ${
                             sg.usmeni
                               ? `${GRADE_BG[sg.usmeni]}`
-                              : 'bg-muted/30 text-muted-foreground border border-dashed border-border/40 ring-0'
+                              : 'bg-white/[0.04] text-muted-foreground/50 border border-dashed border-white/[0.1] ring-0'
                           }`}
                         >
                           {sg.usmeni || '—'}
@@ -397,14 +436,14 @@ export default function GradesPage() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-2">Zaključna</p>
+                      <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest mb-2.5">Zaključna</p>
                       {editingCell === `${activeTrimester}-${subject}-zakljucna` ? (
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-1.5 animate-fade-in">
                           {[5, 4, 3, 2, 1].map((v) => (
                             <button
                               key={v}
                               onClick={() => setSingleGrade(subject, 'zakljucna', v)}
-                              className={`w-8 h-8 rounded-xl text-xs font-bold ${GRADE_COLORS[v]} transition-all active:scale-90 shadow-sm`}
+                              className={`w-9 h-9 rounded-xl text-xs font-bold ${GRADE_COLORS[v]} transition-all active:scale-90 shadow-md ${GRADE_SHADOW[v]}`}
                             >
                               {v}
                             </button>
@@ -412,7 +451,7 @@ export default function GradesPage() {
                           {sg.zakljucna !== null && (
                             <button
                               onClick={() => setSingleGrade(subject, 'zakljucna', null)}
-                              className="w-8 h-8 rounded-xl text-[10px] bg-muted text-muted-foreground"
+                              className="w-9 h-9 rounded-xl text-[10px] bg-white/[0.04] text-muted-foreground border border-white/[0.08]"
                             >
                               ✕
                             </button>
@@ -421,10 +460,10 @@ export default function GradesPage() {
                       ) : (
                         <button
                           onClick={() => setEditingCell(`${activeTrimester}-${subject}-zakljucna`)}
-                          className={`w-10 h-10 rounded-xl text-sm font-bold transition-all active:scale-90 ring-1 ${
+                          className={`w-11 h-11 rounded-xl text-sm font-bold transition-all active:scale-90 ring-1 ${
                             sg.zakljucna
                               ? `${GRADE_BG[sg.zakljucna]}`
-                              : 'bg-muted/30 text-muted-foreground border border-dashed border-border/40 ring-0'
+                              : 'bg-white/[0.04] text-muted-foreground/50 border border-dashed border-white/[0.1] ring-0'
                           }`}
                         >
                           {sg.zakljucna || '—'}
@@ -443,10 +482,10 @@ export default function GradesPage() {
       {availableOptional.length > 0 && (
         <div>
           {showAddSubject ? (
-            <div className="rounded-2xl border border-border/20 bg-card/60 backdrop-blur p-4 space-y-2">
+            <div className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm p-5 space-y-2.5 animate-fade-in">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-semibold">Dodaj predmet</p>
-                <button onClick={() => setShowAddSubject(false)} className="text-muted-foreground">
+                <p className="text-sm font-bold">Dodaj predmet</p>
+                <button onClick={() => setShowAddSubject(false)} className="text-muted-foreground p-1 rounded-lg hover:bg-white/[0.04]">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -454,7 +493,7 @@ export default function GradesPage() {
                 <button
                   key={s}
                   onClick={() => addSubject(s)}
-                  className="w-full text-left px-4 py-2.5 rounded-xl bg-muted/30 text-sm hover:bg-muted/50 transition-colors"
+                  className="w-full text-left px-4 py-3 rounded-xl bg-white/[0.04] text-sm font-medium hover:bg-white/[0.08] transition-all active:scale-[0.98]"
                 >
                   {s}
                 </button>
@@ -463,7 +502,7 @@ export default function GradesPage() {
           ) : (
             <button
               onClick={() => setShowAddSubject(true)}
-              className="w-full py-3.5 rounded-2xl border border-dashed border-border/40 text-sm text-muted-foreground hover:bg-muted/20 hover:border-primary/40 transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl border border-dashed border-white/[0.08] text-sm text-muted-foreground hover:bg-white/[0.02] hover:border-purple-500/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               Dodaj predmet

@@ -36,26 +36,40 @@ export function BottomNav() {
   const items = getResolvedNavItems(orderedIds)
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav glass-premium">
-      <div className="flex items-center justify-around h-20 max-w-lg mx-auto px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav-premium">
+      <div className="flex items-center justify-around h-20 max-w-lg mx-auto px-3">
         {items.map((item) => {
           const isActive = pathname.startsWith(item.href)
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-2xl transition-all duration-200 ${
+              className={`relative flex flex-col items-center gap-1 px-3.5 py-2 rounded-2xl transition-all duration-300 ${
                 isActive
-                  ? 'text-primary nav-active-pill'
+                  ? 'text-purple-400'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <item.IconComponent className={`w-6 h-6 transition-all ${isActive ? 'drop-shadow-[0_0_10px_rgba(167,139,250,0.6)]' : ''}`} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              {/* Active indicator pill */}
+              {isActive && (
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-purple-500/15 to-violet-600/10 border border-purple-500/20 animate-scale-in" />
+              )}
+              <item.IconComponent className={`relative w-6 h-6 transition-all duration-300 ${
+                isActive ? 'drop-shadow-[0_0_12px_rgba(167,139,250,0.7)] scale-110' : ''
+              }`} />
+              <span className={`relative text-[10px] font-medium transition-all duration-300 ${
+                isActive ? 'text-purple-300' : ''
+              }`}>{item.label}</span>
+              {/* Active dot */}
+              {isActive && (
+                <div className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-purple-400 shadow-[0_0_6px_rgba(167,139,250,0.8)] animate-pop-in" />
+              )}
             </Link>
           )
         })}
       </div>
+      {/* Safe area spacer for iOS */}
+      <div className="h-safe-area-bottom" />
     </nav>
   )
 }

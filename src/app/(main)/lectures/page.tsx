@@ -732,60 +732,66 @@ export default function LecturesPage() {
   if (view === 'lectures' && selectedSubject) {
     const subjectInfo = [...DEFAULT_SUBJECTS, ...OPTIONAL_SUBJECTS].find(s => s.name === selectedSubject)
     return (
-      <div className="space-y-4 animate-fade-in">
-        <button onClick={goBack} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all">
+      <div className="space-y-5 animate-fade-in pb-4">
+        <button onClick={goBack} className="text-sm text-purple-400 flex items-center gap-1 hover:gap-2 transition-all font-medium">
           <ChevronLeft className="w-4 h-4" /> Svi predmeti
         </button>
-        <div className="flex items-center gap-3">
-          {subjectInfo && <SubjectIcon name={subjectInfo.name} emoji={subjectInfo.emoji} size="lg" />}
+        <div className="flex items-center gap-4">
+          {subjectInfo && (
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+              <SubjectIcon name={subjectInfo.name} emoji={subjectInfo.emoji} size="lg" />
+            </div>
+          )}
           <div>
             <h1 className="text-2xl font-bold">{selectedSubject}</h1>
-            <p className="text-xs text-muted-foreground">{lectures.length} lekcija</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{lectures.length} lekcija</p>
           </div>
         </div>
 
         {lectures.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>Nema lekcija za ovaj predmet</p>
+          <div className="text-center py-20 text-muted-foreground">
+            <div className="w-16 h-16 rounded-3xl bg-white/[0.03] flex items-center justify-center mx-auto mb-4">
+              <BookOpen className="w-8 h-8 opacity-30" />
+            </div>
+            <p className="text-sm">Nema lekcija za ovaj predmet</p>
           </div>
         ) : (
-          <div className="space-y-2 animate-stagger">
+          <div className="space-y-2.5 animate-stagger">
             {lectures.map((lecture, idx) => {
               const isCurrent = lecture.content?.includes('<!-- CURRENT -->')
               return (
-                <Card
+                <button
                   key={lecture.id}
-                  className={`border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98] card-hover ${
-                    isCurrent ? 'ring-1 ring-violet-500/50 bg-violet-500/5' : ''
+                  className={`w-full text-left rounded-2xl border bg-card/40 backdrop-blur-sm cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-4 flex items-center justify-between ${
+                    isCurrent ? 'border-violet-500/30 bg-violet-500/5' : 'border-white/[0.04]'
                   }`}
                   onClick={() => handleLectureTap(lecture)}
                 >
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground font-mono w-6 text-right flex-shrink-0">{idx + 1}</span>
-                      <div className="space-y-0.5 min-w-0">
-                        <h3 className="font-medium text-sm flex items-center gap-2">
-                          {lecture.title}
-                          {isCurrent && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-400 border border-violet-500/30 whitespace-nowrap flex-shrink-0">
-                              📍 OVDJE SI
-                            </span>
-                          )}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(lecture.created_at).toLocaleDateString('sr-Latn')}
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                    <span className={`text-xs font-mono w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      isCurrent ? 'bg-violet-500/15 text-violet-400 font-bold' : 'bg-white/[0.04] text-muted-foreground'
+                    }`}>{idx + 1}</span>
+                    <div className="space-y-0.5 min-w-0">
+                      <h3 className="font-semibold text-sm flex items-center gap-2">
+                        {lecture.title}
+                        {isCurrent && (
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-lg bg-violet-500/15 text-violet-400 border border-violet-500/20 whitespace-nowrap flex-shrink-0">
+                            📍 OVDJE SI
+                          </span>
+                        )}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(lecture.created_at).toLocaleDateString('sr-Latn')}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {likedLectures[lecture.id] && (
-                        <ThumbsUp className="w-3.5 h-3.5 fill-blue-500 text-blue-500" />
-                      )}
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {likedLectures[lecture.id] && (
+                      <ThumbsUp className="w-3.5 h-3.5 fill-blue-500 text-blue-500" />
+                    )}
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
+                  </div>
+                </button>
               )
             })}
           </div>
@@ -797,10 +803,14 @@ export default function LecturesPage() {
   // ========== LOADING ==========
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-5 pt-2">
+        <div className="space-y-1">
+          <div className="h-8 w-32 skeleton" />
+          <div className="h-4 w-48 skeleton" />
+        </div>
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-28 rounded-2xl bg-muted animate-pulse" />
+            <div key={i} className="h-32 rounded-2xl skeleton" />
           ))}
         </div>
       </div>
@@ -809,26 +819,31 @@ export default function LecturesPage() {
 
   // ========== SUBJECTS GRID VIEW ==========
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-5 animate-fade-in pb-4">
       <BetaDisclaimer />
-      {profile && (
-        <Badge variant="secondary" className="text-xs">
-          Tvoj razred: {profile.class_number}-{profile.section_number}
-        </Badge>
-      )}
+
+      {/* Header */}
+      <div className="pt-1">
+        <h1 className="text-2xl font-bold gradient-text">Lekcije</h1>
+        {profile && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {profile.class_number}. razred, {profile.section_number}. odjeljenje
+          </p>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 gap-3 animate-stagger">
         {allSubjects.map((subject) => (
-          <Card
+          <button
             key={subject.name}
-            className="border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98] card-hover overflow-hidden gradient-overlay glow-hover"
+            className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm cursor-pointer hover:bg-white/[0.05] hover:border-purple-500/15 transition-all duration-300 active:scale-[0.96] overflow-hidden group p-5 flex flex-col items-center text-center gap-3"
             onClick={() => handleSubjectTap(subject.name)}
           >
-            <CardContent className="p-5 flex flex-col items-center text-center gap-2.5">
+            <div className="transition-transform duration-300 group-hover:scale-110">
               <SubjectIcon name={subject.name} emoji={subject.emoji} size="lg" />
-              <h3 className="font-semibold text-sm">{subject.name}</h3>
-            </CardContent>
-          </Card>
+            </div>
+            <h3 className="font-semibold text-sm">{subject.name}</h3>
+          </button>
         ))}
       </div>
 
@@ -843,7 +858,7 @@ export default function LecturesPage() {
                 }, 100)
               }
             }}
-            className="w-full py-3 rounded-2xl border border-dashed border-border/50 text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all active:scale-[0.98]"
+            className="w-full py-3.5 rounded-2xl border border-dashed border-white/[0.08] text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-purple-500/30 hover:text-purple-400 transition-all active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
             Dodaj predmet
@@ -852,17 +867,15 @@ export default function LecturesPage() {
           {showAddSubject && (
             <div id="add-subject-list" className="space-y-2 animate-fade-in">
               {availableOptional.map((subject) => (
-                <Card
+                <button
                   key={subject.name}
-                  className="border-border/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-card/80 transition-all active:scale-[0.98]"
+                  className="w-full rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-3.5 flex items-center gap-3"
                   onClick={() => { addSubject(subject.name); setShowAddSubject(false) }}
                 >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <SubjectIcon name={subject.name} emoji={subject.emoji} size="sm" />
-                    <span className="text-sm font-medium">{subject.name}</span>
-                    <Plus className="w-4 h-4 text-primary ml-auto" />
-                  </CardContent>
-                </Card>
+                  <SubjectIcon name={subject.name} emoji={subject.emoji} size="sm" />
+                  <span className="text-sm font-semibold">{subject.name}</span>
+                  <Plus className="w-4 h-4 text-purple-400 ml-auto" />
+                </button>
               ))}
             </div>
           )}
@@ -875,7 +888,7 @@ export default function LecturesPage() {
             <button
               key={name}
               onClick={() => removeSubject(name)}
-              className="flex items-center gap-1 px-3 py-1 rounded-full bg-muted text-xs text-muted-foreground hover:text-destructive transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-xs text-muted-foreground hover:text-red-400 hover:border-red-500/20 transition-all"
             >
               {name}
               <X className="w-3 h-3" />

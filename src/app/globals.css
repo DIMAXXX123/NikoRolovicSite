@@ -54,7 +54,7 @@
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    opacity: 0.07;
+    opacity: 0.05;
     background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
     background-size: 32px 32px;
     animation: dotsDrift 60s linear infinite;
@@ -75,14 +75,14 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 2px;
+  background: rgba(167, 139, 250, 0.2);
+  border-radius: 3px;
 }
 
 /* ============================================
@@ -91,64 +91,69 @@
 
 /* Fade in */
 .animate-fade-in {
-  animation: fadeIn 0.15s ease-out;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 /* Slide up */
 .animate-slide-up {
-  animation: slideUp 0.2s ease-out both;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 /* Scale in */
 .animate-scale-in {
-  animation: scaleIn 0.15s ease-out;
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
+  from { opacity: 0; transform: scale(0.92); }
   to { opacity: 1; transform: scale(1); }
 }
 
 /* Stagger children animation */
 .animate-stagger > * {
   opacity: 0;
-  animation: slideUp 0.2s ease-out forwards;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .animate-stagger > *:nth-child(1) { animation-delay: 0s; }
-.animate-stagger > *:nth-child(2) { animation-delay: 0.05s; }
-.animate-stagger > *:nth-child(3) { animation-delay: 0.05s; }
-.animate-stagger > *:nth-child(4) { animation-delay: 0.1s; }
-.animate-stagger > *:nth-child(5) { animation-delay: 0.12s; }
-.animate-stagger > *:nth-child(6) { animation-delay: 0.15s; }
-.animate-stagger > *:nth-child(7) { animation-delay: 0.18s; }
-.animate-stagger > *:nth-child(8) { animation-delay: 0.2s; }
-.animate-stagger > *:nth-child(9) { animation-delay: 0.22s; }
-.animate-stagger > *:nth-child(10) { animation-delay: 0.25s; }
+.animate-stagger > *:nth-child(2) { animation-delay: 0.04s; }
+.animate-stagger > *:nth-child(3) { animation-delay: 0.08s; }
+.animate-stagger > *:nth-child(4) { animation-delay: 0.12s; }
+.animate-stagger > *:nth-child(5) { animation-delay: 0.16s; }
+.animate-stagger > *:nth-child(6) { animation-delay: 0.2s; }
+.animate-stagger > *:nth-child(7) { animation-delay: 0.24s; }
+.animate-stagger > *:nth-child(8) { animation-delay: 0.28s; }
+.animate-stagger > *:nth-child(9) { animation-delay: 0.32s; }
+.animate-stagger > *:nth-child(10) { animation-delay: 0.36s; }
+.animate-stagger > *:nth-child(11) { animation-delay: 0.4s; }
+.animate-stagger > *:nth-child(12) { animation-delay: 0.44s; }
+.animate-stagger > *:nth-child(13) { animation-delay: 0.48s; }
+.animate-stagger > *:nth-child(14) { animation-delay: 0.52s; }
+.animate-stagger > *:nth-child(15) { animation-delay: 0.56s; }
 
 /* Card hover effect - premium lift */
 .card-hover {
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 }
 .card-hover:hover {
   transform: translateY(-3px);
   box-shadow:
-    0 12px 40px -8px rgba(167, 139, 250, 0.2),
-    0 4px 12px -2px rgba(0, 0, 0, 0.3);
+    0 16px 48px -8px rgba(167, 139, 250, 0.15),
+    0 6px 16px -4px rgba(0, 0, 0, 0.3);
 }
 
 /* Page transition */
 .page-transition {
-  animation: pageEnter 0.2s ease-out;
+  animation: pageEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes pageEnter {
@@ -163,9 +168,17 @@
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgba(167,139,250,0.08) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(167,139,250,0.06) 50%, transparent 100%);
   background-size: 200% 100%;
-  animation: shimmer 0.8s infinite;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(167,139,250,0.08) 50%, rgba(255,255,255,0.03) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 1rem;
 }
 
 /* Slide down (for toasts) */
@@ -175,7 +188,7 @@
 }
 
 .animate-slide-down {
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ============================================
@@ -242,7 +255,18 @@
   -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
-/* Glassmorphism header */
+/* Premium glassmorphism header */
+.glass-header-premium {
+  background: rgba(9, 9, 11, 0.65);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.03),
+    0 4px 24px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* Glassmorphism header (legacy) */
 .glass-header {
   background: rgba(10, 10, 15, 0.75);
   backdrop-filter: blur(28px) saturate(180%);
@@ -254,18 +278,35 @@
 .premium-card {
   position: relative;
   background: rgba(10, 10, 15, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   overflow: hidden;
+  border-radius: 1.25rem;
 }
 
 .premium-card::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.05) 0%, transparent 50%, rgba(109, 40, 217, 0.03) 100%);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.06) 0%, transparent 50%, rgba(109, 40, 217, 0.03) 100%);
   pointer-events: none;
+}
+
+/* Glass card - frosted glass effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(167, 139, 250, 0.15);
+  box-shadow: 0 8px 32px -4px rgba(167, 139, 250, 0.1);
 }
 
 /* Interactive glow on hover */
@@ -273,7 +314,7 @@
   transition: box-shadow 0.3s ease;
 }
 .glow-hover:hover {
-  box-shadow: 0 0 20px -5px rgba(167, 139, 250, 0.3);
+  box-shadow: 0 0 24px -5px rgba(167, 139, 250, 0.25);
 }
 
 /* Subtle gradient overlay for cards */
@@ -290,9 +331,39 @@
   border-radius: inherit;
 }
 
+/* Gradient border effect */
+.gradient-border {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(109, 40, 217, 0.15), rgba(255, 255, 255, 0.05));
+  z-index: -1;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  padding: 1px;
+}
+
 /* ============================================
    PREMIUM BOTTOM NAV
    ============================================ */
+.glass-nav-premium {
+  background: rgba(9, 9, 11, 0.85);
+  backdrop-filter: blur(48px) saturate(200%);
+  -webkit-backdrop-filter: blur(48px) saturate(200%);
+  border-top: 1px solid rgba(167, 139, 250, 0.08);
+  box-shadow:
+    0 -1px 0 rgba(255, 255, 255, 0.03),
+    0 -8px 32px -4px rgba(0, 0, 0, 0.4);
+}
+
 .glass-nav {
   background: rgba(10, 10, 15, 0.9);
   backdrop-filter: blur(32px) saturate(200%);
@@ -351,7 +422,7 @@ body.perf-mode * {
 
 /* Page content transition */
 .page-content-transition {
-  transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
 }
 
 /* ============================================
@@ -475,13 +546,6 @@ html.font-large { font-size: 18px; }
   }
 }
 
-/* Page load stagger (extends existing stagger with more children) */
-.animate-stagger > *:nth-child(11) { animation-delay: 0.28s; }
-.animate-stagger > *:nth-child(12) { animation-delay: 0.3s; }
-.animate-stagger > *:nth-child(13) { animation-delay: 0.32s; }
-.animate-stagger > *:nth-child(14) { animation-delay: 0.34s; }
-.animate-stagger > *:nth-child(15) { animation-delay: 0.36s; }
-
 /* Pop in animation for icons/badges */
 .animate-pop-in {
   animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -510,7 +574,7 @@ html.font-large { font-size: 18px; }
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: inherit;
   animation: rippleFade 0.4s ease-out;
 }
@@ -561,6 +625,36 @@ html.font-large { font-size: 18px; }
   25% { transform: translateY(-4px) rotate(15deg); }
   50% { transform: translateY(0) rotate(0deg); }
   75% { transform: translateY(-3px) rotate(-10deg); }
+}
+
+/* Circular progress animation */
+@keyframes circularProgress {
+  from { stroke-dashoffset: var(--circumference); }
+  to { stroke-dashoffset: var(--offset); }
+}
+
+.animate-circular-progress {
+  animation: circularProgress 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glow pulse for active elements */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0); }
+  50% { box-shadow: 0 0 16px 2px rgba(167, 139, 250, 0.3); }
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* Count up animation */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-count-up {
+  animation: countUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Smooth color transitions for ALL interactive elements */
