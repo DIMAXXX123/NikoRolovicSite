@@ -9,46 +9,76 @@ import { Trophy, RotateCcw, Crown, Star, Zap } from 'lucide-react'
 type Cell = { filled: boolean; color: string; clearing?: boolean; justPlaced?: boolean }
 type Shape = { cells: [number, number][]; color: string; name: string }
 type Grid = Cell[][]
-type ScorePopup = { id: number; x: number; y: number; value: number; ts: number }
 type LeaderEntry = { rank: number; name: string; classInfo: string; role: string; score: number }
-type Particle = { id: number; x: number; y: number; color: string; angle: number; speed: number; size: number }
 
 // ── Constants ──────────────────────────────────────────────────────────
 const GRID = 8
-// Vivid, high-contrast Block Blast colors
+
 const COLORS = [
-  '#FF3D00', // vivid red-orange
-  '#00E676', // neon green
-  '#FFEA00', // electric yellow
-  '#FF1744', // hot red
-  '#7C4DFF', // deep purple
-  '#00B0FF', // bright blue
-  '#FF6D00', // bright orange
-  '#E040FB', // magenta
-  '#00E5FF', // cyan
-  '#76FF03', // lime
+  '#FF3B3B', // vivid red
+  '#4ADE80', // neon green
+  '#FACC15', // electric yellow
+  '#3B82F6', // bright blue
+  '#A855F7', // purple
+  '#FB923C', // orange
+  '#22D3EE', // cyan
+  '#EC4899', // pink
 ]
 
-const SHAPE_DEFS: { cells: [number, number][]; name: string }[] = [
-  { cells: [[0, 0]], name: 'dot' },
-  { cells: [[0, 0], [0, 1]], name: '2h' },
-  { cells: [[0, 0], [1, 0]], name: '2v' },
-  { cells: [[0, 0], [0, 1], [0, 2]], name: '3h' },
-  { cells: [[0, 0], [1, 0], [2, 0]], name: '3v' },
-  { cells: [[0, 0], [0, 1], [1, 0]], name: 'L' },
-  { cells: [[0, 0], [0, 1], [0, 2], [1, 1]], name: 'T' },
-  { cells: [[0, 0], [0, 1], [1, 0], [1, 1]], name: 'sq' },
-  { cells: [[0, 0], [0, 1], [1, 1], [1, 2]], name: 'Z' },
-  { cells: [[0, 1], [0, 2], [1, 0], [1, 1]], name: 'S' },
-  { cells: [[0, 0], [1, 0], [1, 1]], name: 'L2' },
-  { cells: [[0, 0], [0, 1], [0, 2], [0, 3]], name: '4h' },
-  { cells: [[0, 0], [1, 0], [2, 0], [3, 0]], name: '4v' },
-  { cells: [[0, 0], [0, 1], [0, 2], [1, 0], [1, 2], [2, 0], [2, 1], [2, 2]], name: '3x3frame' },
-  { cells: [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]], name: '3x3' },
+// All standard Block Blast shapes (no rotation — each orientation is a separate shape)
+const SHAPE_DEFS: { cells: [number, number][]; name: string; weight: number }[] = [
+  // Single
+  { cells: [[0, 0]], name: 'dot', weight: 8 },
+  // Horizontal bars
+  { cells: [[0, 0], [0, 1]], name: '1x2', weight: 7 },
+  { cells: [[0, 0], [0, 1], [0, 2]], name: '1x3', weight: 6 },
+  { cells: [[0, 0], [0, 1], [0, 2], [0, 3]], name: '1x4', weight: 4 },
+  { cells: [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]], name: '1x5', weight: 3 },
+  // Vertical bars
+  { cells: [[0, 0], [1, 0]], name: '2x1', weight: 7 },
+  { cells: [[0, 0], [1, 0], [2, 0]], name: '3x1', weight: 6 },
+  { cells: [[0, 0], [1, 0], [2, 0], [3, 0]], name: '4x1', weight: 4 },
+  { cells: [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]], name: '5x1', weight: 3 },
+  // 2x2 square
+  { cells: [[0, 0], [0, 1], [1, 0], [1, 1]], name: '2x2', weight: 5 },
+  // 3x3 square (rare)
+  { cells: [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]], name: '3x3', weight: 1 },
+  // L-shapes (4 rotations)
+  { cells: [[0, 0], [1, 0], [1, 1]], name: 'L1', weight: 5 },
+  { cells: [[0, 0], [0, 1], [1, 0]], name: 'L2', weight: 5 },
+  { cells: [[0, 0], [0, 1], [1, 1]], name: 'L3', weight: 5 },
+  { cells: [[0, 1], [1, 0], [1, 1]], name: 'L4', weight: 5 },
+  // Big L-shapes (4 rotations)
+  { cells: [[0, 0], [1, 0], [2, 0], [2, 1]], name: 'bigL1', weight: 4 },
+  { cells: [[0, 0], [0, 1], [0, 2], [1, 0]], name: 'bigL2', weight: 4 },
+  { cells: [[0, 0], [0, 1], [1, 1], [2, 1]], name: 'bigL3', weight: 4 },
+  { cells: [[0, 2], [1, 0], [1, 1], [1, 2]], name: 'bigL4', weight: 4 },
+  // T-shapes (4 rotations)
+  { cells: [[0, 0], [0, 1], [0, 2], [1, 1]], name: 'T1', weight: 4 },
+  { cells: [[0, 0], [1, 0], [1, 1], [2, 0]], name: 'T2', weight: 4 },
+  { cells: [[0, 1], [1, 0], [1, 1], [1, 2]], name: 'T3', weight: 4 },
+  { cells: [[0, 0], [0, 1], [1, 0], [2, 0]], name: 'T4', weight: 4 },
+  // S/Z shapes
+  { cells: [[0, 0], [0, 1], [1, 1], [1, 2]], name: 'S1', weight: 4 },
+  { cells: [[0, 1], [1, 0], [1, 1], [2, 0]], name: 'S2', weight: 4 },
+  { cells: [[0, 1], [0, 2], [1, 0], [1, 1]], name: 'Z1', weight: 4 },
+  { cells: [[0, 0], [1, 0], [1, 1], [2, 1]], name: 'Z2', weight: 4 },
+  // Corner pieces (2x2 with one missing)
+  { cells: [[0, 0], [0, 1], [1, 0]], name: 'corner1', weight: 5 },
+  { cells: [[0, 0], [0, 1], [1, 1]], name: 'corner2', weight: 5 },
+  { cells: [[0, 0], [1, 0], [1, 1]], name: 'corner3', weight: 5 },
+  { cells: [[0, 1], [1, 0], [1, 1]], name: 'corner4', weight: 5 },
 ]
 
+// Weighted random selection
 function randomShape(): Shape {
-  const def = SHAPE_DEFS[Math.floor(Math.random() * SHAPE_DEFS.length)]
+  const totalWeight = SHAPE_DEFS.reduce((s, d) => s + d.weight, 0)
+  let r = Math.random() * totalWeight
+  let def = SHAPE_DEFS[0]
+  for (const d of SHAPE_DEFS) {
+    r -= d.weight
+    if (r <= 0) { def = d; break }
+  }
   const color = COLORS[Math.floor(Math.random() * COLORS.length)]
   return { cells: def.cells.map(c => [...c] as [number, number]), color, name: def.name }
 }
@@ -82,13 +112,19 @@ function getShapeBounds(shape: Shape) {
   return { rows: maxR - minR + 1, cols: maxC - minC + 1, minR, minC }
 }
 
-// Darken a hex color for borders
 function darkenColor(hex: string, amount: number): string {
   const num = parseInt(hex.slice(1), 16)
   const r = Math.max(0, (num >> 16) - amount)
   const g = Math.max(0, ((num >> 8) & 0x00FF) - amount)
   const b = Math.max(0, (num & 0x0000FF) - amount)
   return `rgb(${r},${g},${b})`
+}
+
+function isBoardEmpty(grid: Grid): boolean {
+  for (let r = 0; r < GRID; r++)
+    for (let c = 0; c < GRID; c++)
+      if (grid[r][c].filled) return false
+  return true
 }
 
 // ── LocalStorage helpers ───────────────────────────────────────────────
@@ -119,8 +155,19 @@ function saveLocalScore(entry: LeaderEntry) {
   localStorage.setItem(LS_SCORES_KEY, JSON.stringify(scores.slice(0, 20)))
 }
 
+// ── Scoring ────────────────────────────────────────────────────────────
+function calcLineScore(linesCleared: number): number {
+  if (linesCleared === 0) return 0
+  if (linesCleared === 1) return 10
+  if (linesCleared === 2) return 30
+  if (linesCleared === 3) return 60
+  // 4+ lines: exponential
+  return 60 + (linesCleared - 3) * 40
+}
+
 // ── Component ──────────────────────────────────────────────────────────
 export default function BlockBlastPage() {
+  // State
   const [grid, setGrid] = useState<Grid>(emptyGrid)
   const [shapes, setShapes] = useState<(Shape | null)[]>([])
   const [score, setScore] = useState(0)
@@ -128,31 +175,31 @@ export default function BlockBlastPage() {
   const [combo, setCombo] = useState(0)
   const [gameOver, setGameOver] = useState(false)
   const [shaking, setShaking] = useState(false)
-  const [popups, setPopups] = useState<ScorePopup[]>([])
   const [leaderboard, setLeaderboard] = useState<LeaderEntry[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
   const [hoverPos, setHoverPos] = useState<{ row: number; col: number } | null>(null)
   const [clearingCells, setClearingCells] = useState<Set<string>>(new Set())
   const [newShapeAnim, setNewShapeAnim] = useState(false)
-  const [particles, setParticles] = useState<Particle[]>([])
   const [comboFlash, setComboFlash] = useState(false)
+  const [comboText, setComboText] = useState<{ value: number; id: number } | null>(null)
 
+  // Refs
   const gridRef = useRef<HTMLDivElement>(null)
-  const popupId = useRef(0)
-  const particleId = useRef(0)
   const isDragging = useRef(false)
   const dragShapeIdx = useRef<number | null>(null)
   const hoverPosRef = useRef<{ row: number; col: number } | null>(null)
-  // Refs for latest state to avoid stale closures
   const scoreRef = useRef(score)
-  const gridRefState = useRef(grid)
+  const gridStateRef = useRef(grid)
   const shapesRef = useRef(shapes)
+  const comboRef = useRef(combo)
+  const comboIdRef = useRef(0)
 
   // Keep refs in sync
   useEffect(() => { scoreRef.current = score }, [score])
-  useEffect(() => { gridRefState.current = grid }, [grid])
+  useEffect(() => { gridStateRef.current = grid }, [grid])
   useEffect(() => { shapesRef.current = shapes }, [shapes])
+  useEffect(() => { comboRef.current = combo }, [combo])
   useEffect(() => { hoverPosRef.current = hoverPos }, [hoverPos])
 
   // ── Init ─────────────────────────────────────────────────────────────
@@ -165,207 +212,34 @@ export default function BlockBlastPage() {
   const generateShapes = useCallback(() => {
     const s = [randomShape(), randomShape(), randomShape()]
     setShapes(s)
+    shapesRef.current = s
     setNewShapeAnim(true)
     setTimeout(() => setNewShapeAnim(false), 400)
     return s
   }, [])
 
   const startNewGame = useCallback(() => {
-    setGrid(emptyGrid())
+    const g = emptyGrid()
+    setGrid(g)
+    gridStateRef.current = g
     setScore(0)
+    scoreRef.current = 0
     setCombo(0)
+    comboRef.current = 0
     setGameOver(false)
     setShaking(false)
-    setPopups([])
-    setParticles([])
     setSelectedIdx(null)
     setHoverPos(null)
+    hoverPosRef.current = null
     setClearingCells(new Set())
+    setComboText(null)
     generateShapes()
   }, [generateShapes])
-
-  // ── Add popup ────────────────────────────────────────────────────────
-  const addPopup = useCallback((x: number, y: number, value: number) => {
-    const id = ++popupId.current
-    setPopups(prev => [...prev, { id, x, y, value, ts: Date.now() }])
-    setTimeout(() => setPopups(prev => prev.filter(p => p.id !== id)), 1200)
-  }, [])
-
-  // ── Spawn particles ─────────────────────────────────────────────────
-  const spawnParticles = useCallback((cells: [number, number][], color: string) => {
-    if (!gridRef.current) return
-    const cellSize = gridRef.current.offsetWidth / GRID
-    const newParticles: Particle[] = []
-    for (const [r, c] of cells) {
-      const cx = c * cellSize + cellSize / 2
-      const cy = r * cellSize + cellSize / 2
-      for (let i = 0; i < 3; i++) {
-        newParticles.push({
-          id: ++particleId.current,
-          x: cx,
-          y: cy,
-          color,
-          angle: Math.random() * 360,
-          speed: 1 + Math.random() * 2,
-          size: 3 + Math.random() * 4,
-        })
-      }
-    }
-    setParticles(prev => [...prev, ...newParticles])
-    setTimeout(() => {
-      setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)))
-    }, 800)
-  }, [])
-
-  // ── Game Over ────────────────────────────────────────────────────────
-  const triggerGameOver = useCallback((finalScore: number) => {
-    setGameOver(true)
-    setShaking(true)
-    setTimeout(() => setShaking(false), 500)
-    saveHighScore(finalScore)
-    setHighScore(Math.max(getHighScore(), finalScore))
-    loadLeaderboard(finalScore)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // ── Check game over (uses refs to avoid stale state) ────────────────
-  const checkGameOver = useCallback((gridToCheck: Grid, shapesToCheck: (Shape | null)[]) => {
-    const remaining = shapesToCheck.filter(Boolean) as Shape[]
-    if (remaining.length === 0) return
-    const anyCanPlace = remaining.some(s => canPlaceAnywhere(gridToCheck, s))
-    if (!anyCanPlace) {
-      triggerGameOver(scoreRef.current)
-    }
-  }, [triggerGameOver])
-
-  // ── Place block ──────────────────────────────────────────────────────
-  const placeBlock = useCallback((shapeIdx: number, row: number, col: number) => {
-    const shape = shapesRef.current[shapeIdx]
-    const currentGrid = gridRefState.current
-    if (!shape || !canPlace(currentGrid, shape, row, col)) return false
-
-    const newGrid = currentGrid.map(r => r.map(c => ({ ...c, justPlaced: false })))
-
-    // Place
-    shape.cells.forEach(([r, c]) => {
-      newGrid[row + r][col + c] = { filled: true, color: shape.color, justPlaced: true }
-    })
-
-    // Check clears
-    const clearRows: number[] = []
-    const clearCols: number[] = []
-    for (let i = 0; i < GRID; i++) {
-      if (newGrid[i].every(cell => cell.filled)) clearRows.push(i)
-      if (newGrid.every(r => r[i].filled)) clearCols.push(i)
-    }
-
-    const linesCleared = clearRows.length + clearCols.length
-
-    // Calculate points
-    let pts = shape.cells.length * 10
-    let newCombo = combo
-
-    if (linesCleared > 0) {
-      newCombo += 1
-      const multiplier = Math.min(newCombo, 5)
-      pts += linesCleared * 50 * multiplier
-
-      // Combo flash
-      setComboFlash(true)
-      setTimeout(() => setComboFlash(false), 400)
-
-      // Collect clearing cells for particles
-      const clearCellCoords: [number, number][] = []
-      const clearing = new Set<string>()
-      clearRows.forEach(r => {
-        for (let c = 0; c < GRID; c++) {
-          clearing.add(`${r}-${c}`)
-          clearCellCoords.push([r, c])
-        }
-      })
-      clearCols.forEach(c => {
-        for (let r = 0; r < GRID; r++) {
-          clearing.add(`${r}-${c}`)
-          clearCellCoords.push([r, c])
-        }
-      })
-      setClearingCells(clearing)
-
-      // Spawn particles from cleared cells
-      const particleColor = shape.color
-      spawnParticles(clearCellCoords.slice(0, 24), particleColor)
-
-      // Screen shake
-      setShaking(true)
-      setTimeout(() => setShaking(false), 300)
-
-      // After animation, actually clear the cells
-      setTimeout(() => {
-        setGrid(prev => {
-          const g = prev.map(r => r.map(c => ({ ...c })))
-          clearRows.forEach(r => {
-            for (let c = 0; c < GRID; c++) g[r][c] = { filled: false, color: '' }
-          })
-          clearCols.forEach(c => {
-            for (let r = 0; r < GRID; r++) g[r][c] = { filled: false, color: '' }
-          })
-          return g
-        })
-        setClearingCells(new Set())
-      }, 400)
-    } else {
-      newCombo = 0
-    }
-
-    setCombo(newCombo)
-    setGrid(newGrid)
-    setScore(prev => {
-      const newScore = prev + pts
-      scoreRef.current = newScore
-      return newScore
-    })
-
-    // Popup
-    if (gridRef.current) {
-      const cellSize = gridRef.current.offsetWidth / GRID
-      addPopup(col * cellSize + cellSize / 2, row * cellSize, pts)
-    }
-
-    // Remove used shape
-    const newShapes = [...shapesRef.current]
-    newShapes[shapeIdx] = null
-    setShapes(newShapes)
-
-    // If all shapes used, generate new batch
-    const remaining = newShapes.filter(Boolean) as Shape[]
-    if (remaining.length === 0) {
-      const delay = linesCleared > 0 ? 500 : 150
-      setTimeout(() => {
-        const fresh = generateShapes()
-        // Check game over with the post-clear grid
-        setTimeout(() => {
-          checkGameOver(gridRefState.current, fresh)
-        }, 100)
-      }, delay)
-    } else {
-      // Check if remaining shapes can be placed (after lines clear)
-      const delay = linesCleared > 0 ? 500 : 100
-      setTimeout(() => {
-        checkGameOver(gridRefState.current, newShapes)
-      }, delay)
-    }
-
-    setSelectedIdx(null)
-    setHoverPos(null)
-    return true
-  }, [combo, addPopup, generateShapes, spawnParticles, checkGameOver])
 
   // ── Leaderboard ──────────────────────────────────────────────────────
   const loadLeaderboard = useCallback(async (currentScore: number) => {
     try {
       const supabase = createClient()
-
-      // Save score to DB
       const { data: { user } } = await supabase.auth.getUser()
       if (user && currentScore > 0) {
         const { data: existing } = await supabase
@@ -373,7 +247,6 @@ export default function BlockBlastPage() {
           .select('score')
           .eq('user_id', user.id)
           .single()
-
         if (!existing || currentScore > existing.score) {
           await supabase.from('game_scores').upsert(
             { user_id: user.id, score: currentScore },
@@ -381,14 +254,11 @@ export default function BlockBlastPage() {
           )
         }
       }
-
-      // Load top 10 scores with profiles
       const { data: scores } = await supabase
         .from('game_scores')
         .select('score, user_id')
         .order('score', { ascending: false })
         .limit(10)
-
       if (scores && scores.length > 0) {
         const entries: LeaderEntry[] = []
         for (const s of scores) {
@@ -415,36 +285,42 @@ export default function BlockBlastPage() {
         setLeaderboard(local.slice(0, 10).map((e, i) => ({ ...e, rank: i + 1 })))
       }
     }
-
-    // Save locally
-    saveLocalScore({
-      rank: 0,
-      name: 'Ja',
-      classInfo: '-',
-      role: 'student',
-      score: currentScore,
-    })
+    saveLocalScore({ rank: 0, name: 'Ja', classInfo: '-', role: 'student', score: currentScore })
   }, [])
 
-  // ── Grid cell position ───────────────────────────────────────────────
-  const getCellFromPoint = useCallback((clientX: number, clientY: number, clamp = false): { row: number; col: number } | null => {
+  // ── Game Over ────────────────────────────────────────────────────────
+  const triggerGameOver = useCallback((finalScore: number) => {
+    setGameOver(true)
+    setShaking(true)
+    setTimeout(() => setShaking(false), 500)
+    saveHighScore(finalScore)
+    setHighScore(Math.max(getHighScore(), finalScore))
+    loadLeaderboard(finalScore)
+  }, [loadLeaderboard])
+
+  // ── Check game over ────────────────────────────────────────────────
+  const checkGameOver = useCallback((gridToCheck: Grid, shapesToCheck: (Shape | null)[]) => {
+    const remaining = shapesToCheck.filter(Boolean) as Shape[]
+    if (remaining.length === 0) return
+    const anyCanPlace = remaining.some(s => canPlaceAnywhere(gridToCheck, s))
+    if (!anyCanPlace) {
+      triggerGameOver(scoreRef.current)
+    }
+  }, [triggerGameOver])
+
+  // ── Grid cell from screen coords ───────────────────────────────────
+  const getCellFromPoint = useCallback((clientX: number, clientY: number): { row: number; col: number } | null => {
     if (!gridRef.current) return null
     const rect = gridRef.current.getBoundingClientRect()
     const x = clientX - rect.left
     const y = clientY - rect.top
     const cellSize = rect.width / GRID
-    let col = Math.floor(x / cellSize)
-    let row = Math.floor(y / cellSize)
-    if (clamp) {
-      row = Math.max(0, Math.min(GRID - 1, row))
-      col = Math.max(0, Math.min(GRID - 1, col))
-    } else {
-      if (row < 0 || row >= GRID || col < 0 || col >= GRID) return null
-    }
+    const col = Math.floor(x / cellSize)
+    const row = Math.floor(y / cellSize)
     return { row, col }
   }, [])
 
-  // ── Clamp shape so it stays within grid bounds ──────────────────────
+  // Clamp shape position to stay within grid bounds
   const clampShapePos = useCallback((row: number, col: number, shape: Shape) => {
     const bounds = getShapeBounds(shape)
     return {
@@ -453,13 +329,131 @@ export default function BlockBlastPage() {
     }
   }, [])
 
-  // ── Touch / Mouse handlers for grid ──────────────────────────────────
-  const handleGridClick = useCallback((row: number, col: number) => {
-    if (selectedIdx === null || gameOver) return
-    placeBlock(selectedIdx, row, col)
-  }, [selectedIdx, gameOver, placeBlock])
+  // ── Place block ──────────────────────────────────────────────────────
+  const placeBlock = useCallback((shapeIdx: number, row: number, col: number) => {
+    const shape = shapesRef.current[shapeIdx]
+    const currentGrid = gridStateRef.current
+    if (!shape || !canPlace(currentGrid, shape, row, col)) return false
 
-  // ── Touch drag support ───────────────────────────────────────────────
+    const newGrid = currentGrid.map(r => r.map(c => ({ ...c, justPlaced: false })))
+
+    // Place cells
+    shape.cells.forEach(([r, c]) => {
+      newGrid[row + r][col + c] = { filled: true, color: shape.color, justPlaced: true }
+    })
+
+    // Check clears
+    const clearRows: number[] = []
+    const clearCols: number[] = []
+    for (let i = 0; i < GRID; i++) {
+      if (newGrid[i].every(cell => cell.filled)) clearRows.push(i)
+      if (newGrid.every(r => r[i].filled)) clearCols.push(i)
+    }
+    const linesCleared = clearRows.length + clearCols.length
+
+    // Scoring: each cell placed = 1pt + line clear bonus
+    let pts = shape.cells.length
+    let newCombo = comboRef.current
+
+    if (linesCleared > 0) {
+      newCombo += 1
+      const comboMultiplier = Math.min(newCombo, 5)
+      pts += calcLineScore(linesCleared) * comboMultiplier
+
+      // Show combo text
+      if (newCombo >= 2) {
+        const cid = ++comboIdRef.current
+        setComboText({ value: newCombo, id: cid })
+        setTimeout(() => setComboText(prev => prev?.id === cid ? null : prev), 1200)
+      }
+      setComboFlash(true)
+      setTimeout(() => setComboFlash(false), 400)
+
+      // Clearing animation
+      const clearing = new Set<string>()
+      clearRows.forEach(r => { for (let c = 0; c < GRID; c++) clearing.add(`${r}-${c}`) })
+      clearCols.forEach(c => { for (let r = 0; r < GRID; r++) clearing.add(`${r}-${c}`) })
+      setClearingCells(clearing)
+
+      // Screen shake on multi-line
+      if (linesCleared >= 2) {
+        setShaking(true)
+        setTimeout(() => setShaking(false), 200)
+      }
+
+      // Clear cells after animation
+      setTimeout(() => {
+        setGrid(prev => {
+          const g = prev.map(r => r.map(c => ({ ...c })))
+          clearRows.forEach(r => { for (let c = 0; c < GRID; c++) g[r][c] = { filled: false, color: '' } })
+          clearCols.forEach(c => { for (let r = 0; r < GRID; r++) g[r][c] = { filled: false, color: '' } })
+
+          // Board clear bonus
+          if (isBoardEmpty(g)) {
+            pts += 360
+            setScore(prev2 => {
+              const ns = prev2 + 360
+              scoreRef.current = ns
+              return ns
+            })
+          }
+
+          gridStateRef.current = g
+
+          // Check game over after clear
+          const remainingAfterClear = shapesRef.current.filter(Boolean) as Shape[]
+          if (remainingAfterClear.length > 0) {
+            const anyFit = remainingAfterClear.some(s => canPlaceAnywhere(g, s))
+            if (!anyFit) triggerGameOver(scoreRef.current)
+          }
+
+          return g
+        })
+        setClearingCells(new Set())
+      }, 300)
+    } else {
+      newCombo = 0
+    }
+
+    setCombo(newCombo)
+    comboRef.current = newCombo
+    setGrid(newGrid)
+    gridStateRef.current = newGrid
+    setScore(prev => {
+      const newScore = prev + pts
+      scoreRef.current = newScore
+      return newScore
+    })
+
+    // Remove used shape
+    const newShapes = [...shapesRef.current]
+    newShapes[shapeIdx] = null
+    setShapes(newShapes)
+    shapesRef.current = newShapes
+
+    // If all 3 placed, generate new batch
+    const remaining = newShapes.filter(Boolean) as Shape[]
+    if (remaining.length === 0) {
+      const delay = linesCleared > 0 ? 400 : 150
+      setTimeout(() => {
+        const fresh = generateShapes()
+        setTimeout(() => {
+          checkGameOver(gridStateRef.current, fresh)
+        }, 50)
+      }, delay)
+    } else if (linesCleared === 0) {
+      // Check immediately if no lines to clear
+      checkGameOver(newGrid, newShapes)
+    }
+    // If lines are clearing, game over check happens in the setTimeout above
+
+    setSelectedIdx(null)
+    setHoverPos(null)
+    hoverPosRef.current = null
+    return true
+  }, [generateShapes, checkGameOver, triggerGameOver])
+
+  // ── Touch handlers ──────────────────────────────────────────────────
   const handleTouchStart = useCallback((e: React.TouchEvent, idx: number) => {
     if (gameOver || !shapes[idx]) return
     e.stopPropagation()
@@ -475,12 +469,11 @@ export default function BlockBlastPage() {
     const shape = shapesRef.current[dragShapeIdx.current]
     if (!shape) return
     const bounds = getShapeBounds(shape)
-    // Offset touch 80px up so user can see placement under finger
-    const pos = getCellFromPoint(touch.clientX, touch.clientY - 80, true)
+    // Offset 80px up so user can see placement
+    const pos = getCellFromPoint(touch.clientX, touch.clientY - 80)
     if (pos) {
       const adjRow = pos.row - Math.floor(bounds.rows / 2)
       const adjCol = pos.col - Math.floor(bounds.cols / 2)
-      // Clamp so shape always stays within grid bounds
       const clamped = clampShapePos(adjRow, adjCol, shape)
       setHoverPos(clamped)
       hoverPosRef.current = clamped
@@ -489,10 +482,10 @@ export default function BlockBlastPage() {
 
   const handleTouchEnd = useCallback(() => {
     if (!isDragging.current || dragShapeIdx.current === null) return
-    // Use ref to get latest hoverPos (avoids stale closure)
-    const currentHoverPos = hoverPosRef.current
-    if (currentHoverPos && dragShapeIdx.current !== null) {
-      placeBlock(dragShapeIdx.current, currentHoverPos.row, currentHoverPos.col)
+    const hp = hoverPosRef.current
+    const idx = dragShapeIdx.current
+    if (hp !== null && idx !== null) {
+      placeBlock(idx, hp.row, hp.col)
     }
     isDragging.current = false
     dragShapeIdx.current = null
@@ -500,10 +493,10 @@ export default function BlockBlastPage() {
     hoverPosRef.current = null
   }, [placeBlock])
 
-  // ── Mouse hover on grid ──────────────────────────────────────────────
+  // ── Mouse handlers for grid ─────────────────────────────────────────
   const handleGridMouseMove = useCallback((e: React.MouseEvent) => {
     if (selectedIdx === null || !shapes[selectedIdx]) return
-    const pos = getCellFromPoint(e.clientX, e.clientY, true)
+    const pos = getCellFromPoint(e.clientX, e.clientY)
     if (pos) {
       const shape = shapes[selectedIdx]!
       const bounds = getShapeBounds(shape)
@@ -518,9 +511,9 @@ export default function BlockBlastPage() {
     setHoverPos(null)
   }, [])
 
-  const handleGridClick2 = useCallback((e: React.MouseEvent) => {
+  const handleGridClick = useCallback((e: React.MouseEvent) => {
     if (selectedIdx === null || !shapes[selectedIdx] || gameOver) return
-    const pos = getCellFromPoint(e.clientX, e.clientY, true)
+    const pos = getCellFromPoint(e.clientX, e.clientY)
     if (!pos) return
     const shape = shapes[selectedIdx]!
     const bounds = getShapeBounds(shape)
@@ -531,32 +524,24 @@ export default function BlockBlastPage() {
   }, [selectedIdx, shapes, gameOver, getCellFromPoint, clampShapePos, placeBlock])
 
   // ── Ghost cells (preview) ────────────────────────────────────────────
-  const ghostCells = useMemo(() => {
-    if (selectedIdx === null || !hoverPos || !shapes[selectedIdx]) return new Set<string>()
+  const ghostInfo = useMemo(() => {
+    if (selectedIdx === null || !hoverPos || !shapes[selectedIdx]) return { cells: new Set<string>(), valid: false }
     const shape = shapes[selectedIdx]!
     const valid = canPlace(grid, shape, hoverPos.row, hoverPos.col)
-    if (!valid) return new Set<string>()
     const s = new Set<string>()
     shape.cells.forEach(([r, c]) => s.add(`${hoverPos.row + r}-${hoverPos.col + c}`))
-    return s
-  }, [selectedIdx, hoverPos, shapes, grid])
-
-  // Invalid placement preview
-  const invalidGhost = useMemo(() => {
-    if (selectedIdx === null || !hoverPos || !shapes[selectedIdx]) return false
-    const shape = shapes[selectedIdx]!
-    return !canPlace(grid, shape, hoverPos.row, hoverPos.col)
+    return { cells: s, valid }
   }, [selectedIdx, hoverPos, shapes, grid])
 
   const ghostColor = selectedIdx !== null && shapes[selectedIdx] ? shapes[selectedIdx]!.color : '#a78bfa'
 
   // ── Role badge ───────────────────────────────────────────────────────
   const roleBadge = (role: string) => {
-    const badges: Record<string, { label: string; class: string }> = {
-      creator: { label: '👑', class: 'text-yellow-400' },
-      admin: { label: '⚡', class: 'text-red-400' },
-      moderator: { label: '🛡️', class: 'text-blue-400' },
-      student: { label: '📚', class: 'text-gray-400' },
+    const badges: Record<string, { label: string; cls: string }> = {
+      creator: { label: '👑', cls: 'text-yellow-400' },
+      admin: { label: '⚡', cls: 'text-red-400' },
+      moderator: { label: '🛡️', cls: 'text-blue-400' },
+      student: { label: '📚', cls: 'text-gray-400' },
     }
     return badges[role] || badges.student
   }
@@ -572,118 +557,92 @@ export default function BlockBlastPage() {
       <style jsx global>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
-          10%, 50%, 90% { transform: translateX(-3px) rotate(-0.5deg); }
-          30%, 70% { transform: translateX(3px) rotate(0.5deg); }
+          25% { transform: translateX(-2px) rotate(-0.3deg); }
+          75% { transform: translateX(2px) rotate(0.3deg); }
         }
-        .animate-shake { animation: shake 0.4s ease-in-out; }
+        .animate-shake { animation: shake 0.2s ease-in-out; }
 
         @keyframes clearFlash {
-          0% { opacity: 1; transform: scale(1); filter: brightness(1); }
-          30% { opacity: 1; transform: scale(1.15); filter: brightness(2.5); background: white !important; }
-          60% { opacity: 0.6; transform: scale(0.9); filter: brightness(1.5); }
-          100% { opacity: 0; transform: scale(0.5); filter: brightness(0.5); }
+          0% { opacity: 1; transform: scale(1); background-color: inherit; }
+          40% { opacity: 1; transform: scale(1.05); background-color: white !important; }
+          100% { opacity: 0; transform: scale(0.8); }
         }
-        .cell-clearing { animation: clearFlash 0.4s ease-out forwards; }
-
-        @keyframes popUp {
-          0% { opacity: 1; transform: translateY(0) scale(1); }
-          50% { opacity: 1; transform: translateY(-20px) scale(1.4); }
-          100% { opacity: 0; transform: translateY(-50px) scale(0.8); }
-        }
-        .score-popup {
-          animation: popUp 1s ease-out forwards;
-          pointer-events: none;
-          text-shadow: 0 0 10px rgba(255,215,0,0.8), 0 0 20px rgba(255,215,0,0.4);
-        }
+        .cell-clearing { animation: clearFlash 0.3s ease-out forwards; }
 
         @keyframes scaleIn {
-          0% { transform: scale(0) rotate(-10deg); opacity: 0; }
-          60% { transform: scale(1.1) rotate(2deg); }
-          80% { transform: scale(0.95) rotate(-1deg); }
-          100% { transform: scale(1) rotate(0); opacity: 1; }
-        }
-        .shape-appear { animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-
-        @keyframes dropBounce {
-          0% { transform: scale(0.3); opacity: 0.5; }
-          50% { transform: scale(1.08); }
-          70% { transform: scale(0.96); }
-          85% { transform: scale(1.02); }
+          0% { transform: scale(0.5); opacity: 0; }
+          60% { transform: scale(1.05); }
           100% { transform: scale(1); opacity: 1; }
         }
-        .cell-placed { animation: dropBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .shape-appear { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+        @keyframes cellPlace {
+          0% { transform: scale(0.6); opacity: 0.7; }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .cell-placed { animation: cellPlace 0.15s ease-out; }
 
         @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        .fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
         @keyframes pulseGlow {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(124,77,255,0.5), 0 0 8px rgba(124,77,255,0.2); }
-          50% { box-shadow: 0 0 16px 6px rgba(124,77,255,0.3), 0 0 24px rgba(124,77,255,0.15); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(168,85,247,0.4); }
+          50% { box-shadow: 0 0 12px 4px rgba(168,85,247,0.2); }
         }
         .selected-shape { animation: pulseGlow 1.5s ease-in-out infinite; }
 
-        @keyframes particleFly {
-          0% { opacity: 1; transform: translate(0, 0) scale(1); }
-          100% { opacity: 0; transform: translate(var(--px), var(--py)) scale(0); }
-        }
-        .particle {
-          animation: particleFly 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-          pointer-events: none;
-        }
-
-        @keyframes scoreGlow {
-          0%, 100% { text-shadow: 0 0 4px rgba(255,255,255,0.1); }
-          50% { text-shadow: 0 0 16px rgba(255,255,255,0.3), 0 0 32px rgba(124,77,255,0.2); }
-        }
-        .score-glow { animation: scoreGlow 2s ease-in-out infinite; }
-
-        @keyframes comboFlash {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.3); filter: brightness(1.5); }
-          100% { transform: scale(1); }
-        }
-        .combo-flash { animation: comboFlash 0.3s ease-out; }
-
-        @keyframes gameOverTitle {
-          0% { opacity: 0; transform: scale(0.5) rotate(-5deg); }
-          60% { transform: scale(1.1) rotate(2deg); }
-          100% { opacity: 1; transform: scale(1) rotate(0); }
-        }
-        .game-over-title { animation: gameOverTitle 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-
         @keyframes ghostPulse {
-          0%, 100% { opacity: 0.3; }
+          0%, 100% { opacity: 0.35; }
           50% { opacity: 0.55; }
         }
-        .ghost-cell { animation: ghostPulse 1s ease-in-out infinite; }
+        .ghost-cell { animation: ghostPulse 0.8s ease-in-out infinite; }
 
-        .grid-bg {
-          background-image:
-            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-          background-size: 12.5% 12.5%;
+        @keyframes comboPopup {
+          0% { opacity: 0; transform: translateY(0) scale(0.5); }
+          30% { opacity: 1; transform: translateY(-10px) scale(1.3); }
+          60% { transform: translateY(-20px) scale(1); }
+          100% { opacity: 0; transform: translateY(-40px) scale(0.8); }
         }
+        .combo-popup { animation: comboPopup 1.2s ease-out forwards; pointer-events: none; }
+
+        @keyframes comboFlashKf {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+          100% { transform: scale(1); }
+        }
+        .combo-flash { animation: comboFlashKf 0.3s ease-out; }
+
+        @keyframes gameOverTitle {
+          0% { opacity: 0; transform: scale(0.5); }
+          60% { transform: scale(1.05); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        .game-over-title { animation: gameOverTitle 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
       `}</style>
 
-      {/* Header */}
-      <div className="text-center mb-4 mt-1">
-        <h1 className="text-3xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-purple-500 bg-clip-text text-transparent drop-shadow-lg">
-          Block Blast
-        </h1>
-        <div className="flex items-center justify-center gap-6 mt-2">
+      {/* Score Header */}
+      <div className="text-center mb-3 mt-1">
+        <div className="flex items-center justify-center gap-6">
           <div className="text-center">
             <p className="text-[10px] uppercase tracking-wider text-zinc-500">Score</p>
-            <p className={`text-2xl font-bold text-white tabular-nums score-glow ${comboFlash ? 'combo-flash' : ''}`}>
+            <p className={`text-2xl font-bold text-white tabular-nums ${comboFlash ? 'combo-flash' : ''}`}>
               {score}
             </p>
           </div>
-          {combo > 0 && (
-            <div className={`flex items-center gap-1 px-3 py-1.5 bg-purple-500/20 rounded-full border border-purple-500/30 ${comboFlash ? 'combo-flash' : ''}`}>
+          {combo >= 2 && (
+            <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full border ${comboFlash ? 'combo-flash' : ''}`}
+              style={{
+                background: 'rgba(168,85,247,0.15)',
+                borderColor: 'rgba(168,85,247,0.3)',
+                boxShadow: '0 0 12px rgba(168,85,247,0.2)',
+              }}
+            >
               <Zap className="w-3.5 h-3.5 text-purple-400" />
-              <span className="text-sm font-black text-purple-300">x{Math.min(combo, 5)}</span>
+              <span className="text-sm font-black text-purple-300">x{Math.min(combo, 5)} COMBO</span>
             </div>
           )}
           <div className="text-center">
@@ -700,6 +659,15 @@ export default function BlockBlastPage() {
         </div>
       </div>
 
+      {/* Combo popup above score */}
+      {comboText && (
+        <div key={comboText.id} className="combo-popup text-center text-lg font-black text-purple-300"
+          style={{ textShadow: '0 0 12px rgba(168,85,247,0.6)' }}
+        >
+          x{Math.min(comboText.value, 5)} COMBO!
+        </div>
+      )}
+
       {/* Leaderboard overlay */}
       {showLeaderboard && !gameOver && (
         <div className="absolute inset-0 z-40 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowLeaderboard(false)}>
@@ -714,7 +682,7 @@ export default function BlockBlastPage() {
               <div className="space-y-1.5 max-h-60 overflow-y-auto">
                 {leaderboard.map((e, i) => (
                   <div key={i} className={`flex items-center gap-3 px-3 py-2 rounded-lg ${i === 0 ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-zinc-800/50'}`}>
-                    <span className={`text-sm font-bold w-6 ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-zinc-300' : i === 2 ? 'text-orange-400' : 'text-zinc-500'}`}>#{i+1}</span>
+                    <span className={`text-sm font-bold w-6 ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-zinc-300' : i === 2 ? 'text-orange-400' : 'text-zinc-500'}`}>#{i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{e.name}</p>
                       <p className="text-[10px] text-zinc-500">{e.classInfo}</p>
@@ -729,117 +697,100 @@ export default function BlockBlastPage() {
       )}
 
       {/* Grid */}
-      <div className="relative mx-auto flex-1 w-full" style={{ maxWidth: '360px' }}>
+      <div className="relative mx-auto w-full" style={{ maxWidth: '360px' }}>
         <div
           ref={gridRef}
-          className="grid gap-[2px] rounded-xl p-[2px] border border-zinc-600/50 w-full mx-auto grid-bg"
+          className="grid rounded-xl p-[3px] border w-full mx-auto"
           style={{
             gridTemplateColumns: `repeat(${GRID}, 1fr)`,
+            gap: '2px',
             aspectRatio: '1/1',
-            maxWidth: '340px',
-            maxHeight: '340px',
-            background: 'linear-gradient(135deg, rgba(39,39,42,0.8), rgba(24,24,27,0.95))',
-            boxShadow: 'inset 0 0 30px rgba(0,0,0,0.3), 0 4px 20px rgba(0,0,0,0.4)',
+            maxWidth: '352px',
+            maxHeight: '352px',
+            background: '#111827',
+            borderColor: 'rgba(255,255,255,0.06)',
+            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.4), 0 4px 20px rgba(0,0,0,0.3)',
           }}
           onMouseMove={handleGridMouseMove}
           onMouseLeave={handleGridMouseLeave}
-          onClick={handleGridClick2}
+          onClick={handleGridClick}
         >
           {grid.map((row, r) =>
             row.map((cell, c) => {
               const key = `${r}-${c}`
-              const isGhost = ghostCells.has(key)
+              const isGhost = ghostInfo.cells.has(key)
               const isClearing = clearingCells.has(key)
+              const showInvalid = isGhost && !ghostInfo.valid
               return (
                 <div
                   key={key}
                   className={`
-                    aspect-square rounded-[4px] transition-all duration-150
-                    ${cell.filled ? (cell.justPlaced ? 'cell-placed' : '') : ''}
+                    aspect-square rounded-[3px]
+                    ${cell.filled && cell.justPlaced ? 'cell-placed' : ''}
                     ${isClearing ? 'cell-clearing' : ''}
-                    ${!cell.filled && !isGhost ? '' : ''}
-                    ${isGhost ? 'ghost-cell ring-1 ring-white/40' : ''}
-                    ${invalidGhost && !isGhost && hoverPos ? '' : ''}
+                    ${isGhost && ghostInfo.valid ? 'ghost-cell' : ''}
                   `}
                   style={{
                     backgroundColor: cell.filled
                       ? cell.color
                       : isGhost
-                        ? `${ghostColor}55`
-                        : 'rgba(9,9,11,0.7)',
+                        ? showInvalid
+                          ? 'rgba(239,68,68,0.25)'
+                          : `${ghostColor}44`
+                        : 'rgba(255,255,255,0.02)',
                     ...(cell.filled ? {
-                      backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 30%, transparent 50%, rgba(0,0,0,0.15) 70%, rgba(0,0,0,0.3) 100%)`,
-                      boxShadow: `inset 0 1px 1px rgba(255,255,255,0.4), inset 0 -1px 1px rgba(0,0,0,0.4), inset 1px 0 1px rgba(255,255,255,0.15), inset -1px 0 1px rgba(0,0,0,0.2), 0 1px 3px rgba(0,0,0,0.3)`,
-                      border: `1px solid ${darkenColor(cell.color, 40)}`,
-                      borderRadius: '4px',
+                      backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)',
+                      border: `2px solid ${darkenColor(cell.color, 50)}`,
+                      borderTop: `2px solid ${darkenColor(cell.color, -30)}`,
+                      borderLeft: `2px solid ${darkenColor(cell.color, -20)}`,
+                      borderRadius: '3px',
                     } : {
-                      border: '1px solid rgba(63,63,70,0.3)',
+                      border: '1px solid rgba(255,255,255,0.04)',
                     }),
+                    ...(isGhost && ghostInfo.valid ? {
+                      border: `1px solid ${ghostColor}66`,
+                      borderRadius: '3px',
+                    } : {}),
+                    ...(showInvalid ? {
+                      border: '1px solid rgba(239,68,68,0.3)',
+                    } : {}),
                   }}
-                  onClick={(e) => { e.stopPropagation(); handleGridClick(r, c) }}
                 />
               )
             })
           )}
         </div>
-
-        {/* Score popups */}
-        {popups.map(p => (
-          <div
-            key={p.id}
-            className="score-popup absolute text-base font-black text-yellow-300 z-10"
-            style={{ left: p.x, top: p.y }}
-          >
-            +{p.value}
-          </div>
-        ))}
-
-        {/* Particles */}
-        {particles.map(p => (
-          <div
-            key={p.id}
-            className="particle absolute rounded-full z-10"
-            style={{
-              left: p.x,
-              top: p.y,
-              width: p.size,
-              height: p.size,
-              backgroundColor: p.color,
-              boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
-              '--px': `${Math.cos(p.angle * Math.PI / 180) * p.speed * 40}px`,
-              '--py': `${Math.sin(p.angle * Math.PI / 180) * p.speed * 40}px`,
-            } as React.CSSProperties}
-          />
-        ))}
       </div>
 
       {/* Shapes tray */}
-      <div className="mt-5 flex items-center justify-center gap-5">
+      <div className="mt-4 flex items-center justify-center gap-4">
         {shapes.map((shape, idx) => {
-          if (!shape) return <div key={idx} className="w-24 h-24" />
+          if (!shape) return <div key={idx} className="w-[88px] h-[88px]" />
           const bounds = getShapeBounds(shape)
           const isSelected = selectedIdx === idx
-          const cellPx = 20
+          const cellPx = Math.min(18, Math.floor(72 / Math.max(bounds.rows, bounds.cols)))
           return (
             <button
               key={idx}
               className={`
-                relative p-3 rounded-xl transition-all duration-200
+                relative p-3 rounded-xl transition-all duration-200 min-w-[88px] min-h-[88px]
+                flex items-center justify-center
                 ${isSelected
-                  ? 'selected-shape bg-zinc-700/70 scale-110 border border-purple-500/40'
-                  : 'bg-zinc-800/50 hover:bg-zinc-700/50 hover:scale-105 border border-zinc-700/30 hover:border-zinc-500/50'}
+                  ? 'selected-shape bg-zinc-700/70 scale-110 border-2 border-purple-500/50'
+                  : 'bg-zinc-800/50 hover:bg-zinc-700/50 hover:scale-105 border border-zinc-700/30 hover:border-zinc-500/40'}
                 ${newShapeAnim ? 'shape-appear' : ''}
                 active:scale-95
               `}
-              style={{ animationDelay: newShapeAnim ? `${idx * 100}ms` : undefined }}
+              style={{ animationDelay: newShapeAnim ? `${idx * 80}ms` : undefined }}
               onClick={() => setSelectedIdx(isSelected ? null : idx)}
               onTouchStart={(e) => handleTouchStart(e, idx)}
             >
               <div
-                className="grid gap-[2px]"
+                className="grid"
                 style={{
                   gridTemplateColumns: `repeat(${bounds.cols}, ${cellPx}px)`,
                   gridTemplateRows: `repeat(${bounds.rows}, ${cellPx}px)`,
+                  gap: '2px',
                 }}
               >
                 {Array.from({ length: bounds.rows * bounds.cols }, (_, i) => {
@@ -855,10 +806,10 @@ export default function BlockBlastPage() {
                         height: cellPx,
                         backgroundColor: isFilled ? shape.color : 'transparent',
                         ...(isFilled ? {
-                          backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 30%, transparent 50%, rgba(0,0,0,0.15) 70%, rgba(0,0,0,0.3) 100%)',
-                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.4), inset 0 -1px 1px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3)',
-                          border: `1px solid ${darkenColor(shape.color, 40)}`,
-                          borderRadius: '4px',
+                          backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)',
+                          border: `2px solid ${darkenColor(shape.color, 50)}`,
+                          borderTop: `2px solid ${darkenColor(shape.color, -30)}`,
+                          borderLeft: `2px solid ${darkenColor(shape.color, -20)}`,
                         } : {}),
                       }}
                     />
@@ -879,17 +830,16 @@ export default function BlockBlastPage() {
       {/* Game Over Overlay */}
       {gameOver && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
-          <div className="fade-in-up bg-zinc-900/95 border border-zinc-600 rounded-2xl p-6 w-full max-w-sm shadow-2xl" style={{ boxShadow: '0 0 60px rgba(124,77,255,0.15), 0 20px 40px rgba(0,0,0,0.5)' }}>
+          <div className="fade-in-up bg-zinc-900/95 border border-zinc-600 rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+            style={{ boxShadow: '0 0 60px rgba(168,85,247,0.15), 0 20px 40px rgba(0,0,0,0.5)' }}
+          >
             <div className="text-center mb-5">
               <h2 className="game-over-title text-3xl font-black text-white mb-2">
                 Kraj igre!
               </h2>
               <div className="flex items-center justify-center gap-2 mb-1">
                 <Trophy className="w-6 h-6 text-yellow-400" />
-                <span
-                  className="text-4xl font-black bg-gradient-to-r from-yellow-300 via-orange-400 to-yellow-300 bg-clip-text text-transparent"
-                  style={{ textShadow: '0 0 20px rgba(255,215,0,0.3)' }}
-                >
+                <span className="text-4xl font-black bg-gradient-to-r from-yellow-300 via-orange-400 to-yellow-300 bg-clip-text text-transparent">
                   {score}
                 </span>
               </div>
@@ -900,7 +850,6 @@ export default function BlockBlastPage() {
               )}
             </div>
 
-            {/* Leaderboard */}
             {leaderboard.length > 0 && (
               <div className="mb-5">
                 <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-2 flex items-center gap-1">
@@ -910,25 +859,20 @@ export default function BlockBlastPage() {
                   {leaderboard.map((entry, i) => {
                     const badge = roleBadge(entry.role)
                     return (
-                      <div
-                        key={i}
-                        className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-sm ${
-                          i === 0 ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-zinc-800/60'
-                        }`}
-                      >
+                      <div key={i} className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-sm ${
+                        i === 0 ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-zinc-800/60'
+                      }`}>
                         <div className="flex items-center gap-2">
                           <span className={`w-5 text-right font-mono text-xs ${
                             i === 0 ? 'text-amber-400' : i === 1 ? 'text-zinc-300' : i === 2 ? 'text-orange-400' : 'text-zinc-500'
                           }`}>
                             {i + 1}.
                           </span>
-                          <span className={badge.class}>{badge.label}</span>
+                          <span className={badge.cls}>{badge.label}</span>
                           <span className="text-white truncate max-w-[120px]">{entry.name}</span>
                           <span className="text-zinc-600 text-xs">{entry.classInfo}</span>
                         </div>
-                        <span className="text-purple-300 font-semibold tabular-nums">
-                          {entry.score}
-                        </span>
+                        <span className="text-purple-300 font-semibold tabular-nums">{entry.score}</span>
                       </div>
                     )
                   })}
@@ -939,7 +883,7 @@ export default function BlockBlastPage() {
             <button
               onClick={startNewGame}
               className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 active:scale-95 transition-all rounded-xl text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg"
-              style={{ boxShadow: '0 4px 15px rgba(124,77,255,0.4)' }}
+              style={{ boxShadow: '0 4px 15px rgba(168,85,247,0.4)' }}
             >
               <RotateCcw className="w-5 h-5" />
               Igraj ponovo
