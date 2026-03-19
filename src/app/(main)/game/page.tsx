@@ -164,6 +164,30 @@ function saveHighScore(score: number) {
   if (score > prev) localStorage.setItem(LS_KEY, String(score))
 }
 
+const SEED_SCORES: LeaderEntry[] = [
+  { rank: 1, name: 'Dmitrij Ivascenko', classInfo: '2-1', role: 'student', score: 2130 },
+  { rank: 2, name: 'Ivan Siniukov', classInfo: '2-3', role: 'student', score: 1540 },
+  { rank: 3, name: 'Timofej Masaidov', classInfo: '2-4', role: 'student', score: 1280 },
+  { rank: 4, name: 'Stefan Vujovic', classInfo: '3-2', role: 'student', score: 1050 },
+  { rank: 5, name: 'Lara Peric', classInfo: '1-2', role: 'student', score: 970 },
+  { rank: 6, name: 'Nikola Popovic', classInfo: '4-1', role: 'student', score: 820 },
+  { rank: 7, name: 'Danilo Dabanovic', classInfo: '3-1', role: 'student', score: 740 },
+  { rank: 8, name: 'Milos Jokic', classInfo: '2-1', role: 'student', score: 680 },
+  { rank: 9, name: 'Ana Markovic', classInfo: '1-3', role: 'student', score: 530 },
+  { rank: 10, name: 'Kenan Hodzic', classInfo: '2-1', role: 'student', score: 450 },
+]
+
+const LS_RESET_KEY = 'bb_v2_reset'
+
+function resetAndSeedScores() {
+  if (typeof window === 'undefined') return
+  if (!localStorage.getItem(LS_RESET_KEY)) {
+    localStorage.removeItem(LS_KEY)
+    localStorage.setItem(LS_SCORES_KEY, JSON.stringify(SEED_SCORES))
+    localStorage.setItem(LS_RESET_KEY, '1')
+  }
+}
+
 function getLocalScores(): LeaderEntry[] {
   if (typeof window === 'undefined') return []
   try {
@@ -184,8 +208,8 @@ function calcLineScore(linesCleared: number): number {
   if (linesCleared === 1) return 10
   if (linesCleared === 2) return 30
   if (linesCleared === 3) return 60
-  // 4+ lines: exponential
-  return 60 + (linesCleared - 3) * 40
+  if (linesCleared === 4) return 100
+  return 150 // 5+ lines
 }
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -227,6 +251,7 @@ export default function BlockBlastPage() {
 
   // ── Init ─────────────────────────────────────────────────────────────
   useEffect(() => {
+    resetAndSeedScores()
     setHighScore(getHighScore())
     startNewGame()
     // eslint-disable-next-line react-hooks/exhaustive-deps
