@@ -28,10 +28,13 @@ export default function GalleryPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
-  // Load photos + user + likes on mount
+  // Load user first, then photos + likes
   useEffect(() => {
-    loadPhotos()
-    loadCurrentUser()
+    async function init() {
+      await loadCurrentUser()
+      await loadPhotos()
+    }
+    init()
   }, [])
 
   // Realtime subscription — new approved photos appear at top
@@ -123,6 +126,8 @@ export default function GalleryPage() {
   async function toggleLike(photoId: string) {
     if (!currentUserId) return
     const wasLiked = !!likedPhotos[photoId]
+    const prevCounts = { ...likeCounts }
+    const prevLiked = { ...likedPhotos }
 
     // Optimistic update
     const updated = { ...likedPhotos }
@@ -131,10 +136,18 @@ export default function GalleryPage() {
     setLikeCounts((prev) => ({ ...prev, [photoId]: Math.max(0, (prev[photoId] || 0) + (wasLiked ? -1 : 1)) }))
 
     // DB update
-    if (wasLiked) {
-      await supabase.from('photo_likes').delete().eq('photo_id', photoId).eq('user_id', currentUserId)
-    } else {
-      await supabase.from('photo_likes').upsert({ photo_id: photoId, user_id: currentUserId }, { onConflict: 'photo_id,user_id' })
+    try {
+      if (wasLiked) {
+        const { error } = await supabase.from('photo_likes').delete().eq('photo_id', photoId).eq('user_id', currentUserId)
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('photo_likes').upsert({ photo_id: photoId, user_id: currentUserId }, { onConflict: 'photo_id,user_id' })
+        if (error) throw error
+      }
+    } catch {
+      // Revert on error
+      setLikedPhotos(prevLiked)
+      setLikeCounts(prevCounts)
     }
   }
 
