@@ -116,7 +116,7 @@ function avgLabel(avg: number): string {
 }
 
 export default function GradesPage() {
-  const [activeTrimester, setActiveTrimester] = useState(0)
+  const [activeTrimester, setActiveTrimester] = useState(2) // III trimester (current)
   const [grades, setGrades] = useState<GradeData>({})
   const [subjects, setSubjects] = useState<string[]>(DEFAULT_SUBJECTS)
   const [editingCell, setEditingCell] = useState<string | null>(null)
