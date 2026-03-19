@@ -459,34 +459,55 @@ export default function LecturesPage() {
           <p className="text-xs text-muted-foreground">{currentCard + 1} / {flashcards.length}</p>
         </div>
         {card && (
-          <div className="relative min-h-[220px] cursor-pointer" onClick={() => setFlipped(!flipped)}>
-            <div className={`w-full min-h-[220px] transition-all duration-500 ${flipped ? 'animate-scale-in' : 'animate-fade-in'}`}>
-              <Card className="border-border/30 bg-card/50 backdrop-blur min-h-[220px] flex items-center justify-center">
-                <CardContent className="p-6 text-center space-y-4">
-                  {!flipped ? (
-                    <>
-                      <Brain className="w-8 h-8 mx-auto text-primary opacity-60" />
-                      <p className="text-lg font-medium leading-relaxed">{card.question}</p>
-                      <p className="text-xs text-muted-foreground">Tapni za odgovor</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-8 h-8 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
-                        <span className="text-green-400 text-lg">✓</span>
-                      </div>
-                      <p className="text-lg font-medium text-green-400 leading-relaxed">{card.answer}</p>
-                      <p className="text-xs text-muted-foreground">Tapni za sljedeće pitanje</p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+          <div
+            className="relative min-h-[220px] cursor-pointer [perspective:800px]"
+            onClick={() => {
+              if (flipped) {
+                // Advance to next card (or loop back)
+                setFlipped(false)
+                if (currentCard < flashcards.length - 1) {
+                  setCurrentCard(currentCard + 1)
+                } else {
+                  setCurrentCard(0)
+                }
+              } else {
+                setFlipped(true)
+              }
+            }}
+          >
+            <div
+              className="w-full min-h-[220px] transition-transform duration-500 [transform-style:preserve-3d]"
+              style={{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+            >
+              {/* Front - Question */}
+              <div className="absolute inset-0 [backface-visibility:hidden]">
+                <Card className="border-border/30 bg-card/50 backdrop-blur min-h-[220px] flex items-center justify-center h-full">
+                  <CardContent className="p-6 text-center space-y-4">
+                    <Brain className="w-8 h-8 mx-auto text-primary opacity-60" />
+                    <p className="text-lg font-medium leading-relaxed">{card.question}</p>
+                    <p className="text-xs text-muted-foreground">Tapni za odgovor</p>
+                  </CardContent>
+                </Card>
+              </div>
+              {/* Back - Answer */}
+              <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]">
+                <Card className="border-border/30 bg-card/50 backdrop-blur min-h-[220px] flex items-center justify-center h-full">
+                  <CardContent className="p-6 text-center space-y-4">
+                    <div className="w-8 h-8 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
+                      <span className="text-green-400 text-lg">✓</span>
+                    </div>
+                    <p className="text-lg font-medium text-green-400 leading-relaxed">{card.answer}</p>
+                    <p className="text-xs text-muted-foreground">Tapni za sljedeće pitanje</p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         )}
         <div className="flex gap-2 justify-center">
           <button
             onClick={(e) => { e.stopPropagation(); setFlipped(false); setCurrentCard(Math.max(0, currentCard - 1)) }}
-            disabled={currentCard === 0}
+            disabled={currentCard === 0 && !flipped}
             className="px-4 py-2 rounded-xl bg-muted text-sm disabled:opacity-30 transition-all active:scale-95"
           >
             ← Prethodno
@@ -494,21 +515,21 @@ export default function LecturesPage() {
           <button
             onClick={(e) => {
               e.stopPropagation()
-              if (flipped && currentCard < flashcards.length - 1) {
+              if (!flipped) {
+                setFlipped(true)
+              } else if (currentCard < flashcards.length - 1) {
                 setFlipped(false)
                 setCurrentCard(currentCard + 1)
-              } else if (!flipped) {
-                setFlipped(true)
               } else {
-                setCurrentCard(0)
                 setFlipped(false)
+                setCurrentCard(0)
               }
             }}
             className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm transition-all active:scale-95"
           >
-            {flipped && currentCard === flashcards.length - 1 ? (
+            {!flipped ? 'Otkrij' : currentCard === flashcards.length - 1 ? (
               <span className="flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Ponovo</span>
-            ) : flipped ? 'Sljedeće →' : 'Otkrij'}
+            ) : 'Sljedeće →'}
           </button>
         </div>
         <div className="flex justify-center gap-1.5">

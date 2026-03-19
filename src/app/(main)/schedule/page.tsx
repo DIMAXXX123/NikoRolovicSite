@@ -360,7 +360,7 @@ export default function SchedulePage() {
             <div className="flex-1">
               <label className="text-xs text-muted-foreground">Odjeljenje</label>
               <div className="flex gap-1 mt-1">
-                {[1, 2, 3, 4, 5].map((n) => (
+                {[1, 2, 3, 4, 5, 6].map((n) => (
                   <button
                     key={n}
                     onClick={() => setSectionNum(n)}
