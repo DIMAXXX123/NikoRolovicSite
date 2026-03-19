@@ -224,6 +224,7 @@ export default function BlockBlastPage() {
   const [shaking, setShaking] = useState(false)
   const [leaderboard, setLeaderboard] = useState<LeaderEntry[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [leaderLoading, setLeaderLoading] = useState(false)
   const [myUserId, setMyUserId] = useState<string | null>(null)
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
   const [hoverPos, setHoverPos] = useState<{ row: number; col: number } | null>(null)
@@ -287,6 +288,7 @@ export default function BlockBlastPage() {
 
   // ── Leaderboard ──────────────────────────────────────────────────────
   const loadLeaderboard = useCallback(async (currentScore: number) => {
+    setLeaderLoading(true)
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -338,6 +340,7 @@ export default function BlockBlastPage() {
       }
     }
     saveLocalScore({ rank: 0, name: 'Ja', classInfo: '-', role: 'student', score: currentScore })
+    setLeaderLoading(false)
   }, [])
 
   // ── Game Over ────────────────────────────────────────────────────────
@@ -749,7 +752,17 @@ export default function BlockBlastPage() {
               <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2"><Trophy className="w-5 h-5" /> Tabela lidera</h3>
               <button onClick={() => setShowLeaderboard(false)} className="text-zinc-500 hover:text-white text-sm">✕</button>
             </div>
-            {leaderboard.length === 0 ? (
+            {leaderLoading ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-3">
+                <div className="relative w-12 h-12">
+                  <div className="absolute inset-0 rounded-full border-2 border-amber-500/20" />
+                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-amber-400 animate-spin" />
+                  <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-purple-400 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }} />
+                  <span className="absolute inset-0 flex items-center justify-center text-lg">🏆</span>
+                </div>
+                <p className="text-sm text-zinc-400 animate-pulse">Učitavanje tabele...</p>
+              </div>
+            ) : leaderboard.length === 0 ? (
               <p className="text-center text-zinc-500 py-4">Nema rezultata</p>
             ) : (
               <>
