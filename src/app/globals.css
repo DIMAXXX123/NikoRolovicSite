@@ -50,7 +50,7 @@
     letter-spacing: -0.01em;
     line-height: 1.65;
   }
-  /* Gradient mesh background */
+  /* Animated gradient mesh background — visible orbs */
   body::after {
     content: '';
     position: fixed;
@@ -58,8 +58,10 @@
     z-index: 0;
     pointer-events: none;
     background:
-      radial-gradient(ellipse 600px 400px at 15% 10%, rgba(124, 92, 252, 0.04) 0%, transparent 70%),
-      radial-gradient(ellipse 500px 350px at 85% 90%, rgba(59, 130, 246, 0.03) 0%, transparent 70%);
+      radial-gradient(ellipse 700px 500px at 10% 5%, rgba(124, 92, 252, 0.12) 0%, transparent 65%),
+      radial-gradient(ellipse 600px 400px at 90% 85%, rgba(59, 130, 246, 0.08) 0%, transparent 65%),
+      radial-gradient(ellipse 500px 350px at 50% 50%, rgba(124, 92, 252, 0.05) 0%, transparent 70%);
+    animation: floatOrb1 25s ease-in-out infinite;
   }
   body > * {
     position: relative;
@@ -639,9 +641,164 @@ html.font-large { font-size: 18px; }
 }
 .animate-count-up { animation: countUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both; }
 
-/* Smooth transitions for interactive elements */
-button, a, [role="button"], .card-hover, input, select, label, span, div, svg, badge {
-  transition-property: color, background-color, border-color, box-shadow, opacity, transform, fill, stroke;
-  transition-duration: 0.25s;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+/* Smooth transitions for ALL interactive elements */
+button, a, [role="button"], input, select {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ============================================
+   MEGA ANIMATION PACK — Maximum dynamics
+   ============================================ */
+
+/* Ripple on press */
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 0.4; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.press-effect:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(124,92,252,0.3) 0%, transparent 70%);
+  animation: ripple 0.5s ease-out;
+  pointer-events: none;
+}
+
+/* Shimmer loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Background floating orbs */
+@keyframes floatOrb1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.1); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
+}
+@keyframes floatOrb2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-25px, 25px) scale(1.05); }
+  66% { transform: translate(20px, -15px) scale(0.9); }
+}
+
+/* Stagger with scale */
+.stagger-scale > * {
+  opacity: 0;
+  animation: scaleStagger 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes scaleStagger {
+  from { opacity: 0; transform: scale(0.9) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.stagger-scale > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-scale > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-scale > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-scale > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-scale > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-scale > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-scale > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-scale > *:nth-child(8) { animation-delay: 0.4s; }
+.stagger-scale > *:nth-child(9) { animation-delay: 0.45s; }
+.stagger-scale > *:nth-child(10) { animation-delay: 0.5s; }
+
+/* Card entrance from left */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-left { animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Card entrance from right */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-right { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Hover float */
+.hover-float {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+.hover-float:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px -8px rgba(124, 92, 252, 0.15), 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Pill tab active glow */
+.pill-active {
+  box-shadow: 0 0 16px rgba(124, 92, 252, 0.35), 0 0 4px rgba(124, 92, 252, 0.5);
+  animation: pillGlow 2s ease-in-out infinite;
+}
+@keyframes pillGlow {
+  0%, 100% { box-shadow: 0 0 16px rgba(124, 92, 252, 0.35); }
+  50% { box-shadow: 0 0 24px rgba(124, 92, 252, 0.5); }
+}
+
+/* Icon hover wiggle */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-8deg); }
+  40% { transform: rotate(6deg); }
+  60% { transform: rotate(-4deg); }
+  80% { transform: rotate(2deg); }
+}
+.hover-wiggle:hover { animation: wiggle 0.5s ease-in-out; }
+
+/* Number counter tick */
+@keyframes tickUp {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.animate-tick { animation: tickUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Like heart explosion */
+@keyframes heartExplode {
+  0% { transform: scale(0); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-heart-explode { animation: heartExplode 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* Gradient border rotation */
+@keyframes borderRotate {
+  0% { --angle: 0deg; }
+  100% { --angle: 360deg; }
+}
+
+/* Background moving gradient */
+@keyframes bgShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-bg-shift {
+  background-size: 200% 200%;
+  animation: bgShift 8s ease-in-out infinite;
+}
+
+/* Subtle breathe for cards */
+@keyframes breathe {
+  0%, 100% { border-color: rgba(255,255,255,0.06); }
+  50% { border-color: rgba(124,92,252,0.12); }
+}
+.animate-breathe { animation: breathe 4s ease-in-out infinite; }
+
+/* Page enter */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(16px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-page-enter { animation: pageEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Smooth blur-in */
+@keyframes blurIn {
+  from { opacity: 0; filter: blur(8px); }
+  to { opacity: 1; filter: blur(0); }
+}
+.animate-blur-in { animation: blurIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }

@@ -36,7 +36,7 @@ export default function MainLayout({
     <div className="min-h-screen pb-28">
       {/* V5 Header — 56px, frosted dark glass */}
       <header className="fixed top-0 left-0 right-0 z-50 glass-header-premium">
-        <div className="max-w-md mx-auto px-5 h-14 flex items-center justify-between">
+        <div className="max-w-lg mx-auto px-5 h-16 flex items-center justify-between">
           <button
             onClick={() => {
               const ids = getNavConfig()
@@ -45,14 +45,14 @@ export default function MainLayout({
             }}
             className="flex items-center gap-3 active:scale-[0.97] transition-transform press-ripple rounded-2xl py-1.5 px-1 -ml-1"
           >
-            {/* Logo — gradient circle */}
+            {/* Logo — gradient circle with glow */}
             <div
-              className="w-9 h-9 rounded-full flex items-center justify-center"
+              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,92,252,0.3)] transition-shadow duration-500 hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]"
               style={{
                 background: 'linear-gradient(135deg, #7c5cfc 0%, #5b3fd9 100%)',
               }}
             >
-              <span className="text-xs font-extrabold text-white tracking-tight">NR</span>
+              <span className="text-sm font-black text-white tracking-tight">NR</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="font-semibold text-[15px] text-[#e8e8f0] tracking-tight">Niko Rolović</span>
@@ -62,17 +62,17 @@ export default function MainLayout({
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push('/tournament')}
-              className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.04] border border-white/[0.06] active:scale-[0.97] transition-all hover:bg-white/[0.08] btn-press"
+              className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20 active:scale-[0.92] transition-all duration-300 hover:from-orange-500/30 hover:to-amber-500/20 hover:shadow-[0_0_20px_rgba(249,115,22,0.15)] hover:border-orange-500/30"
               title="Turnir u košarci"
             >
-              <span className="text-sm">🏀</span>
+              <span className="text-lg animate-[basketBounce_2s_ease-in-out_infinite]">🏀</span>
             </button>
             <button
               onClick={() => router.push('/game')}
-              className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.04] border border-white/[0.06] active:scale-[0.97] transition-all hover:bg-white/[0.08] overflow-hidden btn-press"
+              className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-indigo-500/10 border border-blue-500/20 active:scale-[0.92] transition-all duration-300 hover:from-blue-500/30 hover:to-indigo-500/20 hover:shadow-[0_0_20px_rgba(99,102,241,0.15)] hover:border-blue-500/30 overflow-hidden"
               title="Block Blast"
             >
-              <div className="grid grid-cols-3 gap-[1px] w-5 h-5">
+              <div className="grid grid-cols-3 gap-[1px] w-6 h-6 animate-[blockPulse_3s_ease-in-out_infinite]">
                 <div className="rounded-[2px] bg-red-500" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
                 <div className="rounded-[2px] bg-red-600" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
                 <div className="rounded-[2px]" />
