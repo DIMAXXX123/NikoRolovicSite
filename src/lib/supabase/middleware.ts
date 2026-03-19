@@ -36,7 +36,9 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isAuthPage && request.nextUrl.pathname !== '/') {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    // First visit → register, returning user → login
+    const hasVisited = request.cookies.get('niko_visited')
+    url.pathname = hasVisited ? '/login' : '/register'
     return NextResponse.redirect(url)
   }
 
@@ -44,6 +46,15 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/news'
     return NextResponse.redirect(url)
+  }
+
+  // Set visited cookie on login/register pages so next time they go to login
+  if (isAuthPage && !request.cookies.get('niko_visited')) {
+    supabaseResponse.cookies.set('niko_visited', '1', {
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      path: '/',
+      sameSite: 'lax',
+    })
   }
 
   return supabaseResponse
