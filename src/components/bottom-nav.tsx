@@ -10,13 +10,11 @@ export function BottomNav() {
   const [navIds, setNavIds] = useState(getNavConfig)
 
   useEffect(() => {
-    // Re-read config when localStorage changes (from nav editor)
     function handleStorage(e: StorageEvent) {
       if (e.key === NAV_CONFIG_KEY) {
         setNavIds(getNavConfig())
       }
     }
-    // Also listen for custom event (same-tab updates)
     function handleCustom() {
       setNavIds(getNavConfig())
     }
@@ -28,7 +26,6 @@ export function BottomNav() {
     }
   }, [])
 
-  // Ensure 'profile' (Još) is always the last (rightmost) item
   const orderedIds = (() => {
     const withoutProfile = navIds.filter(id => id !== 'profile')
     return [...withoutProfile, 'profile']
@@ -46,23 +43,26 @@ export function BottomNav() {
               href={item.href}
               className={`relative flex flex-col items-center gap-1 px-4 py-2 transition-all duration-300 ${
                 isActive
-                  ? 'text-purple-400'
-                  : 'text-zinc-500 hover:text-zinc-300'
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground/70'
               }`}
             >
               <item.IconComponent
                 className={`relative w-[22px] h-[22px] transition-all duration-300 ${
-                  isActive ? 'text-purple-400' : ''
+                  isActive ? 'text-primary' : ''
                 }`}
                 strokeWidth={isActive ? 2.5 : 1.5}
                 fill={isActive ? 'currentColor' : 'none'}
               />
               <span className={`relative text-[10px] font-medium transition-all duration-300 ${
-                isActive ? 'text-purple-300' : ''
+                isActive ? 'text-primary/80' : ''
               }`}>{item.label}</span>
-              {/* Active dot indicator */}
+              {/* Active dot indicator — small dot below text */}
               {isActive && (
-                <div className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.9)] animate-pop-in" />
+                <div
+                  className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-primary animate-pop-in"
+                  style={{ boxShadow: '0 0 6px var(--theme-primary, rgba(167, 139, 250, 0.8))' }}
+                />
               )}
             </Link>
           )

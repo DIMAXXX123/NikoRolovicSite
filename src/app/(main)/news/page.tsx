@@ -7,13 +7,21 @@ import { BetaDisclaimer } from '@/components/beta-disclaimer'
 import { RoleBadge } from '@/components/role-badge'
 import type { NewsItem } from '@/lib/types'
 
+interface FloatingHeart {
+  id: number
+  x: number
+  y: number
+}
+
 export default function NewsPage() {
   const [news, setNews] = useState<NewsItem[]>([])
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [likingIds, setLikingIds] = useState<Set<string>>(new Set())
   const [heartAnimId, setHeartAnimId] = useState<string | null>(null)
+  const [floatingHearts, setFloatingHearts] = useState<FloatingHeart[]>([])
   const lastTapRef = useRef<Record<string, number>>({})
+  const heartKeyRef = useRef(0)
   const supabase = createClient()
 
   useEffect(() => {
@@ -62,11 +70,10 @@ export default function NewsPage() {
 
   async function toggleLike(newsId: string, currentlyLiked: boolean) {
     if (!userId) return
-    if (likingIds.has(newsId)) return // prevent double-click
+    if (likingIds.has(newsId)) return
 
     setLikingIds((prev) => new Set(prev).add(newsId))
 
-    // Optimistic update
     setNews((prev) =>
       prev.map((item) =>
         item.id === newsId
@@ -94,7 +101,6 @@ export default function NewsPage() {
         if (error) throw error
       }
     } catch {
-      // Revert on error
       setNews((prev) =>
         prev.map((item) =>
           item.id === newsId
@@ -115,17 +121,34 @@ export default function NewsPage() {
     }
   }
 
-  function handleDoubleTap(newsId: string) {
+  function spawnFloatingHearts(e: React.MouseEvent | React.TouchEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const hearts: FloatingHeart[] = []
+    for (let i = 0; i < 3; i++) {
+      heartKeyRef.current++
+      hearts.push({
+        id: heartKeyRef.current,
+        x: rect.width / 2 + (Math.random() - 0.5) * 40,
+        y: rect.height / 2 + (Math.random() - 0.5) * 20,
+      })
+    }
+    setFloatingHearts(prev => [...prev, ...hearts])
+    setTimeout(() => {
+      setFloatingHearts(prev => prev.filter(h => !hearts.find(nh => nh.id === h.id)))
+    }, 1100)
+  }
+
+  function handleDoubleTap(newsId: string, e: React.MouseEvent) {
     const now = Date.now()
     const lastTap = lastTapRef.current[newsId] || 0
 
     if (now - lastTap < 300) {
-      // Double tap detected
       const item = news.find((n) => n.id === newsId)
       if (item && !item.user_liked) {
         toggleLike(newsId, false)
       }
       setHeartAnimId(newsId)
+      spawnFloatingHearts(e)
       setTimeout(() => setHeartAnimId(null), 600)
       lastTapRef.current[newsId] = 0
     } else {
@@ -156,9 +179,9 @@ export default function NewsPage() {
           <div className="h-4 w-48 skeleton" />
         </div>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-2xl overflow-hidden">
-            <div className="h-48 skeleton" />
-            <div className="p-4 space-y-3 bg-card/30 rounded-b-2xl">
+          <div key={i} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="h-48 skeleton" style={{ borderRadius: 0 }} />
+            <div className="p-4 space-y-3">
               <div className="h-5 w-3/4 skeleton" />
               <div className="h-4 w-full skeleton" />
               <div className="h-4 w-2/3 skeleton" />
@@ -173,18 +196,29 @@ export default function NewsPage() {
   const restItems = news.length > 1 ? news.slice(1) : []
 
   return (
-    <div className="space-y-6 animate-fade-in pb-4">
+    <div className="space-y-6 animate-fade-in pb-4 relative">
       <BetaDisclaimer />
+
+      {/* Floating hearts container */}
+      {floatingHearts.map(h => (
+        <div
+          key={h.id}
+          className="fixed pointer-events-none z-[100]"
+          style={{ left: h.x, top: h.y }}
+        >
+          <Heart className="w-6 h-6 fill-red-500 text-red-500 animate-heart-float" />
+        </div>
+      ))}
 
       {/* Page header */}
       <div className="pt-1 pb-1">
-        <h1 className="text-3xl font-bold text-white tracking-tight">Novosti</h1>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">Novosti</h1>
         <p className="text-sm text-muted-foreground mt-1">Najnovije vijesti iz skole</p>
       </div>
 
       {news.length === 0 ? (
         <div className="text-center py-24">
-          <div className="w-16 h-16 rounded-3xl bg-muted/30 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-3xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
             <Newspaper className="w-8 h-8 text-muted-foreground/30" />
           </div>
           <p className="text-muted-foreground text-sm">Jos nema novosti</p>
@@ -195,16 +229,11 @@ export default function NewsPage() {
           {heroItem && (
             <article
               key={heroItem.id}
-              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none"
+              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none v4-card"
               style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(12px) saturate(150%)',
-                WebkitBackdropFilter: 'blur(12px) saturate(150%)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05) inset',
-                transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.03) inset',
               }}
-              onClick={() => handleDoubleTap(heroItem.id)}
+              onClick={(e) => handleDoubleTap(heroItem.id, e)}
             >
               {heroItem.image_url && (
                 <div className="relative h-72 overflow-hidden">
@@ -238,7 +267,7 @@ export default function NewsPage() {
                       <div className="flex items-center gap-2.5">
                         {heroItem.author && (
                           <>
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white shadow-lg">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-bold text-white shadow-lg">
                               {heroItem.author.first_name?.[0]}{heroItem.author.last_name?.[0]}
                             </div>
                             <div className="flex flex-col">
@@ -276,7 +305,6 @@ export default function NewsPage() {
               {/* If no image, show content in card body */}
               {!heroItem.image_url && (
                 <div className="relative p-5 space-y-3">
-                  {/* Heart animation overlay for no-image hero */}
                   {heartAnimId === heroItem.id && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                       <Heart
@@ -285,13 +313,13 @@ export default function NewsPage() {
                     </div>
                   )}
                   <span className="text-xs text-muted-foreground">{formatDate(heroItem.created_at)}</span>
-                  <h2 className="text-xl font-bold text-white leading-snug">{heroItem.title}</h2>
+                  <h2 className="text-xl font-bold text-foreground leading-snug">{heroItem.title}</h2>
                   <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">{heroItem.content}</p>
                   <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
                     <div className="flex items-center gap-2.5">
                       {heroItem.author && (
                         <>
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-bold text-white">
                             {heroItem.author.first_name?.[0]}{heroItem.author.last_name?.[0]}
                           </div>
                           <div className="flex flex-col">
@@ -338,28 +366,8 @@ export default function NewsPage() {
           {restItems.map((item) => (
             <article
               key={item.id}
-              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none"
-              style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(12px) saturate(150%)',
-                WebkitBackdropFilter: 'blur(12px) saturate(150%)',
-                boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05) inset',
-                transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget
-                el.style.transform = 'translateY(-2px)'
-                el.style.boxShadow = '0 8px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(167, 139, 250, 0.15) inset'
-                el.style.borderColor = 'rgba(167, 139, 250, 0.2)'
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget
-                el.style.transform = 'translateY(0)'
-                el.style.boxShadow = '0 4px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05) inset'
-                el.style.borderColor = 'rgba(255, 255, 255, 0.08)'
-              }}
-              onClick={() => handleDoubleTap(item.id)}
+              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none v4-card"
+              onClick={(e) => handleDoubleTap(item.id, e)}
             >
               {/* Heart animation overlay */}
               {heartAnimId === item.id && (
@@ -378,7 +386,6 @@ export default function NewsPage() {
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                  {/* Date badge on image */}
                   <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-black/50 backdrop-blur-md text-[10px] text-white/80 font-medium">
                     {formatDateShort(item.created_at)}
                   </div>
@@ -386,14 +393,14 @@ export default function NewsPage() {
               )}
 
               <div className="p-5 space-y-3">
-                <h2 className="text-lg font-bold text-white leading-snug">{item.title}</h2>
+                <h2 className="text-lg font-bold text-foreground leading-snug">{item.title}</h2>
                 <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">{item.content}</p>
 
                 <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
                   <div className="flex items-center gap-2.5">
                     {item.author && (
                       <>
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-[10px] font-bold text-white shadow-md">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[10px] font-bold text-white shadow-md">
                           {item.author.first_name?.[0]}{item.author.last_name?.[0]}
                         </div>
                         <div className="flex items-center gap-2">

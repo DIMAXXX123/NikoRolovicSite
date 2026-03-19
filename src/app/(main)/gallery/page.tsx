@@ -28,7 +28,6 @@ export default function GalleryPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
-  // Load user first, then photos + likes
   useEffect(() => {
     async function init() {
       await loadCurrentUser()
@@ -37,7 +36,6 @@ export default function GalleryPage() {
     init()
   }, [])
 
-  // Realtime subscription — new approved photos appear at top
   useEffect(() => {
     const channel = supabase
       .channel('gallery-realtime')
@@ -46,7 +44,6 @@ export default function GalleryPage() {
         { event: 'INSERT', schema: 'public', table: 'photos', filter: 'status=eq.approved' },
         async (payload: any) => {
           const newPhoto = payload.new as Photo
-          // Fetch user profile for the new photo
           const { data: profile } = await supabase
             .from('profiles')
             .select('first_name, last_name, class_number, section_number, role')
@@ -62,7 +59,6 @@ export default function GalleryPage() {
         async (payload: any) => {
           const updated = payload.new as Photo
           if (updated.status === 'approved') {
-            // Photo just got approved — fetch profile and add to top with animation
             const { data: profile } = await supabase
               .from('profiles')
               .select('first_name, last_name, class_number, section_number, role')
@@ -73,10 +69,8 @@ export default function GalleryPage() {
               if (prev.some((p) => p.id === updated.id)) return prev
               return [photoWithUser, ...prev]
             })
-            // Load like count for new photo
             loadLikeCounts([updated.id])
           } else if (updated.status === 'rejected') {
-            // Remove rejected photos
             setPhotos((prev) => prev.filter(p => p.id !== updated.id))
           }
         }
@@ -92,7 +86,6 @@ export default function GalleryPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       setCurrentUserId(user.id)
-      // Load user's likes from DB
       const { data: userLikes } = await supabase
         .from('photo_likes')
         .select('photo_id')
@@ -106,7 +99,6 @@ export default function GalleryPage() {
   }
 
   async function loadLikeCounts(photoIds: string[]) {
-    // Load like counts for all photos
     const counts: Record<string, number> = {}
     for (const id of photoIds) {
       const { count } = await supabase
@@ -138,13 +130,11 @@ export default function GalleryPage() {
     const prevCounts = { ...likeCounts }
     const prevLiked = { ...likedPhotos }
 
-    // Optimistic update
     const updated = { ...likedPhotos }
     if (wasLiked) { delete updated[photoId] } else { updated[photoId] = true }
     setLikedPhotos(updated)
     setLikeCounts((prev) => ({ ...prev, [photoId]: Math.max(0, (prev[photoId] || 0) + (wasLiked ? -1 : 1)) }))
 
-    // DB update
     try {
       if (wasLiked) {
         const { error } = await supabase.from('photo_likes').delete().eq('photo_id', photoId).eq('user_id', currentUserId)
@@ -154,14 +144,12 @@ export default function GalleryPage() {
         if (error) throw error
       }
     } catch {
-      // Revert on error
       setLikedPhotos(prevLiked)
       setLikeCounts(prevCounts)
     }
   }
 
   async function handleReport(photoId: string) {
-    // Check cooldown (max 5 reports per hour)
     const reportsRaw = localStorage.getItem('photo_reports_log')
     const reportsLog: number[] = reportsRaw ? JSON.parse(reportsRaw) : []
     const oneHourAgo = Date.now() - 3600000
@@ -174,7 +162,6 @@ export default function GalleryPage() {
       return
     }
 
-    // Send report to Telegram
     try {
       await fetch('/api/telegram/notify', {
         method: 'POST',
@@ -188,7 +175,6 @@ export default function GalleryPage() {
       })
     } catch {}
 
-    // Log report
     recentReports.push(Date.now())
     localStorage.setItem('photo_reports_log', JSON.stringify(recentReports))
     setShowReportConfirm(null)
@@ -337,9 +323,8 @@ export default function GalleryPage() {
           <div
             key={i}
             className="rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
           >
-            {/* Header skeleton */}
             <div className="flex items-center gap-3 p-4">
               <div className="w-10 h-10 rounded-full skeleton" />
               <div className="flex-1 space-y-2">
@@ -347,9 +332,7 @@ export default function GalleryPage() {
                 <div className="h-2.5 w-16 skeleton rounded-lg" />
               </div>
             </div>
-            {/* Image skeleton */}
             <div className={`w-full skeleton ${i === 1 ? 'aspect-[4/5]' : i === 2 ? 'aspect-square' : 'aspect-[4/5]'}`} style={{ borderRadius: 0 }} />
-            {/* Actions skeleton */}
             <div className="p-4 space-y-3">
               <div className="flex items-center gap-4">
                 <div className="h-6 w-6 skeleton rounded-full" />
@@ -367,15 +350,15 @@ export default function GalleryPage() {
     <>
       {/* Toast */}
       {toast && (
-        <div className="fixed top-18 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-medium shadow-xl shadow-green-500/20 animate-slide-down backdrop-blur-sm">
+        <div className="fixed top-18 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-medium shadow-xl shadow-green-500/20 animate-slide-down backdrop-blur-sm">
           {toast}
         </div>
       )}
 
-      {/* Upload modal — Portal to body to escape transform stacking context */}
+      {/* Upload modal */}
       {showUpload && typeof document !== 'undefined' && createPortal(
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }} className="bg-black/80 backdrop-blur-xl flex items-end sm:items-center justify-center" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
-          <div className="bg-card/95 backdrop-blur-xl w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 space-y-5 animate-slide-up border-t border-white/[0.08] sm:border sm:border-white/[0.06]" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 space-y-5 animate-slide-up border-t sm:border border-white/[0.06]" style={{ background: 'rgba(14, 14, 26, 0.95)', backdropFilter: 'blur(40px)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-lg">Nova fotografija</h2>
               <button onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }} className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors">
@@ -383,7 +366,6 @@ export default function GalleryPage() {
               </button>
             </div>
 
-            {/* Drag handle for bottom sheet feel */}
             <div className="sm:hidden absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-white/20" />
 
             {previewUrl ? (
@@ -399,10 +381,10 @@ export default function GalleryPage() {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full aspect-square max-h-[50vh] rounded-2xl border-2 border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-purple-500/30 hover:bg-purple-500/5 transition-all"
+                className="w-full aspect-square max-h-[50vh] rounded-2xl border-2 border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-primary/30 hover:bg-primary/5 transition-all"
               >
-                <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center">
-                  <Camera className="w-7 h-7 text-purple-400" />
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <Camera className="w-7 h-7 text-primary" />
                 </div>
                 <span className="text-sm font-medium">Izaberi fotografiju</span>
               </button>
@@ -414,7 +396,7 @@ export default function GalleryPage() {
               placeholder="Opis (opciono)"
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="bg-white/[0.04] rounded-xl border-white/[0.06] focus:border-purple-500/40 h-11"
+              className="bg-white/[0.04] rounded-xl border-white/[0.06] focus:border-primary/40 h-11"
             />
 
             <label className="flex items-center justify-between text-sm">
@@ -422,7 +404,7 @@ export default function GalleryPage() {
               <button
                 type="button"
                 onClick={() => setAnonymous(!anonymous)}
-                className={`relative w-11 h-6 rounded-full transition-all duration-300 ${anonymous ? 'bg-gradient-to-r from-purple-500 to-violet-600' : 'bg-white/[0.08]'}`}
+                className={`relative w-11 h-6 rounded-full transition-all duration-300 ${anonymous ? 'bg-gradient-to-r from-primary to-accent' : 'bg-white/[0.08]'}`}
               >
                 <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${anonymous ? 'translate-x-5' : ''}`} />
               </button>
@@ -431,7 +413,8 @@ export default function GalleryPage() {
             <Button
               onClick={handleUpload}
               disabled={!selectedFile || uploading}
-              className="w-full h-12 rounded-2xl bg-gradient-to-r from-purple-600 to-violet-700 active:scale-[0.98] transition-transform text-base font-semibold shadow-lg shadow-purple-500/20 border-0"
+              className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-accent active:scale-[0.98] transition-transform text-base font-semibold shadow-lg border-0"
+              style={{ boxShadow: '0 4px 16px -4px var(--theme-primary, rgba(167, 139, 250, 0.3))' }}
             >
               {uploading ? 'Šalje se...' : <><Send className="w-4 h-4 mr-2" />Pošalji</>}
             </Button>
@@ -444,7 +427,7 @@ export default function GalleryPage() {
       <div className="px-4 py-3 space-y-6 pb-24">
         {photos.length === 0 ? (
           <div className="h-[60vh] flex flex-col items-center justify-center text-muted-foreground">
-            <div className="w-16 h-16 rounded-3xl bg-white/[0.03] flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-3xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-4">
               <Camera className="w-8 h-8 opacity-30" />
             </div>
             <p className="text-sm">Još nema fotografija</p>
@@ -458,20 +441,21 @@ export default function GalleryPage() {
                 key={photo.id}
                 className={`rounded-2xl overflow-hidden ${(photo as any)._new ? 'animate-slide-down' : 'animate-fade-in'}`}
                 style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
                 }}
               >
                 {/* Card header — user info */}
                 <div className="flex items-center gap-3 px-4 py-3">
-                  {/* Avatar */}
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center flex-shrink-0">
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'linear-gradient(135deg, var(--theme-primary, #a78bfa), var(--theme-accent, #7c3aed))' }}
+                  >
                     <span className="text-[11px] font-bold text-white leading-none">
                       {getInitials(photo)}
                     </span>
                   </div>
 
-                  {/* Name + time */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-[13px] font-semibold text-foreground truncate">
@@ -484,7 +468,6 @@ export default function GalleryPage() {
                     </span>
                   </div>
 
-                  {/* Report button in header */}
                   <button
                     onClick={() => setShowReportConfirm(photo.id)}
                     className="p-2 -mr-2 active:scale-90 transition-all rounded-lg hover:bg-orange-500/10"
@@ -506,7 +489,6 @@ export default function GalleryPage() {
                     draggable={false}
                   />
 
-                  {/* Heart animation overlay */}
                   {heartAnimId === photo.id && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <Heart
@@ -519,7 +501,6 @@ export default function GalleryPage() {
 
                 {/* Action row + caption */}
                 <div className="px-4 pt-3 pb-3.5">
-                  {/* Actions */}
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => toggleLike(photo.id)}
@@ -535,14 +516,12 @@ export default function GalleryPage() {
                     </button>
                   </div>
 
-                  {/* Like count */}
                   {(likeCounts[photo.id] || 0) > 0 && (
                     <p className="text-[13px] font-semibold text-foreground mt-1.5">
                       {likeCounts[photo.id]} {likeCounts[photo.id] === 1 ? 'lajk' : 'lajkova'}
                     </p>
                   )}
 
-                  {/* Caption */}
                   {photo.caption && (
                     <p className="text-[13px] text-foreground/80 mt-1.5 leading-snug">
                       <span className="font-semibold text-foreground mr-1.5">
@@ -561,20 +540,20 @@ export default function GalleryPage() {
       {/* Report confirmation modal */}
       {showReportConfirm && typeof document !== 'undefined' && createPortal(
         <div style={{ position: 'fixed', inset: 0, zIndex: 99998 }} className="bg-black/70 backdrop-blur-xl flex items-center justify-center p-6" onClick={() => setShowReportConfirm(null)}>
-          <div className="bg-card/95 backdrop-blur-xl rounded-3xl p-6 max-w-sm w-full space-y-4 animate-scale-in border border-white/[0.06]" onClick={e => e.stopPropagation()}>
+          <div className="rounded-3xl p-6 max-w-sm w-full space-y-4 animate-scale-in border border-white/[0.06]" style={{ background: 'rgba(14, 14, 26, 0.95)', backdropFilter: 'blur(40px)' }} onClick={e => e.stopPropagation()}>
             {reportCooldown ? (
               <>
                 <p className="text-center text-orange-400 font-bold text-lg">⚠️ Previše prijava</p>
                 <p className="text-center text-sm text-muted-foreground">Možeš prijaviti maksimalno 5 fotografija na sat.</p>
-                <Button onClick={() => { setShowReportConfirm(null); setReportCooldown(false) }} className="w-full rounded-2xl h-11" variant="outline">Zatvori</Button>
+                <Button onClick={() => { setShowReportConfirm(null); setReportCooldown(false) }} className="w-full rounded-xl h-11" variant="outline">Zatvori</Button>
               </>
             ) : (
               <>
                 <p className="text-center font-bold text-lg">Prijavi fotografiju?</p>
                 <p className="text-center text-sm text-muted-foreground leading-relaxed">Da li si siguran/na da želiš prijaviti ovu fotografiju? Prijava će biti poslata administratoru.</p>
                 <div className="flex gap-3">
-                  <Button onClick={() => setShowReportConfirm(null)} className="flex-1 rounded-2xl h-11" variant="outline">Ne</Button>
-                  <Button onClick={() => handleReport(showReportConfirm)} className="flex-1 rounded-2xl h-11 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white border-0">Da, prijavi</Button>
+                  <Button onClick={() => setShowReportConfirm(null)} className="flex-1 rounded-xl h-11" variant="outline">Ne</Button>
+                  <Button onClick={() => handleReport(showReportConfirm)} className="flex-1 rounded-xl h-11 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white border-0">Da, prijavi</Button>
                 </div>
               </>
             )}
@@ -583,12 +562,19 @@ export default function GalleryPage() {
         document.body
       )}
 
-      {/* CAMERA BUTTON — Portal to body so parent transforms can't break fixed positioning */}
+      {/* CAMERA BUTTON */}
       {typeof document !== 'undefined' && createPortal(
         <button
           onClick={() => setShowUpload(true)}
-          style={{ position: 'fixed', bottom: '6rem', right: '1rem', zIndex: 9999 }}
-          className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-700 shadow-xl shadow-purple-500/30 flex items-center justify-center text-white active:scale-90 transition-all hover:shadow-purple-500/40 animate-bounce-in"
+          style={{
+            position: 'fixed',
+            bottom: '6rem',
+            right: '1rem',
+            zIndex: 9999,
+            background: 'linear-gradient(135deg, var(--theme-primary, #a78bfa), var(--theme-accent, #7c3aed))',
+            boxShadow: '0 4px 16px -4px var(--theme-primary, rgba(167, 139, 250, 0.4)), 0 8px 24px -4px rgba(0,0,0,0.3)',
+          }}
+          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white active:scale-90 transition-all animate-bounce-in"
         >
           <Camera className="w-6 h-6" />
         </button>,
