@@ -103,6 +103,29 @@ function canPlaceAnywhere(grid: Grid, shape: Shape): boolean {
   return false
 }
 
+function findNearestValidPosition(
+  grid: Grid, shape: Shape, rawRow: number, rawCol: number, maxRadius = 4
+): { row: number; col: number } | null {
+  // Check the raw position first
+  if (canPlace(grid, shape, rawRow, rawCol)) return { row: rawRow, col: rawCol }
+  // Search in expanding Manhattan distance
+  for (let dist = 1; dist <= maxRadius; dist++) {
+    let bestPos: { row: number; col: number } | null = null
+    for (let dr = -dist; dr <= dist; dr++) {
+      const dc_abs = dist - Math.abs(dr)
+      for (const dc of dc_abs === 0 ? [0] : [-dc_abs, dc_abs]) {
+        const nr = rawRow + dr
+        const nc = rawCol + dc
+        if (canPlace(grid, shape, nr, nc)) {
+          if (!bestPos) bestPos = { row: nr, col: nc }
+        }
+      }
+    }
+    if (bestPos) return bestPos
+  }
+  return null
+}
+
 function getShapeBounds(shape: Shape) {
   let minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity
   for (const [r, c] of shape.cells) {
@@ -460,8 +483,6 @@ export default function BlockBlastPage() {
   }, [generateShapes, checkGameOver, triggerGameOver])
 
   // ── Touch handlers ──────────────────────────────────────────────────
-  const [invalidFlash, setInvalidFlash] = useState<Set<string>>(new Set())
-
   const handleTouchStart = useCallback((e: React.TouchEvent, idx: number) => {
     if (gameOver || !shapes[idx]) return
     e.stopPropagation()
@@ -484,8 +505,15 @@ export default function BlockBlastPage() {
       const adjRow = pos.row - Math.floor(bounds.rows / 2)
       const adjCol = pos.col - Math.floor(bounds.cols / 2)
       const clamped = clampShapePos(adjRow, adjCol, shape)
-      setHoverPos(clamped)
-      hoverPosRef.current = clamped
+      // Find nearest valid position (magnetic snap)
+      const snapped = findNearestValidPosition(gridStateRef.current, shape, clamped.row, clamped.col)
+      if (snapped) {
+        setHoverPos(snapped)
+        hoverPosRef.current = snapped
+      } else {
+        setHoverPos(null)
+        hoverPosRef.current = null
+      }
     } else {
       // Finger too far from grid — hide preview
       setHoverPos(null)
@@ -498,16 +526,8 @@ export default function BlockBlastPage() {
     const hp = hoverPosRef.current
     const idx = dragShapeIdx.current
     if (hp !== null && idx !== null) {
-      const shape = shapesRef.current[idx]
-      if (shape && !canPlace(gridStateRef.current, shape, hp.row, hp.col)) {
-        // Invalid placement — show red flash then return shape to tray
-        const flashCells = new Set<string>()
-        shape.cells.forEach(([r, c]) => flashCells.add(`${hp.row + r}-${hp.col + c}`))
-        setInvalidFlash(flashCells)
-        setTimeout(() => setInvalidFlash(new Set()), 300)
-      } else {
-        placeBlock(idx, hp.row, hp.col)
-      }
+      // hoverPos is always a valid position (magnetic snap ensures this)
+      placeBlock(idx, hp.row, hp.col)
     }
     isDragging.current = false
     dragShapeIdx.current = null
@@ -525,11 +545,12 @@ export default function BlockBlastPage() {
       const adjRow = pos.row - Math.floor(bounds.rows / 2)
       const adjCol = pos.col - Math.floor(bounds.cols / 2)
       const clamped = clampShapePos(adjRow, adjCol, shape)
-      setHoverPos(clamped)
+      const snapped = findNearestValidPosition(grid, shape, clamped.row, clamped.col)
+      setHoverPos(snapped)
     } else {
       setHoverPos(null)
     }
-  }, [selectedIdx, shapes, getCellFromPoint, clampShapePos])
+  }, [selectedIdx, shapes, grid, getCellFromPoint, clampShapePos])
 
   const handleGridMouseLeave = useCallback(() => {
     setHoverPos(null)
@@ -544,18 +565,21 @@ export default function BlockBlastPage() {
     const adjRow = pos.row - Math.floor(bounds.rows / 2)
     const adjCol = pos.col - Math.floor(bounds.cols / 2)
     const clamped = clampShapePos(adjRow, adjCol, shape)
-    placeBlock(selectedIdx, clamped.row, clamped.col)
-  }, [selectedIdx, shapes, gameOver, getCellFromPoint, clampShapePos, placeBlock])
+    const snapped = findNearestValidPosition(grid, shape, clamped.row, clamped.col)
+    if (snapped) {
+      placeBlock(selectedIdx, snapped.row, snapped.col)
+    }
+  }, [selectedIdx, shapes, grid, gameOver, getCellFromPoint, clampShapePos, placeBlock])
 
   // ── Ghost cells (preview) ────────────────────────────────────────────
   const ghostInfo = useMemo(() => {
     if (selectedIdx === null || !hoverPos || !shapes[selectedIdx]) return { cells: new Set<string>(), valid: false }
     const shape = shapes[selectedIdx]!
-    const valid = canPlace(grid, shape, hoverPos.row, hoverPos.col)
     const s = new Set<string>()
     shape.cells.forEach(([r, c]) => s.add(`${hoverPos.row + r}-${hoverPos.col + c}`))
-    return { cells: s, valid }
-  }, [selectedIdx, hoverPos, shapes, grid])
+    // hoverPos is always a valid position thanks to magnetic snapping
+    return { cells: s, valid: true }
+  }, [selectedIdx, hoverPos, shapes])
 
   const ghostColor = selectedIdx !== null && shapes[selectedIdx] ? shapes[selectedIdx]!.color : '#a78bfa'
 
@@ -639,12 +663,6 @@ export default function BlockBlastPage() {
           100% { transform: scale(1); }
         }
         .combo-flash { animation: comboFlashKf 0.3s ease-out; }
-
-        @keyframes invalidFlashKf {
-          0% { background-color: rgba(239,68,68,0.5) !important; }
-          100% { background-color: transparent; }
-        }
-        .cell-invalid-flash { animation: invalidFlashKf 0.3s ease-out; }
 
         @keyframes gameOverTitle {
           0% { opacity: 0; transform: scale(0.5); }
@@ -750,8 +768,6 @@ export default function BlockBlastPage() {
               const key = `${r}-${c}`
               const isGhost = ghostInfo.cells.has(key)
               const isClearing = clearingCells.has(key)
-              const isInvalidFlash = invalidFlash.has(key)
-              const showInvalid = isGhost && !ghostInfo.valid
               return (
                 <div
                   key={key}
@@ -759,19 +775,14 @@ export default function BlockBlastPage() {
                     aspect-square rounded-[3px]
                     ${cell.filled && cell.justPlaced ? 'cell-placed' : ''}
                     ${isClearing ? 'cell-clearing' : ''}
-                    ${isGhost && ghostInfo.valid ? 'ghost-cell' : ''}
-                    ${isInvalidFlash ? 'cell-invalid-flash' : ''}
+                    ${isGhost ? 'ghost-cell' : ''}
                   `}
                   style={{
                     backgroundColor: cell.filled
                       ? cell.color
-                      : isInvalidFlash
-                        ? 'rgba(239,68,68,0.4)'
-                        : isGhost
-                          ? showInvalid
-                            ? 'rgba(239,68,68,0.25)'
-                            : `${ghostColor}44`
-                          : 'rgba(255,255,255,0.02)',
+                      : isGhost
+                        ? `${ghostColor}44`
+                        : 'rgba(255,255,255,0.02)',
                     ...(cell.filled ? {
                       backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)',
                       border: `2px solid ${darkenColor(cell.color, 50)}`,
@@ -781,12 +792,9 @@ export default function BlockBlastPage() {
                     } : {
                       border: '1px solid rgba(255,255,255,0.04)',
                     }),
-                    ...(isGhost && ghostInfo.valid ? {
+                    ...(isGhost ? {
                       border: `1px solid ${ghostColor}66`,
                       borderRadius: '3px',
-                    } : {}),
-                    ...(showInvalid || isInvalidFlash ? {
-                      border: '1px solid rgba(239,68,68,0.5)',
                     } : {}),
                   }}
                 />
