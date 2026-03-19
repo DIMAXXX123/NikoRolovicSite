@@ -179,7 +179,7 @@ export default function NewsPage() {
           <div className="h-4 w-48 skeleton" />
         </div>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div key={i} className="rounded-2xl overflow-hidden bg-[#0c0c14] border border-[#1a1a2e]">
             <div className="h-48 skeleton" style={{ borderRadius: 0 }} />
             <div className="p-4 space-y-3">
               <div className="h-5 w-3/4 skeleton" />
@@ -212,27 +212,24 @@ export default function NewsPage() {
 
       {/* Page header */}
       <div className="pt-1 pb-1">
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">Novosti</h1>
-        <p className="text-sm text-muted-foreground mt-1">Najnovije vijesti iz skole</p>
+        <h1 className="text-3xl font-bold text-[#e8e8f0] tracking-tight">Novosti</h1>
+        <p className="text-sm text-[#6b6b80] mt-1">Najnovije vijesti iz skole</p>
       </div>
 
       {news.length === 0 ? (
         <div className="text-center py-24">
-          <div className="w-16 h-16 rounded-3xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
-            <Newspaper className="w-8 h-8 text-muted-foreground/30" />
+          <div className="w-16 h-16 rounded-3xl bg-[#0c0c14] border border-[#1a1a2e] flex items-center justify-center mx-auto mb-4">
+            <Newspaper className="w-8 h-8 text-[#3d3d50]" />
           </div>
-          <p className="text-muted-foreground text-sm">Jos nema novosti</p>
+          <p className="text-[#6b6b80] text-sm">Jos nema novosti</p>
         </div>
       ) : (
         <div className="space-y-4 animate-stagger">
-          {/* Hero card - first news item */}
+          {/* Hero card — first news item with gradient overlay */}
           {heroItem && (
             <article
               key={heroItem.id}
-              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none v4-card"
-              style={{
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.03) inset',
-              }}
+              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none bg-[#0c0c14] border border-[#1a1a2e] transition-all duration-250 hover:border-[#7c5cfc]/30 hover:shadow-[0_8px_32px_rgba(124,92,252,0.08)]"
               onClick={(e) => handleDoubleTap(heroItem.id, e)}
             >
               {heroItem.image_url && (
@@ -240,11 +237,10 @@ export default function NewsPage() {
                   <img
                     src={heroItem.image_url}
                     alt={heroItem.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/40 to-transparent" />
 
-                  {/* Heart animation overlay */}
                   {heartAnimId === heroItem.id && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                       <Heart
@@ -253,7 +249,6 @@ export default function NewsPage() {
                     </div>
                   )}
 
-                  {/* Overlaid content at bottom of image */}
                   <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="px-2.5 py-1 rounded-xl bg-white/10 backdrop-blur-md text-[11px] text-white/80 font-medium">
@@ -267,7 +262,7 @@ export default function NewsPage() {
                       <div className="flex items-center gap-2.5">
                         {heroItem.author && (
                           <>
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-bold text-white shadow-lg">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7c5cfc] to-[#5b3fd9] flex items-center justify-center text-xs font-bold text-white shadow-lg">
                               {heroItem.author.first_name?.[0]}{heroItem.author.last_name?.[0]}
                             </div>
                             <div className="flex flex-col">
@@ -284,10 +279,10 @@ export default function NewsPage() {
                           e.stopPropagation()
                           toggleLike(heroItem.id, heroItem.user_liked || false)
                         }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md transition-all duration-200 active:scale-110 hover:bg-red-500/20"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md transition-all duration-200 active:scale-[0.97] hover:bg-red-500/20"
                       >
                         <Heart
-                          className={`w-5 h-5 transition-all duration-300 ${
+                          className={`w-5 h-5 transition-all duration-200 ${
                             heroItem.user_liked
                               ? 'fill-red-500 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]'
                               : 'text-white/70'
@@ -302,7 +297,6 @@ export default function NewsPage() {
                 </div>
               )}
 
-              {/* If no image, show content in card body */}
               {!heroItem.image_url && (
                 <div className="relative p-5 space-y-3">
                   {heartAnimId === heroItem.id && (
@@ -312,18 +306,18 @@ export default function NewsPage() {
                       />
                     </div>
                   )}
-                  <span className="text-xs text-muted-foreground">{formatDate(heroItem.created_at)}</span>
-                  <h2 className="text-xl font-bold text-foreground leading-snug">{heroItem.title}</h2>
-                  <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">{heroItem.content}</p>
-                  <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+                  <span className="text-xs text-[#6b6b80]">{formatDate(heroItem.created_at)}</span>
+                  <h2 className="text-xl font-bold text-[#e8e8f0] leading-snug">{heroItem.title}</h2>
+                  <p className="text-[#6b6b80] text-sm leading-relaxed line-clamp-3">{heroItem.content}</p>
+                  <div className="flex items-center justify-between pt-3 border-t border-[#1a1a2e]">
                     <div className="flex items-center gap-2.5">
                       {heroItem.author && (
                         <>
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-bold text-white">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7c5cfc] to-[#5b3fd9] flex items-center justify-center text-xs font-bold text-white">
                             {heroItem.author.first_name?.[0]}{heroItem.author.last_name?.[0]}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-foreground/80">
+                            <span className="text-sm font-medium text-[#e8e8f0]/80">
                               {heroItem.author.first_name} {heroItem.author.last_name}
                             </span>
                             <RoleBadge role={heroItem.author.role || 'student'} />
@@ -336,16 +330,16 @@ export default function NewsPage() {
                         e.stopPropagation()
                         toggleLike(heroItem.id, heroItem.user_liked || false)
                       }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-110 hover:bg-red-500/10"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.97] hover:bg-red-500/10"
                     >
                       <Heart
-                        className={`w-5 h-5 transition-all duration-300 ${
+                        className={`w-5 h-5 transition-all duration-200 ${
                           heroItem.user_liked
                             ? 'fill-red-500 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]'
-                            : 'text-muted-foreground'
+                            : 'text-[#6b6b80]'
                         }`}
                       />
-                      <span className={`text-sm font-medium ${heroItem.user_liked ? 'text-red-400' : 'text-muted-foreground'}`}>
+                      <span className={`text-sm font-medium ${heroItem.user_liked ? 'text-red-400' : 'text-[#6b6b80]'}`}>
                         {heroItem.likes_count || 0}
                       </span>
                     </button>
@@ -353,10 +347,9 @@ export default function NewsPage() {
                 </div>
               )}
 
-              {/* Content preview below image for hero */}
               {heroItem.image_url && heroItem.content && (
                 <div className="px-5 py-4">
-                  <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2">{heroItem.content}</p>
+                  <p className="text-[#6b6b80] text-sm leading-relaxed line-clamp-2">{heroItem.content}</p>
                 </div>
               )}
             </article>
@@ -366,10 +359,9 @@ export default function NewsPage() {
           {restItems.map((item) => (
             <article
               key={item.id}
-              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none v4-card"
+              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none bg-[#0c0c14] border border-[#1a1a2e] transition-all duration-250 hover:border-[#7c5cfc]/30 hover:shadow-[0_8px_32px_rgba(124,92,252,0.08)]"
               onClick={(e) => handleDoubleTap(item.id, e)}
             >
-              {/* Heart animation overlay */}
               {heartAnimId === item.id && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                   <Heart
@@ -385,7 +377,7 @@ export default function NewsPage() {
                     alt={item.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050508]/60 via-transparent to-transparent" />
                   <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-black/50 backdrop-blur-md text-[10px] text-white/80 font-medium">
                     {formatDateShort(item.created_at)}
                   </div>
@@ -393,18 +385,18 @@ export default function NewsPage() {
               )}
 
               <div className="p-5 space-y-3">
-                <h2 className="text-lg font-bold text-foreground leading-snug">{item.title}</h2>
-                <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">{item.content}</p>
+                <h2 className="text-lg font-bold text-[#e8e8f0] leading-snug">{item.title}</h2>
+                <p className="text-[#6b6b80] text-sm leading-relaxed line-clamp-3">{item.content}</p>
 
-                <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+                <div className="flex items-center justify-between pt-3 border-t border-[#1a1a2e]">
                   <div className="flex items-center gap-2.5">
                     {item.author && (
                       <>
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[10px] font-bold text-white shadow-md">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#7c5cfc] to-[#5b3fd9] flex items-center justify-center text-[10px] font-bold text-white shadow-md">
                           {item.author.first_name?.[0]}{item.author.last_name?.[0]}
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-foreground/70">
+                          <span className="text-xs font-medium text-[#e8e8f0]/70">
                             {item.author.first_name} {item.author.last_name}
                           </span>
                           <RoleBadge role={item.author.role || 'student'} />
@@ -412,7 +404,7 @@ export default function NewsPage() {
                       </>
                     )}
                     {!item.image_url && (
-                      <span className="text-xs text-muted-foreground/50">
+                      <span className="text-xs text-[#3d3d50]">
                         {formatDate(item.created_at)}
                       </span>
                     )}
@@ -422,16 +414,16 @@ export default function NewsPage() {
                       e.stopPropagation()
                       toggleLike(item.id, item.user_liked || false)
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-110 hover:bg-red-500/10"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.97] hover:bg-red-500/10"
                   >
                     <Heart
-                      className={`w-4 h-4 transition-all duration-300 ${
+                      className={`w-4 h-4 transition-all duration-200 ${
                         item.user_liked
                           ? 'fill-red-500 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]'
-                          : 'text-muted-foreground'
+                          : 'text-[#6b6b80]'
                       }`}
                     />
-                    <span className={`text-sm font-medium ${item.user_liked ? 'text-red-400' : 'text-muted-foreground'}`}>
+                    <span className={`text-sm font-medium ${item.user_liked ? 'text-red-400' : 'text-[#6b6b80]'}`}>
                       {item.likes_count || 0}
                     </span>
                   </button>

@@ -114,7 +114,7 @@ export default function AdminNewsPage() {
         <Button
           size="sm"
           onClick={() => setShowForm(!showForm)}
-          className="bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all"
+          className="bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-[#7c5cfc]/20 hover:shadow-[#7c5cfc]/30 transition-all"
         >
           {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4 mr-1" />}
           {showForm ? '' : 'Nova'}
@@ -122,7 +122,7 @@ export default function AdminNewsPage() {
       </div>
 
       {showForm && (
-        <div className="rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-purple-500/20 p-5 animate-slide-up">
+        <div className="rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-[#7c5cfc]/20 p-5 animate-slide-up">
           <form onSubmit={createNews} className="space-y-4">
             <div className="space-y-2">
               <Label className="text-white/70 text-sm">Naslov</Label>
@@ -130,7 +130,7 @@ export default function AdminNewsPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/30 focus:border-purple-500 focus:ring-purple-500/20"
+                className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/30 focus:border-[#7c5cfc] focus:ring-purple-500/20"
               />
             </div>
             <div className="space-y-2">
@@ -140,7 +140,7 @@ export default function AdminNewsPage() {
                 onChange={(e) => setContent(e.target.value)}
                 required
                 rows={4}
-                className="flex min-h-[100px] w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/20 transition-colors"
+                className="flex min-h-[100px] w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#7c5cfc] focus:outline-none focus:ring-1 focus:ring-purple-500/20 transition-colors"
               />
             </div>
             <div className="space-y-2">
@@ -167,7 +167,7 @@ export default function AdminNewsPage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-24 rounded-xl border-2 border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-1 text-white/30 hover:border-purple-500/40 hover:text-purple-400 transition-colors"
+                  className="w-full h-24 rounded-xl border-2 border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-1 text-white/30 hover:border-[#7c5cfc]/40 hover:text-[#7c5cfc] transition-colors"
                 >
                   <ImagePlus className="w-6 h-6" />
                   <span className="text-xs">Izaberi sliku</span>
@@ -177,7 +177,7 @@ export default function AdminNewsPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-purple-500/20"
+              className="w-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-[#7c5cfc]/20"
             >
               {loading ? 'Objavljuje se...' : 'Objavi'}
             </Button>
@@ -188,7 +188,7 @@ export default function AdminNewsPage() {
       {news.map((item, index) => (
         <div
           key={item.id}
-          className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] p-4 flex items-start justify-between hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300 group"
+          className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] p-4 flex items-start justify-between hover:-translate-y-[2px] hover:shadow-lg hover:shadow-[#7c5cfc]/10 hover:border-[#7c5cfc]/20 transition-all duration-300 group"
           style={{ animationDelay: `${index * 60}ms` }}
         >
           <div className="min-w-0 flex-1">

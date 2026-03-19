@@ -85,7 +85,7 @@ export default function ResetPasswordPage() {
           {error && (
             <p className="text-destructive text-sm text-center">{error}</p>
           )}
-          <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800" disabled={loading}>
+          <Button type="submit" className="w-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800" disabled={loading}>
             {loading ? 'Slanje...' : 'Pošalji link za reset'}
           </Button>
         </form>

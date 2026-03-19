@@ -5,54 +5,54 @@ import { Palette } from 'lucide-react'
 
 const themes = [
   {
-    name: 'Midnight Purple',
-    key: 'midnight-purple',
-    color: '#a78bfa',
+    name: 'Midnight',
+    key: 'midnight',
+    color: '#7c5cfc',
     vars: {
-      '--theme-primary': '#a78bfa',
-      '--theme-primary-foreground': '#0a0a12',
-      '--theme-accent': '#7c3aed',
-      '--theme-secondary': '#16152a',
-      '--theme-background': '#0a0a12',
-      '--theme-foreground': '#f4f4f6',
-      '--theme-card': '#0e0e1a',
+      '--theme-primary': '#7c5cfc',
+      '--theme-primary-foreground': '#ffffff',
+      '--theme-accent': '#5b3fd9',
+      '--theme-secondary': '#0c0c14',
+      '--theme-background': '#050508',
+      '--theme-foreground': '#e8e8f0',
+      '--theme-card': '#0c0c14',
       '--theme-muted': '#1a1a2e',
-      '--theme-muted-foreground': '#9b9bb0',
-      '--theme-border': '#1f1f38',
+      '--theme-muted-foreground': '#6b6b80',
+      '--theme-border': '#1a1a2e',
     },
   },
   {
-    name: 'Ocean Blue',
-    key: 'ocean-blue',
-    color: '#60a5fa',
+    name: 'Arctic',
+    key: 'arctic',
+    color: '#3b82f6',
     vars: {
-      '--theme-primary': '#60a5fa',
-      '--theme-primary-foreground': '#0a0f14',
-      '--theme-accent': '#3b82f6',
-      '--theme-secondary': '#0f1a2e',
-      '--theme-background': '#0a0f14',
-      '--theme-foreground': '#edf4fc',
-      '--theme-card': '#0d1520',
-      '--theme-muted': '#142238',
-      '--theme-muted-foreground': '#7cb3f0',
-      '--theme-border': '#1a3050',
+      '--theme-primary': '#3b82f6',
+      '--theme-primary-foreground': '#ffffff',
+      '--theme-accent': '#2563eb',
+      '--theme-secondary': '#0a0e14',
+      '--theme-background': '#060a10',
+      '--theme-foreground': '#e8ecf0',
+      '--theme-card': '#0a0e18',
+      '--theme-muted': '#141e2e',
+      '--theme-muted-foreground': '#5a7090',
+      '--theme-border': '#152030',
     },
   },
   {
-    name: 'Emerald Dark',
-    key: 'emerald-dark',
-    color: '#34d399',
+    name: 'Forest',
+    key: 'forest',
+    color: '#10b981',
     vars: {
-      '--theme-primary': '#34d399',
-      '--theme-primary-foreground': '#0a120f',
-      '--theme-accent': '#10b981',
-      '--theme-secondary': '#0f1f1a',
-      '--theme-background': '#0a120f',
-      '--theme-foreground': '#edfcf6',
-      '--theme-card': '#0d1814',
-      '--theme-muted': '#142e24',
-      '--theme-muted-foreground': '#6ee7b7',
-      '--theme-border': '#1a3d2e',
+      '--theme-primary': '#10b981',
+      '--theme-primary-foreground': '#ffffff',
+      '--theme-accent': '#059669',
+      '--theme-secondary': '#080e0a',
+      '--theme-background': '#050a08',
+      '--theme-foreground': '#e0f0e8',
+      '--theme-card': '#0a140e',
+      '--theme-muted': '#142e20',
+      '--theme-muted-foreground': '#5a8070',
+      '--theme-border': '#1a3028',
     },
   },
 ]
@@ -79,7 +79,6 @@ export function ThemeSwitcher() {
         applyTheme(saved)
       }
     } else {
-      // Apply default theme on mount
       applyTheme(themes[0].key)
     }
   }, [])
@@ -98,14 +97,14 @@ export function ThemeSwitcher() {
     <div className="relative">
       <button
         onClick={cycleTheme}
-        className="theme-btn w-8 h-8 rounded-full flex items-center justify-center transition-all"
-        style={{ backgroundColor: themes[currentIndex].color + '20', color: themes[currentIndex].color }}
+        className="theme-btn w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.04] border border-white/[0.06] transition-all"
+        style={{ color: themes[currentIndex].color }}
         title={themes[currentIndex].name}
       >
         <Palette className="w-4 h-4" />
       </button>
       {showPopup && (
-        <div className="absolute right-0 top-full mt-2 px-3 py-1.5 rounded-xl bg-card border border-border/50 text-xs font-medium whitespace-nowrap animate-fade-in z-50">
+        <div className="absolute right-0 top-full mt-2 px-3 py-1.5 rounded-xl bg-[#0c0c14] border border-[#1a1a2e] text-xs font-medium whitespace-nowrap animate-fade-in z-50">
           {themes[currentIndex].name}
         </div>
       )}

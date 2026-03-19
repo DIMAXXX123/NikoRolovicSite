@@ -376,7 +376,7 @@ export default function LecturesPage() {
             {/* Progress bar */}
             <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-600 transition-all duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] transition-all duration-500"
                 style={{ width: `${((quizCurrent + (quizAnswered ? 1 : 0)) / quizQuestions.length) * 100}%` }}
               />
             </div>
@@ -427,7 +427,7 @@ export default function LecturesPage() {
                 <div className="pt-2 animate-fade-in">
                   <button
                     onClick={handleQuizNext}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 text-white font-medium text-sm transition-all active:scale-[0.98]"
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] text-white font-medium text-sm transition-all active:scale-[0.98]"
                   >
                     {quizCurrent + 1 >= quizQuestions.length ? 'Pogledaj rezultat' : 'Sljedeće pitanje →'}
                   </button>
@@ -600,7 +600,7 @@ export default function LecturesPage() {
               </p>
               <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-violet-600 rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] rounded-full transition-all duration-500"
                   style={{ width: `${((currentLectureIndex + 1) / lectures.length) * 100}%` }}
                 />
               </div>
@@ -649,8 +649,8 @@ export default function LecturesPage() {
               {cleanContent.includes('<') ? (
                 <div
                   className="text-foreground/90 leading-relaxed text-[15px]
-                    [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h1]:mt-6 [&_h1]:bg-gradient-to-r [&_h1]:from-purple-400 [&_h1]:to-violet-300 [&_h1]:bg-clip-text [&_h1]:text-transparent
-                    [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-purple-300
+                    [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h1]:mt-6 [&_h1]:bg-gradient-to-r [&_h1]:from-[#7c5cfc] [&_h1]:to-[#a78bfa] [&_h1]:bg-clip-text [&_h1]:text-transparent
+                    [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-[#7c5cfc]
                     [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-4
                     [&_p]:mb-3 [&_p]:leading-7
                     [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul]:space-y-1
@@ -699,14 +699,14 @@ export default function LecturesPage() {
         {/* Quiz section (inline) */}
         {activeSection === 'quiz' && (
           <div className="animate-fade-in space-y-4">
-            <Card className="border-border/30 bg-gradient-to-br from-purple-500/10 to-violet-600/5 backdrop-blur">
+            <Card className="border-border/30 bg-gradient-to-br from-[#7c5cfc]/10 to-[#5b3fd9]/5 backdrop-blur">
               <CardContent className="p-5 text-center space-y-3">
-                <Brain className="w-10 h-10 mx-auto text-purple-400" />
+                <Brain className="w-10 h-10 mx-auto text-[#7c5cfc]" />
                 <h3 className="text-lg font-bold">Provjeri znanje</h3>
                 <p className="text-sm text-muted-foreground">Testiraj koliko si naučio/la iz ove lekcije</p>
                 <button
                   onClick={() => handleQuiz(selectedLecture)}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 text-white font-medium text-sm transition-all active:scale-[0.98] hover:shadow-lg hover:shadow-purple-500/20"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] text-white font-medium text-sm transition-all active:scale-[0.98] hover:shadow-lg hover:shadow-[#7c5cfc]/20"
                 >
                   Započni kviz →
                 </button>
@@ -719,7 +719,7 @@ export default function LecturesPage() {
         <div className="pt-4 border-t border-border/30">
           <button
             onClick={() => handleQuiz(selectedLecture)}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 text-white text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)]"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]"
           >
             <Brain className="w-5 h-5" /> Provjeri znanje
           </button>
@@ -733,7 +733,7 @@ export default function LecturesPage() {
     const subjectInfo = [...DEFAULT_SUBJECTS, ...OPTIONAL_SUBJECTS].find(s => s.name === selectedSubject)
     return (
       <div className="space-y-5 animate-fade-in pb-4">
-        <button onClick={goBack} className="text-sm text-purple-400 flex items-center gap-1 hover:gap-2 transition-all font-medium">
+        <button onClick={goBack} className="text-sm text-[#7c5cfc] flex items-center gap-1 hover:gap-2 transition-all font-medium">
           <ChevronLeft className="w-4 h-4" /> Svi predmeti
         </button>
         <div className="flex items-center gap-4">
@@ -762,8 +762,8 @@ export default function LecturesPage() {
               return (
                 <button
                   key={lecture.id}
-                  className={`w-full text-left rounded-2xl border bg-card/40 backdrop-blur-sm cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-4 flex items-center justify-between ${
-                    isCurrent ? 'border-violet-500/30 bg-violet-500/5' : 'border-white/[0.04]'
+                  className={`w-full text-left rounded-2xl border bg-[#0c0c14] cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-4 flex items-center justify-between ${
+                    isCurrent ? 'border-violet-500/30 bg-violet-500/5' : 'border-[#1a1a2e]'
                   }`}
                   onClick={() => handleLectureTap(lecture)}
                 >
@@ -836,11 +836,11 @@ export default function LecturesPage() {
         {allSubjects.map((subject) => (
           <button
             key={subject.name}
-            className="relative rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm cursor-pointer hover:bg-white/[0.05] hover:border-purple-500/15 transition-all duration-300 active:scale-[0.96] overflow-hidden group p-5 flex flex-col items-center text-center gap-3"
+            className="relative rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] cursor-pointer hover:bg-white/[0.05] hover:border-[#7c5cfc]/20 transition-all duration-300 active:scale-[0.96] overflow-hidden group p-5 flex flex-col items-center text-center gap-3"
             onClick={() => handleSubjectTap(subject.name)}
           >
             {/* Subtle gradient bg */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/[0.03] to-violet-600/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#7c5cfc]/[0.03] to-[#5b3fd9]/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="relative transition-transform duration-300 group-hover:scale-110">
               <SubjectIcon name={subject.name} emoji={subject.emoji} size="lg" />
             </div>
@@ -860,7 +860,7 @@ export default function LecturesPage() {
                 }, 100)
               }
             }}
-            className="w-full py-3.5 rounded-2xl border border-dashed border-white/[0.08] text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-purple-500/30 hover:text-purple-400 transition-all active:scale-[0.98]"
+            className="w-full py-3.5 rounded-2xl border border-dashed border-white/[0.08] text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-[#7c5cfc]/30 hover:text-[#7c5cfc] transition-all active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
             Dodaj predmet
@@ -871,12 +871,12 @@ export default function LecturesPage() {
               {availableOptional.map((subject) => (
                 <button
                   key={subject.name}
-                  className="w-full rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-3.5 flex items-center gap-3"
+                  className="w-full rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-3.5 flex items-center gap-3"
                   onClick={() => { addSubject(subject.name); setShowAddSubject(false) }}
                 >
                   <SubjectIcon name={subject.name} emoji={subject.emoji} size="sm" />
                   <span className="text-sm font-semibold">{subject.name}</span>
-                  <Plus className="w-4 h-4 text-purple-400 ml-auto" />
+                  <Plus className="w-4 h-4 text-[#7c5cfc] ml-auto" />
                 </button>
               ))}
             </div>

@@ -304,10 +304,10 @@ export default function GalleryPage() {
     if (!role || role === 'student') return null
     const config: Record<string, { label: string; bg: string; text: string }> = {
       creator: { label: '👑 Creator', bg: 'bg-amber-500/15', text: 'text-amber-400' },
-      admin: { label: 'Admin', bg: 'bg-purple-500/15', text: 'text-purple-400' },
-      moderator: { label: 'Mod', bg: 'bg-blue-500/15', text: 'text-blue-400' },
+      admin: { label: 'Admin', bg: 'bg-[#7c5cfc]/15', text: 'text-[#7c5cfc]' },
+      moderator: { label: 'Mod', bg: 'bg-[#3b82f6]/15', text: 'text-[#3b82f6]' },
     }
-    const c = config[role] || { label: role, bg: 'bg-green-500/15', text: 'text-green-400' }
+    const c = config[role] || { label: role, bg: 'bg-[#10b981]/15', text: 'text-[#10b981]' }
     return (
       <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${c.bg} ${c.text}`}>
         {c.label}
@@ -315,16 +315,11 @@ export default function GalleryPage() {
     )
   }
 
-  // Loading skeleton — Instagram-style card skeletons
   if (loading) {
     return (
-      <div className="px-4 py-3 space-y-6 pb-24">
+      <div className="py-3 space-y-6 pb-24">
         {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
+          <div key={i} className="rounded-2xl overflow-hidden bg-[#0c0c14] border border-[#1a1a2e]">
             <div className="flex items-center gap-3 p-4">
               <div className="w-10 h-10 rounded-full skeleton" />
               <div className="flex-1 space-y-2">
@@ -350,7 +345,7 @@ export default function GalleryPage() {
     <>
       {/* Toast */}
       {toast && (
-        <div className="fixed top-18 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-medium shadow-xl shadow-green-500/20 animate-slide-down backdrop-blur-sm">
+        <div className="fixed top-18 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#10b981] to-emerald-600 text-white text-sm font-medium shadow-xl shadow-[#10b981]/20 animate-slide-down backdrop-blur-sm">
           {toast}
         </div>
       )}
@@ -358,18 +353,18 @@ export default function GalleryPage() {
       {/* Upload modal */}
       {showUpload && typeof document !== 'undefined' && createPortal(
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }} className="bg-black/80 backdrop-blur-xl flex items-end sm:items-center justify-center" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
-          <div className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 space-y-5 animate-slide-up border-t sm:border border-white/[0.06]" style={{ background: 'rgba(14, 14, 26, 0.95)', backdropFilter: 'blur(40px)' }} onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-5 animate-slide-up border-t sm:border border-[#1a1a2e]" style={{ background: '#0c0c14' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="font-bold text-lg">Nova fotografija</h2>
+              <h2 className="font-bold text-lg text-[#e8e8f0]">Nova fotografija</h2>
               <button onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }} className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors">
-                <X className="w-5 h-5 text-muted-foreground" />
+                <X className="w-5 h-5 text-[#6b6b80]" />
               </button>
             </div>
 
             <div className="sm:hidden absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-white/20" />
 
             {previewUrl ? (
-              <div className="relative aspect-square max-h-[50vh] rounded-2xl overflow-hidden border border-white/[0.06]">
+              <div className="relative aspect-square max-h-[50vh] rounded-2xl overflow-hidden border border-[#1a1a2e]">
                 <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                 <button
                   onClick={() => { setSelectedFile(null); setPreviewUrl(null) }}
@@ -381,10 +376,10 @@ export default function GalleryPage() {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full aspect-square max-h-[50vh] rounded-2xl border-2 border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-primary/30 hover:bg-primary/5 transition-all"
+                className="w-full aspect-square max-h-[50vh] rounded-2xl border-2 border-dashed border-[#1a1a2e] flex flex-col items-center justify-center gap-3 text-[#6b6b80] hover:border-[#7c5cfc]/30 hover:bg-[#7c5cfc]/5 transition-all"
               >
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                  <Camera className="w-7 h-7 text-primary" />
+                <div className="w-14 h-14 rounded-2xl bg-[#7c5cfc]/10 flex items-center justify-center">
+                  <Camera className="w-7 h-7 text-[#7c5cfc]" />
                 </div>
                 <span className="text-sm font-medium">Izaberi fotografiju</span>
               </button>
@@ -396,25 +391,24 @@ export default function GalleryPage() {
               placeholder="Opis (opciono)"
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="bg-white/[0.04] rounded-xl border-white/[0.06] focus:border-primary/40 h-11"
+              className="bg-white/[0.04] rounded-xl border-[#1a1a2e] focus:border-[#7c5cfc]/40 h-11"
             />
 
             <label className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Anonimno</span>
+              <span className="text-[#6b6b80]">Anonimno</span>
               <button
                 type="button"
                 onClick={() => setAnonymous(!anonymous)}
-                className={`relative w-11 h-6 rounded-full transition-all duration-300 ${anonymous ? 'bg-gradient-to-r from-primary to-accent' : 'bg-white/[0.08]'}`}
+                className={`relative w-11 h-6 rounded-full transition-all duration-200 ${anonymous ? 'bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9]' : 'bg-white/[0.08]'}`}
               >
-                <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${anonymous ? 'translate-x-5' : ''}`} />
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${anonymous ? 'translate-x-5' : ''}`} />
               </button>
             </label>
 
             <Button
               onClick={handleUpload}
               disabled={!selectedFile || uploading}
-              className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-accent active:scale-[0.98] transition-transform text-base font-semibold shadow-lg border-0"
-              style={{ boxShadow: '0 4px 16px -4px var(--theme-primary, rgba(167, 139, 250, 0.3))' }}
+              className="w-full h-12 rounded-xl bg-[#7c5cfc] hover:bg-[#6b4fe0] active:scale-[0.97] transition-all text-base font-semibold shadow-lg border-0 text-white"
             >
               {uploading ? 'Šalje se...' : <><Send className="w-4 h-4 mr-2" />Pošalji</>}
             </Button>
@@ -424,10 +418,10 @@ export default function GalleryPage() {
       )}
 
       {/* Instagram-style photo feed */}
-      <div className="px-4 py-3 space-y-6 pb-24">
+      <div className="py-3 space-y-6 pb-24">
         {photos.length === 0 ? (
-          <div className="h-[60vh] flex flex-col items-center justify-center text-muted-foreground">
-            <div className="w-16 h-16 rounded-3xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-4">
+          <div className="h-[60vh] flex flex-col items-center justify-center text-[#6b6b80]">
+            <div className="w-16 h-16 rounded-3xl bg-[#0c0c14] border border-[#1a1a2e] flex items-center justify-center mb-4">
               <Camera className="w-8 h-8 opacity-30" />
             </div>
             <p className="text-sm">Još nema fotografija</p>
@@ -439,17 +433,13 @@ export default function GalleryPage() {
             return (
               <div
                 key={photo.id}
-                className={`rounded-2xl overflow-hidden ${(photo as any)._new ? 'animate-slide-down' : 'animate-fade-in'}`}
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                }}
+                className={`rounded-2xl overflow-hidden bg-[#0c0c14] border border-[#1a1a2e] ${(photo as any)._new ? 'animate-slide-down' : 'animate-fade-in'}`}
               >
                 {/* Card header — user info */}
                 <div className="flex items-center gap-3 px-4 py-3">
                   <div
                     className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'linear-gradient(135deg, var(--theme-primary, #a78bfa), var(--theme-accent, #7c3aed))' }}
+                    style={{ background: 'linear-gradient(135deg, #7c5cfc, #5b3fd9)' }}
                   >
                     <span className="text-[11px] font-bold text-white leading-none">
                       {getInitials(photo)}
@@ -458,21 +448,21 @@ export default function GalleryPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-semibold text-foreground truncate">
+                      <span className="text-[13px] font-semibold text-[#e8e8f0] truncate">
                         {getDisplayName(photo)}
                       </span>
                       {!anon && photo.user && getRoleBadge(photo.user.role)}
                     </div>
-                    <span className="text-[11px] text-muted-foreground/60">
+                    <span className="text-[11px] text-[#3d3d50]">
                       {formatTime(photo.created_at)}
                     </span>
                   </div>
 
                   <button
                     onClick={() => setShowReportConfirm(photo.id)}
-                    className="p-2 -mr-2 active:scale-90 transition-all rounded-lg hover:bg-orange-500/10"
+                    className="p-2 -mr-2 active:scale-[0.97] transition-all rounded-lg hover:bg-orange-500/10"
                   >
-                    <Flag className="w-3.5 h-3.5 text-muted-foreground/40 hover:text-orange-400 transition-colors" />
+                    <Flag className="w-3.5 h-3.5 text-[#3d3d50] hover:text-orange-400 transition-colors" />
                   </button>
                 </div>
 
@@ -504,27 +494,27 @@ export default function GalleryPage() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => toggleLike(photo.id)}
-                      className="flex items-center gap-1.5 active:scale-90 transition-all px-2 py-1.5 -ml-2 rounded-xl hover:bg-red-500/10"
+                      className="flex items-center gap-1.5 active:scale-[0.97] transition-all px-2 py-1.5 -ml-2 rounded-xl hover:bg-red-500/10"
                     >
                       <Heart
-                        className={`w-[22px] h-[22px] transition-all duration-300 ${
+                        className={`w-[22px] h-[22px] transition-all duration-200 ${
                           likedPhotos[photo.id]
                             ? 'fill-red-500 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]'
-                            : 'text-foreground/80'
+                            : 'text-[#e8e8f0]/80'
                         }`}
                       />
                     </button>
                   </div>
 
                   {(likeCounts[photo.id] || 0) > 0 && (
-                    <p className="text-[13px] font-semibold text-foreground mt-1.5">
+                    <p className="text-[13px] font-semibold text-[#e8e8f0] mt-1.5">
                       {likeCounts[photo.id]} {likeCounts[photo.id] === 1 ? 'lajk' : 'lajkova'}
                     </p>
                   )}
 
                   {photo.caption && (
-                    <p className="text-[13px] text-foreground/80 mt-1.5 leading-snug">
-                      <span className="font-semibold text-foreground mr-1.5">
+                    <p className="text-[13px] text-[#e8e8f0]/80 mt-1.5 leading-snug">
+                      <span className="font-semibold text-[#e8e8f0] mr-1.5">
                         {getDisplayName(photo)}
                       </span>
                       {photo.caption}
@@ -540,19 +530,19 @@ export default function GalleryPage() {
       {/* Report confirmation modal */}
       {showReportConfirm && typeof document !== 'undefined' && createPortal(
         <div style={{ position: 'fixed', inset: 0, zIndex: 99998 }} className="bg-black/70 backdrop-blur-xl flex items-center justify-center p-6" onClick={() => setShowReportConfirm(null)}>
-          <div className="rounded-3xl p-6 max-w-sm w-full space-y-4 animate-scale-in border border-white/[0.06]" style={{ background: 'rgba(14, 14, 26, 0.95)', backdropFilter: 'blur(40px)' }} onClick={e => e.stopPropagation()}>
+          <div className="rounded-3xl p-6 max-w-sm w-full space-y-4 animate-scale-in bg-[#0c0c14] border border-[#1a1a2e]" onClick={e => e.stopPropagation()}>
             {reportCooldown ? (
               <>
                 <p className="text-center text-orange-400 font-bold text-lg">⚠️ Previše prijava</p>
-                <p className="text-center text-sm text-muted-foreground">Možeš prijaviti maksimalno 5 fotografija na sat.</p>
+                <p className="text-center text-sm text-[#6b6b80]">Možeš prijaviti maksimalno 5 fotografija na sat.</p>
                 <Button onClick={() => { setShowReportConfirm(null); setReportCooldown(false) }} className="w-full rounded-xl h-11" variant="outline">Zatvori</Button>
               </>
             ) : (
               <>
-                <p className="text-center font-bold text-lg">Prijavi fotografiju?</p>
-                <p className="text-center text-sm text-muted-foreground leading-relaxed">Da li si siguran/na da želiš prijaviti ovu fotografiju? Prijava će biti poslata administratoru.</p>
+                <p className="text-center font-bold text-lg text-[#e8e8f0]">Prijavi fotografiju?</p>
+                <p className="text-center text-sm text-[#6b6b80] leading-relaxed">Da li si siguran/na da želiš prijaviti ovu fotografiju? Prijava će biti poslata administratoru.</p>
                 <div className="flex gap-3">
-                  <Button onClick={() => setShowReportConfirm(null)} className="flex-1 rounded-xl h-11" variant="outline">Ne</Button>
+                  <Button onClick={() => setShowReportConfirm(null)} className="flex-1 rounded-xl h-11 bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] text-[#e8e8f0]" variant="outline">Ne</Button>
                   <Button onClick={() => handleReport(showReportConfirm)} className="flex-1 rounded-xl h-11 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white border-0">Da, prijavi</Button>
                 </div>
               </>
@@ -571,10 +561,10 @@ export default function GalleryPage() {
             bottom: '6rem',
             right: '1rem',
             zIndex: 9999,
-            background: 'linear-gradient(135deg, var(--theme-primary, #a78bfa), var(--theme-accent, #7c3aed))',
-            boxShadow: '0 4px 16px -4px var(--theme-primary, rgba(167, 139, 250, 0.4)), 0 8px 24px -4px rgba(0,0,0,0.3)',
+            background: 'linear-gradient(135deg, #7c5cfc, #5b3fd9)',
+            boxShadow: '0 4px 16px -4px rgba(124, 92, 252, 0.4), 0 8px 24px -4px rgba(0,0,0,0.3)',
           }}
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white active:scale-90 transition-all animate-bounce-in"
+          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white active:scale-[0.97] transition-all animate-bounce-in"
         >
           <Camera className="w-6 h-6" />
         </button>,

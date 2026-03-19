@@ -232,7 +232,7 @@ export default function GradesPage() {
 
   function ZakljucnaCircle({ value }: { value: number | null }) {
     if (!value) return (
-      <div className="w-10 h-10 rounded-full bg-white/[0.04] border border-dashed border-white/[0.1] flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full bg-white/[0.04] border border-dashed border-[#1a1a2e] flex items-center justify-center">
         <span className="text-xs text-muted-foreground/50">—</span>
       </div>
     )
@@ -256,14 +256,14 @@ export default function GradesPage() {
       </div>
 
       {/* Trimester pills */}
-      <div className="flex gap-2 p-1.5 bg-white/[0.03] rounded-2xl border border-white/[0.04]">
+      <div className="flex gap-2 p-1.5 bg-white/[0.03] rounded-2xl border border-[#1a1a2e]">
         {TRIMESTER_LABELS.map((label, i) => (
           <button
             key={i}
             onClick={() => { setActiveTrimester(i); setExpandedSubject(null) }}
             className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
               activeTrimester === i
-                ? 'bg-gradient-to-br from-purple-500 to-violet-700 text-white shadow-lg shadow-purple-500/20'
+                ? 'bg-gradient-to-br from-[#7c5cfc] to-[#5b3fd9] text-white shadow-lg shadow-[#7c5cfc]/20'
                 : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.04]'
             }`}
           >
@@ -324,7 +324,7 @@ export default function GradesPage() {
           return (
             <div
               key={subject}
-              className={`rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm overflow-hidden transition-all duration-300 ${
+              className={`rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] overflow-hidden transition-all duration-300 ${
                 isExpanded ? 'gradient-overlay' : ''
               }`}
             >
@@ -349,7 +349,7 @@ export default function GradesPage() {
 
               {/* Expanded content */}
               {isExpanded && (
-                <div className="px-4 pb-5 space-y-4 animate-fade-in border-t border-white/[0.04]">
+                <div className="px-4 pb-5 space-y-4 animate-fade-in border-t border-[#1a1a2e]">
                   {isOptional && (
                     <button
                       onClick={() => removeSubject(subject)}
@@ -371,7 +371,7 @@ export default function GradesPage() {
                       ) : (
                         <button
                           onClick={() => setEditingCell(`${activeTrimester}-${subject}-test`)}
-                          className="w-9 h-9 rounded-xl bg-white/[0.04] text-muted-foreground border border-dashed border-white/[0.1] flex items-center justify-center hover:bg-white/[0.08] hover:border-purple-500/30 transition-all"
+                          className="w-9 h-9 rounded-xl bg-white/[0.04] text-muted-foreground border border-dashed border-[#1a1a2e] flex items-center justify-center hover:bg-white/[0.08] hover:border-[#7c5cfc]/30 transition-all"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -391,7 +391,7 @@ export default function GradesPage() {
                       ) : (
                         <button
                           onClick={() => setEditingCell(`${activeTrimester}-${subject}-pismeni`)}
-                          className="w-9 h-9 rounded-xl bg-white/[0.04] text-muted-foreground border border-dashed border-white/[0.1] flex items-center justify-center hover:bg-white/[0.08] hover:border-purple-500/30 transition-all"
+                          className="w-9 h-9 rounded-xl bg-white/[0.04] text-muted-foreground border border-dashed border-[#1a1a2e] flex items-center justify-center hover:bg-white/[0.08] hover:border-[#7c5cfc]/30 transition-all"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -429,7 +429,7 @@ export default function GradesPage() {
                           className={`w-11 h-11 rounded-xl text-sm font-bold transition-all active:scale-90 ring-1 ${
                             sg.usmeni
                               ? `${GRADE_BG[sg.usmeni]}`
-                              : 'bg-white/[0.04] text-muted-foreground/50 border border-dashed border-white/[0.1] ring-0'
+                              : 'bg-white/[0.04] text-muted-foreground/50 border border-dashed border-[#1a1a2e] ring-0'
                           }`}
                         >
                           {sg.usmeni || '—'}
@@ -464,7 +464,7 @@ export default function GradesPage() {
                           className={`w-11 h-11 rounded-xl text-sm font-bold transition-all active:scale-90 ring-1 ${
                             sg.zakljucna
                               ? `${GRADE_BG[sg.zakljucna]}`
-                              : 'bg-white/[0.04] text-muted-foreground/50 border border-dashed border-white/[0.1] ring-0'
+                              : 'bg-white/[0.04] text-muted-foreground/50 border border-dashed border-[#1a1a2e] ring-0'
                           }`}
                         >
                           {sg.zakljucna || '—'}
@@ -483,7 +483,7 @@ export default function GradesPage() {
       {availableOptional.length > 0 && (
         <div>
           {showAddSubject ? (
-            <div className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm p-5 space-y-2.5 animate-fade-in">
+            <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] p-5 space-y-2.5 animate-fade-in">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-sm font-bold">Dodaj predmet</p>
                 <button onClick={() => setShowAddSubject(false)} className="text-muted-foreground p-1 rounded-lg hover:bg-white/[0.04]">
@@ -503,7 +503,7 @@ export default function GradesPage() {
           ) : (
             <button
               onClick={() => setShowAddSubject(true)}
-              className="w-full py-4 rounded-2xl border border-dashed border-white/[0.08] text-sm text-muted-foreground hover:bg-white/[0.02] hover:border-purple-500/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+              className="w-full py-4 rounded-2xl border border-dashed border-white/[0.08] text-sm text-muted-foreground hover:bg-white/[0.02] hover:border-[#7c5cfc]/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               Dodaj predmet

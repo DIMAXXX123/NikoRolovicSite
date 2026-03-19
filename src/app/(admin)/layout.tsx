@@ -40,8 +40,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--theme-background, #0a0a12)' }}>
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#050508]">
+        <div className="w-8 h-8 border-2 border-[#7c5cfc] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -49,22 +49,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!authorized) return null
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--theme-background, #0a0a12)' }}>
-      <div className="max-w-lg mx-auto px-4 pt-4 pb-8">
+    <div className="min-h-screen bg-[#050508]">
+      <div className="max-w-md mx-auto px-4 pt-4 pb-8">
         {/* Admin Header */}
         <div className="flex items-center justify-between mb-5">
           <Link
             href={isSubPage ? '/admin' : '/profile'}
-            className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors group"
+            className="flex items-center gap-2 text-sm text-[#7c5cfc] hover:text-[#7c5cfc]/80 transition-colors group"
           >
-            <div className="w-8 h-8 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center group-hover:border-primary/30 transition-colors">
+            <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-[#1a1a2e] flex items-center justify-center group-hover:border-[#7c5cfc]/30 transition-colors">
               <ArrowLeft className="w-4 h-4" />
             </div>
             <span className="font-medium">{isSubPage ? 'Admin panel' : 'Nazad'}</span>
           </Link>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] backdrop-blur-sm border border-white/[0.06]">
-            <ShieldCheck className="w-4 h-4 text-primary" />
-            <span className="text-xs font-semibold text-primary/80 tracking-wide uppercase">Admin Panel</span>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0c0c14] border border-[#1a1a2e]">
+            <ShieldCheck className="w-4 h-4 text-[#7c5cfc]" />
+            <span className="text-xs font-semibold text-[#7c5cfc]/80 tracking-wide uppercase">Admin Panel</span>
           </div>
         </div>
         <div className="admin-content">

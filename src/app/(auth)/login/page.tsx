@@ -73,7 +73,7 @@ export default function LoginPage() {
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
       <CardHeader className="text-center space-y-2 pb-2">
-        <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-2" style={{ background: 'var(--theme-primary, #a78bfa)' }}>
+        <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-2" style={{ background: 'var(--theme-primary, #7c5cfc)' }}>
           <span className="text-2xl font-bold text-white">NR</span>
         </div>
         <h1 className="text-2xl font-bold gradient-text">Gimnazija Niko Rolović</h1>
@@ -119,7 +119,7 @@ export default function LoginPage() {
           {error && (
             <p className="text-destructive text-sm text-center">{error}</p>
           )}
-          <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800" disabled={loading}>
+          <Button type="submit" className="w-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800" disabled={loading}>
             {loading ? 'Prijava...' : 'Prijavi se'}
           </Button>
         </form>

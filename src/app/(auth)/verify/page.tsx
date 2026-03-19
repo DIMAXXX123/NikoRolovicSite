@@ -101,7 +101,7 @@ export default function VerifyPage() {
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-xl text-center">
       <CardHeader className="space-y-4 pb-2">
-        <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-violet-700/20 flex items-center justify-center">
+        <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-[#7c5cfc]/20 to-violet-700/20 flex items-center justify-center">
           <Mail className="w-10 h-10 text-primary" />
         </div>
         <h1 className="text-2xl font-bold">Unesi kod</h1>

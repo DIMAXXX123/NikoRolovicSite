@@ -357,7 +357,7 @@ export default function SchedulePage() {
       <div className="flex items-center justify-between pt-1">
         <div>
           <h1 className="text-2xl font-bold gradient-text">Raspored</h1>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-[#6b6b80] mt-1">
             {classNum}. razred, {sectionNum}. odjeljenje · {todayClasses} časova
           </p>
         </div>
@@ -365,7 +365,7 @@ export default function SchedulePage() {
           variant={editing ? 'default' : 'outline'}
           size="sm"
           onClick={() => { setEditing(!editing); cancelEdit() }}
-          className={`gap-1.5 rounded-xl ${editing ? 'bg-gradient-to-r from-purple-600 to-violet-700 border-0' : ''}`}
+          className={`gap-1.5 rounded-xl ${editing ? 'bg-[#7c5cfc] hover:bg-[#6b4fe0] text-white border-0' : 'bg-white/[0.04] border-[#1a1a2e] hover:bg-white/[0.08]'}`}
         >
           <Edit3 className="w-3.5 h-3.5" />
           {editing ? 'Gotovo' : 'Uredi'}
@@ -373,19 +373,19 @@ export default function SchedulePage() {
       </div>
 
       {/* Class/section selector */}
-      <div className="rounded-2xl bg-card/40 backdrop-blur-sm border border-white/[0.04] p-4 space-y-3">
+      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] p-4 space-y-3">
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-2 block">Razred</label>
+            <label className="text-[10px] text-[#6b6b80] font-medium uppercase tracking-wider mb-2 block">Razred</label>
             <div className="flex gap-1.5">
               {[1, 2, 3, 4].map((n) => (
                 <button
                   key={n}
                   onClick={() => setClassNum(n)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                     classNum === n
-                      ? 'bg-gradient-to-br from-purple-500 to-violet-700 text-white shadow-lg shadow-purple-500/20'
-                      : 'bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground'
+                      ? 'bg-[#7c5cfc] text-white shadow-[0_0_16px_rgba(124,92,252,0.3)]'
+                      : 'bg-white/[0.04] text-[#6b6b80] hover:bg-white/[0.08] hover:text-[#e8e8f0]'
                   }`}
                 >
                   {n}.
@@ -394,16 +394,16 @@ export default function SchedulePage() {
             </div>
           </div>
           <div className="flex-1">
-            <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-2 block">Odjeljenje</label>
+            <label className="text-[10px] text-[#6b6b80] font-medium uppercase tracking-wider mb-2 block">Odjeljenje</label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <button
                   key={n}
                   onClick={() => setSectionNum(n)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                     sectionNum === n
-                      ? 'bg-gradient-to-br from-purple-500 to-violet-700 text-white shadow-lg shadow-purple-500/20'
-                      : 'bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground'
+                      ? 'bg-[#7c5cfc] text-white shadow-[0_0_16px_rgba(124,92,252,0.3)]'
+                      : 'bg-white/[0.04] text-[#6b6b80] hover:bg-white/[0.08] hover:text-[#e8e8f0]'
                   }`}
                 >
                   {n}.
@@ -422,15 +422,15 @@ export default function SchedulePage() {
             <button
               key={day}
               onClick={() => setActiveDay(i)}
-              className={`flex-1 min-w-0 py-2.5 px-2 rounded-2xl text-xs font-semibold transition-all duration-300 relative ${
+              className={`flex-1 min-w-0 py-2.5 px-2 rounded-2xl text-xs font-semibold transition-all duration-200 relative ${
                 activeDay === i
-                  ? 'bg-gradient-to-br from-purple-500 to-violet-700 text-white shadow-lg shadow-purple-500/25 shadow-[0_0_12px_rgba(167,139,250,0.4)]'
-                  : 'bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground'
+                  ? 'bg-[#7c5cfc] text-white shadow-[0_0_16px_rgba(124,92,252,0.3)]'
+                  : 'bg-white/[0.04] text-[#6b6b80] hover:bg-white/[0.08] hover:text-[#e8e8f0]'
               }`}
             >
               {day}
               {isToday && activeDay !== i && (
-                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-purple-400" />
+                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#7c5cfc]" />
               )}
             </button>
           )
@@ -438,21 +438,21 @@ export default function SchedulePage() {
       </div>
 
       {/* Weekly overview grid */}
-      <div className="rounded-2xl bg-card/40 backdrop-blur-sm border border-white/[0.04] overflow-hidden">
-        <div className="px-4 py-3 border-b border-white/[0.04]">
-          <h3 className="text-sm font-semibold">Sedmični pregled</h3>
+      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#1a1a2e]">
+          <h3 className="text-sm font-semibold text-[#e8e8f0]">Sedmični pregled</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-white/[0.04]">
-                <th className="p-2 text-left text-muted-foreground font-medium w-8">#</th>
+              <tr className="border-b border-[#1a1a2e]">
+                <th className="p-2 text-left text-[#6b6b80] font-medium w-8">#</th>
                 {DAY_SHORT.map((d, di) => (
                   <th
                     key={d}
                     onClick={() => setActiveDay(di)}
                     className={`p-2 text-center font-medium cursor-pointer transition-colors ${
-                      activeDay === di ? 'text-purple-400' : 'text-muted-foreground hover:text-foreground'
+                      activeDay === di ? 'text-[#7c5cfc]' : 'text-[#6b6b80] hover:text-[#e8e8f0]'
                     }`}
                   >
                     {d}
@@ -462,15 +462,15 @@ export default function SchedulePage() {
             </thead>
             <tbody>
               {PERIODS.map((period) => (
-                <tr key={period} className="border-b border-white/[0.02]">
-                  <td className="p-1.5 text-muted-foreground font-medium text-[11px]">{period}</td>
+                <tr key={period} className="border-b border-[#1a1a2e]/50">
+                  <td className="p-1.5 text-[#6b6b80] font-medium text-[11px]">{period}</td>
                   {DAYS.map((_, di) => {
                     const subj = schedule[cellKey(di, period)] || ''
                     const color = getSubjectColor(subj)
                     return (
                       <td
                         key={di}
-                        className={`p-1 cursor-pointer transition-colors ${activeDay === di ? 'bg-purple-500/5' : ''}`}
+                        className={`p-1 cursor-pointer transition-colors ${activeDay === di ? 'bg-[#7c5cfc]/5' : ''}`}
                         onClick={() => { setActiveDay(di); if (editing) startEdit(di, period) }}
                       >
                         {subj ? (
@@ -478,7 +478,7 @@ export default function SchedulePage() {
                             {subj.length > 5 ? subj.slice(0, 5) + '.' : subj}
                           </div>
                         ) : (
-                          <div className="text-center text-muted-foreground/15">·</div>
+                          <div className="text-center text-[#3d3d50]">·</div>
                         )}
                       </td>
                     )
@@ -491,14 +491,14 @@ export default function SchedulePage() {
       </div>
 
       {/* Schedule for active day */}
-      <div className="rounded-2xl bg-card/40 backdrop-blur-sm border border-white/[0.04] overflow-hidden">
-        <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
-          <h3 className="text-base font-bold">{DAYS[activeDay]}</h3>
-          <span className="text-xs text-muted-foreground px-2.5 py-1 rounded-lg bg-white/[0.04]">
+      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#1a1a2e] flex items-center justify-between">
+          <h3 className="text-base font-bold text-[#e8e8f0]">{DAYS[activeDay]}</h3>
+          <span className="text-xs text-[#6b6b80] px-2.5 py-1 rounded-lg bg-white/[0.04]">
             {todayClasses} časova
           </span>
         </div>
-        <div className="divide-y divide-white/[0.03]">
+        <div className="divide-y divide-[#1a1a2e]/50">
           {PERIODS.map((period) => {
             const key = cellKey(activeDay, period)
             const subject = schedule[key] || ''
@@ -518,8 +518,8 @@ export default function SchedulePage() {
               >
                 {/* Period number & time */}
                 <div className="flex-shrink-0 w-14 text-center">
-                  <div className="text-base font-bold text-foreground/90">{period}.</div>
-                  <div className="flex items-center justify-center gap-0.5 text-[10px] text-muted-foreground/70">
+                  <div className="text-base font-bold text-[#e8e8f0]/90">{period}.</div>
+                  <div className="flex items-center justify-center gap-0.5 text-[10px] text-[#3d3d50]">
                     <Clock className="w-2.5 h-2.5" />
                     {PERIOD_TIMES[period - 1].split(' - ')[0]}
                   </div>
@@ -540,13 +540,13 @@ export default function SchedulePage() {
                           if (e.key === 'Escape') cancelEdit()
                         }}
                         placeholder="Naziv predmeta..."
-                        className="flex-1 bg-white/[0.04] rounded-xl px-3.5 py-2 text-sm outline-none border border-white/[0.08] focus:border-purple-500/40 transition-colors"
+                        className="flex-1 bg-white/[0.04] rounded-xl px-3.5 py-2 text-sm outline-none border border-[#1a1a2e] focus:border-[#7c5cfc]/40 transition-colors"
                       />
-                      <button onClick={confirmEdit} className="p-2 rounded-xl bg-purple-500/15 text-purple-400 hover:bg-purple-500/25 transition-colors">
+                      <button onClick={confirmEdit} className="p-2 rounded-xl bg-[#7c5cfc]/15 text-[#7c5cfc] hover:bg-[#7c5cfc]/25 transition-colors">
                         <Check className="w-4 h-4" />
                       </button>
                       <button onClick={cancelEdit} className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors">
-                        <X className="w-4 h-4 text-muted-foreground" />
+                        <X className="w-4 h-4 text-[#6b6b80]" />
                       </button>
                     </div>
                   ) : subject ? (
@@ -554,13 +554,13 @@ export default function SchedulePage() {
                       {subject}
                     </div>
                   ) : (
-                    <div className="text-sm text-muted-foreground/30 italic flex items-center gap-2">
+                    <div className="text-sm text-[#3d3d50] italic flex items-center gap-2">
                       {editing ? (
                         'Dodaj predmet...'
                       ) : (
                         <>
-                          <div className="w-6 h-[2px] rounded-full bg-white/[0.06]" />
-                          <span className="text-muted-foreground/20">Slobodan čas</span>
+                          <div className="w-6 h-[2px] rounded-full bg-[#1a1a2e]" />
+                          <span className="text-[#3d3d50]">Slobodan čas</span>
                         </>
                       )}
                     </div>

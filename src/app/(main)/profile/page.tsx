@@ -17,7 +17,7 @@ import Link from 'next/link'
 
 const roleGradient: Record<string, string> = {
   creator: 'from-yellow-400 via-amber-500 to-yellow-600',
-  admin: 'from-purple-500 to-violet-700',
+  admin: 'from-[#7c5cfc] to-[#5b3fd9]',
   moderator: 'from-blue-500 to-cyan-600',
   student: 'from-gray-400 to-gray-600',
 }
@@ -40,7 +40,7 @@ const QUICK_ACCESS_PAGES = [
   { id: 'about', href: '/about', label: 'O školi', icon: School, color: 'from-emerald-500 to-teal-600' },
   { id: 'schedule', href: '/schedule', label: 'Raspored', icon: Clock, color: 'from-blue-500 to-cyan-600' },
   { id: 'teachers', href: '/teachers', label: 'Status profesora', icon: Users, color: 'from-teal-500 to-cyan-600' },
-  { id: 'grades', href: '/grades', label: 'Moje ocjene', icon: GraduationCap, color: 'from-purple-500 to-violet-600' },
+  { id: 'grades', href: '/grades', label: 'Moje ocjene', icon: GraduationCap, color: 'from-[#7c5cfc] to-[#5b3fd9]' },
 ]
 
 function QuickAccessCards() {
@@ -60,7 +60,7 @@ function QuickAccessCards() {
       <div className="grid grid-cols-1 gap-2">
         {hiddenPages.map((page) => (
           <Link key={page.id} href={page.href}>
-            <div className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-3.5 flex items-center gap-3">
+            <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-3.5 flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${page.color} flex items-center justify-center flex-shrink-0 shadow-lg`}>
                 <page.icon className="w-5 h-5 text-white" />
               </div>
@@ -339,8 +339,8 @@ export default function ProfilePage() {
       </div>
 
       {/* Stats row */}
-      <div className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm p-4">
-        <div className="grid grid-cols-3 divide-x divide-white/[0.06]">
+      <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] p-4">
+        <div className="grid grid-cols-3 divide-x divide-[#1a1a2e]">
           <div className="flex flex-col items-center gap-1 px-2">
             <span className="text-xs text-muted-foreground">Razred</span>
             <span className="text-base font-bold">{profile.class_number}-{profile.section_number}</span>
@@ -358,7 +358,7 @@ export default function ProfilePage() {
 
       {/* Avatar picker */}
       {showAvatarPicker && (
-        <div className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm animate-fade-in p-4">
+        <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] animate-fade-in p-4">
           <p className="text-sm font-bold mb-3">Izaberi avatar</p>
           <div className="grid grid-cols-5 gap-2">
             {AVATARS.map((av) => (
@@ -366,7 +366,7 @@ export default function ProfilePage() {
                 key={av.id}
                 onClick={() => selectAvatar(av.id)}
                 className={`p-2 rounded-xl transition-all active:scale-90 ${
-                  avatarId === av.id ? 'bg-purple-500/15 ring-2 ring-purple-500 shadow-lg shadow-purple-500/10' : 'hover:bg-white/[0.04]'
+                  avatarId === av.id ? 'bg-[#7c5cfc]/15 ring-2 ring-[#7c5cfc] shadow-lg shadow-[#7c5cfc]/10' : 'hover:bg-white/[0.04]'
                 }`}
                 title={av.label}
               >
@@ -378,7 +378,7 @@ export default function ProfilePage() {
       )}
 
       {/* Info card */}
-      <div className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm p-5 space-y-3.5">
+      <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] p-5 space-y-3.5">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Email</span>
           <span className="truncate ml-4 font-medium">{profile.email}</span>
@@ -398,7 +398,7 @@ export default function ProfilePage() {
 
         {/* Expandable stats */}
         {showStats && (
-          <div className="pt-3 border-t border-white/[0.04] space-y-3 animate-fade-in">
+          <div className="pt-3 border-t border-[#1a1a2e] space-y-3 animate-fade-in">
             {(profile.role === 'admin' || profile.role === 'creator') && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1.5">
@@ -428,7 +428,7 @@ export default function ProfilePage() {
       <div className="space-y-2">
         <button
           onClick={() => setShowCalculator(true)}
-          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
+          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
         >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-blue-500/15">
             <Calculator className="w-4.5 h-4.5 text-white" />
@@ -439,9 +439,9 @@ export default function ProfilePage() {
 
         <button
           onClick={() => setShowNavEditor(true)}
-          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
+          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-500/15">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7c5cfc] to-[#5b3fd9] flex items-center justify-center shadow-lg shadow-[#7c5cfc]/15">
             <Navigation className="w-4.5 h-4.5 text-white" />
           </div>
           <span className="flex-1 text-left">Uredi navigaciju</span>
@@ -455,7 +455,7 @@ export default function ProfilePage() {
       {/* Settings */}
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
+        className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
       >
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-zinc-500 to-zinc-700 flex items-center justify-center">
           <Settings className="w-4.5 h-4.5 text-white" />
@@ -465,7 +465,7 @@ export default function ProfilePage() {
       </button>
 
       {showSettings && (
-        <div className="rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm animate-fade-in p-5 space-y-5">
+        <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] animate-fade-in p-5 space-y-5">
           {/* Performance mode */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -562,7 +562,7 @@ export default function ProfilePage() {
           </div>
 
           {/* About */}
-          <div className="pt-4 border-t border-white/[0.04]">
+          <div className="pt-4 border-t border-[#1a1a2e]">
             <div className="flex items-center gap-2 mb-1.5">
               <Info className="w-4 h-4 text-muted-foreground/50" />
               <p className="text-sm font-semibold">O aplikaciji</p>
@@ -581,7 +581,7 @@ export default function ProfilePage() {
       {(profile.role === 'admin' || profile.role === 'moderator' || profile.role === 'creator') && (
         <button
           onClick={() => router.push('/admin')}
-          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-white/[0.04] bg-card/40 backdrop-blur-sm text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
+          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
         >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/15">
             <Shield className="w-4.5 h-4.5 text-white" />
