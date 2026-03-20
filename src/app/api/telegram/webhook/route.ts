@@ -95,19 +95,32 @@ export async function POST(request: Request) {
       const photoId = parts[1]
 
       if (action === 'approve') {
+        // Check if already decided
+        const { data: photo } = await supabase.from('photos').select('status').eq('id', photoId).single()
+        if (photo && photo.status !== 'pending') {
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ callback_query_id: query.id, text: `Već odlučeno: ${photo.status}` }),
+          })
+          return NextResponse.json({ ok: true })
+        }
+
         await supabase
           .from('photos')
           .update({ status: 'approved' })
           .eq('id', photoId)
 
-        // Edit the message to show approved
+        const moderatorName = query.from?.first_name || 'Moderator'
+
+        // Edit the message to show approved + remove buttons
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
             message_id: messageId,
-            caption: query.message.caption + '\n\n✅ ODOBRENO',
+            caption: query.message.caption + `\n\n✅ ODOBRENO (${moderatorName})`,
           }),
         })
 
@@ -120,10 +133,23 @@ export async function POST(request: Request) {
           }),
         })
       } else if (action === 'reject') {
+        // Check if already decided
+        const { data: photo } = await supabase.from('photos').select('status').eq('id', photoId).single()
+        if (photo && photo.status !== 'pending') {
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ callback_query_id: query.id, text: `Već odlučeno: ${photo.status}` }),
+          })
+          return NextResponse.json({ ok: true })
+        }
+
         await supabase
           .from('photos')
           .update({ status: 'rejected' })
           .eq('id', photoId)
+
+        const moderatorName = query.from?.first_name || 'Moderator'
 
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
           method: 'POST',
@@ -131,7 +157,7 @@ export async function POST(request: Request) {
           body: JSON.stringify({
             chat_id: chatId,
             message_id: messageId,
-            caption: query.message.caption + '\n\n❌ ODBIJENO',
+            caption: query.message.caption + `\n\n❌ ODBIJENO (${moderatorName})`,
           }),
         })
 
