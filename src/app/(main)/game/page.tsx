@@ -472,9 +472,8 @@ export default function BlockBlastPage() {
         })
         setClearingCells(new Set())
       }, 300)
-    } else {
-      newCombo = 0
     }
+    // Don't reset combo here — only reset when new batch of 3 is generated
 
     setCombo(newCombo)
     comboRef.current = newCombo
@@ -492,9 +491,12 @@ export default function BlockBlastPage() {
     setShapes(newShapes)
     shapesRef.current = newShapes
 
-    // If all 3 placed, generate new batch
+    // If all 3 placed, generate new batch — RESET COMBO HERE
     const remaining = newShapes.filter(Boolean) as Shape[]
     if (remaining.length === 0) {
+      // Reset combo when new batch starts (like real Block Blast)
+      setCombo(0)
+      comboRef.current = 0
       const delay = linesCleared > 0 ? 400 : 150
       setTimeout(() => {
         const fresh = generateShapes()
