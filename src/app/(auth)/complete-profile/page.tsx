@@ -18,6 +18,8 @@ export default function CompleteProfilePage() {
   const [lastName, setLastName] = useState('')
   const [classNumber, setClassNumber] = useState('1')
   const [sectionNumber, setSectionNumber] = useState('1')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -78,6 +80,18 @@ export default function CompleteProfilePage() {
       return
     }
 
+    if (password.length < 6) {
+      setError('Lozinka mora imati najmanje 6 karaktera')
+      setLoading(false)
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Lozinke se ne poklapaju')
+      setLoading(false)
+      return
+    }
+
     // Verify student exists in verified_students table
     const { data: student, error: verifyError } = await supabase
       .from('verified_students')
@@ -114,6 +128,14 @@ export default function CompleteProfilePage() {
 
     if (updateError) {
       setError('Greška pri čuvanju profila. Pokušajte ponovo.')
+      setLoading(false)
+      return
+    }
+
+    // Set password so user can also login with email+password
+    const { error: pwError } = await supabase.auth.updateUser({ password })
+    if (pwError) {
+      setError('Greška pri postavljanju lozinke. Pokušajte ponovo.')
       setLoading(false)
       return
     }
@@ -190,6 +212,30 @@ export default function CompleteProfilePage() {
               placeholder="Vaše prezime"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
+              required
+              className="bg-background/50"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Lozinka</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Najmanje 6 karaktera"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="bg-background/50"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Potvrdi lozinku</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="Ponovite lozinku"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               className="bg-background/50"
             />
