@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       }
     )
 
-    const { data: { session } } = await supabase.auth.exchangeCodeForSession(code)
+    await supabase.auth.exchangeCodeForSession(code)
 
     // If recovery flow, redirect to update-password page
     const type = searchParams.get('type')
@@ -35,12 +35,15 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/update-password`)
     }
 
+    // Get user after code exchange
+    const { data: { user } } = await supabase.auth.getUser()
+
     // Check if user has a complete profile
-    if (session?.user) {
+    if (user) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('first_name, last_name, class_number, section_number')
-        .eq('id', session.user.id)
+        .eq('id', user.id)
         .single()
 
       const isComplete = profile &&
@@ -52,9 +55,12 @@ export async function GET(request: Request) {
       if (!isComplete) {
         return NextResponse.redirect(`${origin}/complete-profile`)
       }
+
+      return NextResponse.redirect(`${origin}/gallery`)
     }
 
-    return NextResponse.redirect(`${origin}/gallery`)
+    // No user after exchange — redirect to complete profile (new OAuth user)
+    return NextResponse.redirect(`${origin}/complete-profile`)
   }
 
   return NextResponse.redirect(`${origin}/login`)
