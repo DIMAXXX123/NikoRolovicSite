@@ -53,12 +53,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Allow complete-profile for logged-in users (they need to fill in their details)
-  if (!user && isCompleteProfile) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
+  // complete-profile handles its own auth check — don't interfere
 
   // Set visited cookie on login/register pages so next time they go to login
   if (isAuthPage && !request.cookies.get('niko_visited')) {
