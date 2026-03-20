@@ -223,7 +223,7 @@ export default function BlockBlastPage() {
   const [gameOver, setGameOver] = useState(false)
   const [shaking, setShaking] = useState(false)
   const [leaderboard, setLeaderboard] = useState<LeaderEntry[]>([])
-  const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showLeaderboard, setShowLeaderboard] = useState(true)
   const [leaderLoading, setLeaderLoading] = useState(false)
   const [myUserId, setMyUserId] = useState<string | null>(null)
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
@@ -711,18 +711,18 @@ export default function BlockBlastPage() {
               {score}
             </p>
           </div>
-          {combo >= 2 && (
-            <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full border ${comboFlash ? 'combo-flash' : ''}`}
-              style={{
-                background: 'rgba(168,85,247,0.15)',
-                borderColor: 'rgba(168,85,247,0.3)',
-                boxShadow: '0 0 12px rgba(168,85,247,0.2)',
-              }}
-            >
-              <Zap className="w-3.5 h-3.5 text-purple-400" />
-              <span className="text-sm font-black text-purple-300">x{Math.min(combo, 5)} COMBO</span>
-            </div>
-          )}
+          <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full border ${comboFlash ? 'combo-flash' : ''}`}
+            style={{
+              background: combo >= 2 ? 'rgba(168,85,247,0.15)' : 'rgba(255,255,255,0.05)',
+              borderColor: combo >= 2 ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.1)',
+              boxShadow: combo >= 2 ? '0 0 12px rgba(168,85,247,0.2)' : 'none',
+            }}
+          >
+            <Zap className={`w-3.5 h-3.5 ${combo >= 2 ? 'text-purple-400' : 'text-zinc-500'}`} />
+            <span className={`text-sm font-black ${combo >= 2 ? 'text-purple-300' : 'text-zinc-500'}`}>
+              x{combo >= 1 ? combo : 1}
+            </span>
+          </div>
           <div className="text-center">
             <p className="text-[10px] uppercase tracking-wider text-zinc-500">Best</p>
             <p className="text-lg font-semibold text-zinc-400 tabular-nums">{highScore}</p>
@@ -742,7 +742,7 @@ export default function BlockBlastPage() {
         <div key={comboText.id} className="combo-popup text-center text-lg font-black text-purple-300"
           style={{ textShadow: '0 0 12px rgba(168,85,247,0.6)' }}
         >
-          x{Math.min(comboText.value, 5)} COMBO!
+          x{comboText.value} COMBO!
         </div>
       )}
 

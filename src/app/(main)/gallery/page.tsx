@@ -24,6 +24,7 @@ export default function GalleryPage() {
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({})
   const [showReportConfirm, setShowReportConfirm] = useState<string | null>(null)
   const [reportCooldown, setReportCooldown] = useState(false)
+  const [newPhotosCount, setNewPhotosCount] = useState(0)
   const lastTapRef = useRef<Record<string, number>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
@@ -59,6 +60,9 @@ export default function GalleryPage() {
         async (payload: any) => {
           const updated = payload.new as Photo
           if (updated.status === 'approved') {
+            // Show "new photos" button instead of auto-adding
+            setNewPhotosCount(prev => prev + 1)
+            // Still add to list in background
             const { data: profile } = await supabase
               .from('profiles')
               .select('first_name, last_name, class_number, section_number, role')
@@ -418,6 +422,17 @@ export default function GalleryPage() {
       )}
 
       {/* Instagram-style photo feed */}
+      {/* New photos banner */}
+      {newPhotosCount > 0 && (
+        <button
+          onClick={() => { loadPhotos(); setNewPhotosCount(0); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+          className="sticky top-16 z-30 w-full py-2.5 rounded-xl bg-[#7c5cfc] text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#7c5cfc]/30 animate-slide-down active:scale-[0.97] transition-all mb-2"
+        >
+          <Camera className="w-4 h-4" />
+          {newPhotosCount} {newPhotosCount === 1 ? 'nova fotografija' : 'nove fotografije'} — prikaži
+        </button>
+      )}
+
       <div className="py-3 space-y-6 pb-24">
         {photos.length === 0 ? (
           <div className="h-[60vh] flex flex-col items-center justify-center text-[#6b6b80]">
