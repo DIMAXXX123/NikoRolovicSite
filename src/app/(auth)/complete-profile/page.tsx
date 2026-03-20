@@ -37,15 +37,7 @@ export default function CompleteProfilePage() {
       setEmail(user.email || '')
       setUserId(user.id)
 
-      // Pre-fill from Google metadata if available
-      const meta = user.user_metadata
-      if (meta?.full_name) {
-        const parts = meta.full_name.split(' ')
-        if (parts.length >= 2) {
-          setFirstName(parts[0])
-          setLastName(parts.slice(1).join(' '))
-        }
-      }
+      // Don't pre-fill name from Google — user must enter exactly as in school records
 
       // Check if profile is already complete
       const { data: profile } = await supabase
@@ -92,15 +84,21 @@ export default function CompleteProfilePage() {
       return
     }
 
-    // Verify student exists in verified_students table
-    const { data: student, error: verifyError } = await supabase
+    // Normalize diacritics for comparison (Coso = Ćoso, Scekic = Šćekić)
+    const normalize = (s: string) =>
+      s.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+
+    // Fetch all students in this class+section and match with normalization
+    const { data: students, error: verifyError } = await supabase
       .from('verified_students')
-      .select('id, used')
-      .eq('first_name', trimmedFirst)
-      .eq('last_name', trimmedLast)
+      .select('id, first_name, last_name, used')
       .eq('class_number', classNum)
       .eq('section_number', sectionNum)
-      .single()
+
+    const student = students?.find(
+      (s) => normalize(s.first_name) === normalize(trimmedFirst) &&
+             normalize(s.last_name) === normalize(trimmedLast)
+    )
 
     if (verifyError || !student) {
       setError('Niste na spisku učenika. Provjerite da li ste pravilno unijeli podatke.')
@@ -114,14 +112,14 @@ export default function CompleteProfilePage() {
       return
     }
 
-    // Update profile
+    // Update profile — use the name from verified_students (correct diacritics)
     const { error: updateError } = await supabase
       .from('profiles')
       .upsert({
         id: userId,
         email: email,
-        first_name: trimmedFirst,
-        last_name: trimmedLast,
+        first_name: student.first_name,
+        last_name: student.last_name,
         class_number: classNum,
         section_number: sectionNum,
       })
