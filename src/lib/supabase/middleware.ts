@@ -36,7 +36,9 @@ export async function updateSession(request: NextRequest) {
                      request.nextUrl.pathname.startsWith('/reset-password') ||
                      request.nextUrl.pathname.startsWith('/update-password')
 
-  if (!user && !isAuthPage && request.nextUrl.pathname !== '/') {
+  const isCompleteProfile = request.nextUrl.pathname.startsWith('/complete-profile')
+
+  if (!user && !isAuthPage && !isCompleteProfile && request.nextUrl.pathname !== '/') {
     const url = request.nextUrl.clone()
     // First visit → register, returning user → login
     const hasVisited = request.cookies.get('niko_visited')
@@ -44,7 +46,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  if (user && isAuthPage) {
+  if (user && isAuthPage && !isCompleteProfile) {
     const url = request.nextUrl.clone()
     url.pathname = '/news'
     return NextResponse.redirect(url)
