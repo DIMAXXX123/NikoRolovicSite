@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { getCallerProfile } from '@/lib/api-auth'
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
 // Admin Telegram IDs who receive moderation notifications
@@ -7,11 +6,6 @@ const ADMIN_CHAT_IDS = (process.env.TELEGRAM_ADMIN_IDS || '').split(',').filter(
 
 export async function POST(request: Request) {
   try {
-    const caller = await getCallerProfile()
-    if (!caller) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await request.json()
     const { photoId, imageUrl, userName, caption } = body
 
