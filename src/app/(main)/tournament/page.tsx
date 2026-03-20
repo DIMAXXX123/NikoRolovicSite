@@ -242,7 +242,7 @@ export default function TournamentPage() {
 
             {/* Semi Finals (2 matches) */}
             <div className="flex flex-col justify-around w-[135px] shrink-0" style={{ paddingTop: '50px', paddingBottom: '50px' }}>
-              <BracketMatch teamA="?" teamB="?" />
+              <BracketMatch teamA="IV6" teamB="?" date="TBD" />
               <div style={{ height: '40px' }} />
               <BracketMatch teamA="?" teamB="?" />
             </div>
