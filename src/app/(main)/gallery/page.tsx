@@ -167,14 +167,33 @@ export default function GalleryPage() {
     }
 
     try {
-      await fetch('/api/telegram/notify', {
+      // Get reporter name from auth
+      const { data: { user } } = await supabase.auth.getUser()
+      let reporterName = 'Nepoznat korisnik'
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('first_name, last_name').eq('id', user.id).single()
+        if (profile) reporterName = `${profile.first_name} ${profile.last_name}`
+      }
+
+      const photo = photos.find((p) => p.id === photoId)
+      const photoOwner = photo?.user ? `${photo.user.first_name} ${photo.user.last_name}` : 'Nepoznat'
+
+      // Send report to Telegram with delete/keep buttons
+      const BOT_TOKEN = '8702912868:AAEx02wKRq57WNRNFbrYq7KW9tCerPtDCTM'
+      const ADMIN_ID = '6829550617'
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          photoId,
-          imageUrl: photos.find((p) => p.id === photoId)?.image_url || '',
-          userName: 'REPORT',
-          caption: '⚠️ REPORT: Korisnik je prijavio ovu fotografiju',
+          chat_id: ADMIN_ID,
+          photo: photo?.image_url || '',
+          caption: `⚠️ REPORT\n\n👤 Prijavio: ${reporterName}\n📸 Autor: ${photoOwner}\n🆔 ${photoId}`,
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '🗑 Obriši', callback_data: `reject_${photoId}` },
+              { text: '✅ Ostavi', callback_data: `approve_${photoId}` },
+            ]],
+          },
         }),
       })
     } catch {}
