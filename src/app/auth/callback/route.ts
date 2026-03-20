@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const next = searchParams.get('next') ?? '/complete-profile'
 
   if (code) {
     const cookieStore = await cookies()
@@ -27,41 +28,20 @@ export async function GET(request: Request) {
       }
     )
 
-    await supabase.auth.exchangeCodeForSession(code)
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-    // If recovery flow, redirect to update-password page
-    const type = searchParams.get('type')
-    if (type === 'recovery') {
-      return NextResponse.redirect(`${origin}/update-password`)
-    }
-
-    // Get user after code exchange
-    const { data: { user } } = await supabase.auth.getUser()
-
-    // Check if user has a complete profile
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, class_number, section_number')
-        .eq('id', user.id)
-        .single()
-
-      const isComplete = profile &&
-        profile.first_name &&
-        profile.last_name &&
-        profile.class_number &&
-        profile.section_number
-
-      if (!isComplete) {
-        return NextResponse.redirect(`${origin}/complete-profile`)
+    if (!error) {
+      // Recovery flow
+      const type = searchParams.get('type')
+      if (type === 'recovery') {
+        return NextResponse.redirect(`${origin}/update-password`)
       }
 
-      return NextResponse.redirect(`${origin}/gallery`)
+      // Always redirect to complete-profile — it will auto-redirect to gallery if profile is complete
+      return NextResponse.redirect(`${origin}/complete-profile`)
     }
-
-    // No user after exchange — redirect to complete profile (new OAuth user)
-    return NextResponse.redirect(`${origin}/complete-profile`)
   }
 
+  // Error or no code — back to login
   return NextResponse.redirect(`${origin}/login`)
 }

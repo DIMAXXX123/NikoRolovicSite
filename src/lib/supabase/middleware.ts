@@ -46,9 +46,17 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Don't redirect away from complete-profile — user needs to finish registration
   if (user && isAuthPage && !isCompleteProfile) {
     const url = request.nextUrl.clone()
     url.pathname = '/news'
+    return NextResponse.redirect(url)
+  }
+
+  // Allow complete-profile for logged-in users (they need to fill in their details)
+  if (!user && isCompleteProfile) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
