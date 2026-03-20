@@ -96,8 +96,9 @@ export default function CompleteProfilePage() {
       .eq('section_number', sectionNum)
 
     const student = students?.find(
-      (s) => normalize(s.first_name) === normalize(trimmedFirst) &&
-             normalize(s.last_name) === normalize(trimmedLast)
+      (s: { id: string; first_name: string; last_name: string; used: boolean }) =>
+        normalize(s.first_name) === normalize(trimmedFirst) &&
+        normalize(s.last_name) === normalize(trimmedLast)
     )
 
     if (verifyError || !student) {
