@@ -615,13 +615,13 @@ export default function GalleryPage() {
               key={heart.id}
               className="absolute fill-red-500 text-red-500 animate-tiktok-heart"
               style={{
-                left: heart.x - 20,
-                top: heart.y - 20,
-                width: 40 * heart.scale,
-                height: 40 * heart.scale,
+                left: heart.x - 40,
+                top: heart.y - 40,
+                width: 80 * heart.scale,
+                height: 80 * heart.scale,
                 '--heart-drift': `${heart.drift}px`,
                 '--heart-rotation': `${heart.rotation}deg`,
-                filter: 'drop-shadow(0 4px 12px rgba(239, 68, 68, 0.6))',
+                filter: 'drop-shadow(0 6px 20px rgba(239, 68, 68, 0.6))',
               } as React.CSSProperties}
             />
           ))}
