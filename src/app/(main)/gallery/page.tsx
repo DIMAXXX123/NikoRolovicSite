@@ -211,7 +211,7 @@ export default function GalleryPage() {
     if (now - lastTap < 300) {
       toggleLike(photoId)
       setHeartAnimId(photoId)
-      setTimeout(() => setHeartAnimId(null), 1000)
+      setTimeout(() => setHeartAnimId(null), 1200)
       lastTapRef.current[photoId] = 0
     } else {
       lastTapRef.current[photoId] = now
@@ -516,8 +516,8 @@ export default function GalleryPage() {
                   {heartAnimId === photo.id && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <Heart
-                        className="w-20 h-20 fill-red-500 text-red-500 animate-heart-pop"
-                        style={{ filter: 'drop-shadow(0 4px 16px rgba(239, 68, 68, 0.5))' }}
+                        className="w-32 h-32 md:w-40 md:h-40 fill-red-500 text-red-500 animate-heart-pop"
+                        style={{ filter: 'drop-shadow(0 8px 32px rgba(239, 68, 68, 0.7)) drop-shadow(0 0 60px rgba(239, 68, 68, 0.4))' }}
                       />
                     </div>
                   )}

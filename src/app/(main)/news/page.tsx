@@ -244,7 +244,7 @@ export default function NewsPage() {
                   {heartAnimId === heroItem.id && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                       <Heart
-                        className="w-20 h-20 fill-red-500 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.6)] absolute top-1/2 left-1/2 animate-heart-pop"
+                        className="w-32 h-32 md:w-40 md:h-40 fill-red-500 text-red-500 drop-shadow-[0_8px_32px_rgba(239,68,68,0.7)] absolute top-1/2 left-1/2 animate-heart-pop"
                       />
                     </div>
                   )}
@@ -302,7 +302,7 @@ export default function NewsPage() {
                   {heartAnimId === heroItem.id && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                       <Heart
-                        className="w-20 h-20 fill-red-500 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.6)] absolute top-1/2 left-1/2 animate-heart-pop"
+                        className="w-32 h-32 md:w-40 md:h-40 fill-red-500 text-red-500 drop-shadow-[0_8px_32px_rgba(239,68,68,0.7)] absolute top-1/2 left-1/2 animate-heart-pop"
                       />
                     </div>
                   )}
@@ -365,7 +365,7 @@ export default function NewsPage() {
               {heartAnimId === item.id && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                   <Heart
-                    className="w-16 h-16 fill-red-500 text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.6)] absolute top-1/2 left-1/2 animate-heart-pop"
+                    className="w-24 h-24 fill-red-500 text-red-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.6)] absolute top-1/2 left-1/2 animate-heart-pop"
                   />
                 </div>
               )}
