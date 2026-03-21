@@ -225,19 +225,28 @@ export default function GalleryPage() {
     if (!container) return
     const scale = 0.8 + Math.random() * 0.6
     const size = 80 * scale
-    const drift = (Math.random() - 0.5) * 80
-    const rotation = (Math.random() - 0.5) * 40
+    const driftX = (Math.random() - 0.5) * 80
+    const rot = (Math.random() - 0.5) * 40
 
     const el = document.createElement('div')
     el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
-    el.style.cssText = `position:absolute;left:${clientX - size / 2}px;top:${clientY - size / 2}px;width:${size}px;height:${size}px;pointer-events:none;will-change:transform,opacity;filter:drop-shadow(0 4px 16px rgba(239,68,68,0.5));--heart-drift:${drift}px;--heart-rotation:${rotation}deg;`
-    el.classList.add('animate-tiktok-heart')
+    el.style.cssText = `position:absolute;left:${clientX - size / 2}px;top:${clientY - size / 2}px;width:${size}px;height:${size}px;pointer-events:none;`
 
     container.appendChild(el)
 
-    el.addEventListener('animationend', () => el.remove(), { once: true })
-    // Fallback cleanup
-    setTimeout(() => { if (el.parentNode) el.remove() }, 1800)
+    const anim = el.animate([
+      { opacity: 1, transform: `scale(0) rotate(0deg) translate(0, 0)` },
+      { opacity: 1, transform: `scale(1.1) rotate(${rot * 0.3}deg) translate(${driftX * 0.15}px, -30px)`, offset: 0.12 },
+      { opacity: 1, transform: `scale(1) rotate(${rot * 0.6}deg) translate(${driftX * 0.4}px, -80px)`, offset: 0.3 },
+      { opacity: 0.6, transform: `scale(0.9) rotate(${rot}deg) translate(${driftX * 0.8}px, -200px)`, offset: 0.65 },
+      { opacity: 0, transform: `scale(0.7) rotate(${rot}deg) translate(${driftX}px, -320px)` },
+    ], {
+      duration: 1400,
+      easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      fill: 'forwards',
+    })
+
+    anim.onfinish = () => el.remove()
   }, [])
 
   const handleDoubleTap = useCallback((photoId: string, e: React.MouseEvent | React.TouchEvent) => {

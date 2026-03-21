@@ -608,37 +608,7 @@ html.font-large { font-size: 18px; }
 }
 .animate-heart-float { animation: heartFloat 1s ease-out forwards; }
 
-/* TikTok-style floating heart — spawns at tap point, drifts up */
-@keyframes tiktokHeart {
-  0% {
-    opacity: 1;
-    transform: scale(0) rotate(0deg) translateY(0) translateX(0);
-  }
-  10% {
-    opacity: 1;
-    transform: scale(1.15) rotate(var(--heart-rotation, 0deg)) translateY(-10px) translateX(calc(var(--heart-drift, 0px) * 0.1));
-  }
-  25% {
-    opacity: 1;
-    transform: scale(1) rotate(var(--heart-rotation, 0deg)) translateY(-50px) translateX(calc(var(--heart-drift, 0px) * 0.35));
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(0.95) rotate(var(--heart-rotation, 0deg)) translateY(-130px) translateX(calc(var(--heart-drift, 0px) * 0.7));
-  }
-  75% {
-    opacity: 0.5;
-    transform: scale(0.85) rotate(var(--heart-rotation, 0deg)) translateY(-220px) translateX(var(--heart-drift, 0px));
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.7) rotate(var(--heart-rotation, 0deg)) translateY(-340px) translateX(var(--heart-drift, 0px));
-  }
-}
-.animate-tiktok-heart {
-  animation: tiktokHeart 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-  will-change: transform, opacity;
-}
+/* TikTok hearts now use Web Animations API — no CSS keyframes needed */
 
 /* Block Blast icon pulse */
 @keyframes blockPulse {
