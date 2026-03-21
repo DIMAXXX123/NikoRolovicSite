@@ -60,36 +60,67 @@ interface FlashCard {
   answer: string
 }
 
+/** Strip HTML tags from a string, decode common entities */
+function stripHtml(html: string): string {
+  if (!html) return ''
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .trim()
+}
+
 function parseQuizData(content: string): QuizQuestion[] | null {
-  const quizMatch = content.match(/QUIZ_DATA:([\s\S]*?):QUIZ_DATA/)
+  // Match both <!--QUIZ_DATA:...:QUIZ_DATA--> and QUIZ_DATA:...:QUIZ_DATA
+  const quizMatch = content.match(/(?:<!--\s*)?QUIZ_DATA:([\s\S]*?):QUIZ_DATA(?:\s*-->)?/)
   if (!quizMatch) return null
   try {
     const parsed = JSON.parse(quizMatch[1])
+    // MCQ format: array of { question, options, correct }
     if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].options) {
-      return parsed
+      return parsed.map((q: any) => ({
+        question: stripHtml(q.question),
+        options: q.options.map((o: string) => stripHtml(o)),
+        correct: q.correct,
+      }))
+    }
+    // Flashcard format stored as MCQ-compatible
+    if (parsed.flashcards && Array.isArray(parsed.flashcards)) {
+      // Convert flashcards to MCQ isn't possible, return null so flashcard mode is used
+      return null
     }
   } catch {}
   return null
 }
 
 function generateFlashcards(lecture: Lecture): FlashCard[] {
-  const quizMatch = lecture.content.match(/QUIZ_DATA:([\s\S]*?):QUIZ_DATA/)
+  // Match both <!--QUIZ_DATA:...:QUIZ_DATA--> and QUIZ_DATA:...:QUIZ_DATA
+  const quizMatch = lecture.content.match(/(?:<!--\s*)?QUIZ_DATA:([\s\S]*?):QUIZ_DATA(?:\s*-->)?/)
   if (quizMatch) {
     try {
       const parsed = JSON.parse(quizMatch[1])
       if (parsed.flashcards && parsed.flashcards.length > 0) {
-        return parsed.flashcards
+        return parsed.flashcards.map((fc: any) => ({
+          question: stripHtml(fc.question),
+          answer: stripHtml(fc.answer),
+        }))
       }
       if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].question) {
         return parsed.map((q: any) => ({
-          question: q.question,
-          answer: q.options?.[q.correct] || q.answer || 'Pogledaj lekciju za odgovor',
+          question: stripHtml(q.question),
+          answer: stripHtml(q.options?.[q.correct] || q.answer || 'Pogledaj lekciju za odgovor'),
         }))
       }
     } catch {}
   }
 
-  const lines = lecture.content.split('\n').filter(l => l.trim().length > 20)
+  // Fallback: generate from content (strip HTML first)
+  const plainContent = stripHtml(lecture.content)
+  const lines = plainContent.split('\n').filter(l => l.trim().length > 20)
   const cards: FlashCard[] = []
 
   for (let i = 0; i < Math.min(lines.length, 5); i++) {
@@ -122,11 +153,14 @@ function getYouTubeId(url: string): string | null {
 }
 
 function stripQuizData(html: string): string {
-  // Remove QUIZ_DATA blocks (with or without proper closing)
-  let result = html.replace(/\n*QUIZ_DATA:[\s\S]*?:QUIZ_DATA\n*/g, '')
+  // Remove QUIZ_DATA blocks — both <!--QUIZ_DATA:...:QUIZ_DATA--> and bare QUIZ_DATA:...:QUIZ_DATA
+  let result = html.replace(/\n*(?:<!--\s*)?QUIZ_DATA:[\s\S]*?:QUIZ_DATA(?:\s*-->)?\n*/g, '')
   // Fallback: if QUIZ_DATA: is still present (broken closing), strip everything after it
   const idx = result.indexOf('QUIZ_DATA:')
   if (idx !== -1) result = result.substring(0, idx).trim()
+  // Also catch leftover <!-- with QUIZ_DATA
+  const idx2 = result.indexOf('<!--QUIZ_DATA')
+  if (idx2 !== -1) result = result.substring(0, idx2).trim()
   return result
 }
 
