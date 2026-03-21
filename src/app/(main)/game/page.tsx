@@ -408,21 +408,24 @@ export default function BlockBlastPage() {
     const linesCleared = clearRows.length + clearCols.length
 
     let newCombo = comboRef.current
-    // Crazy scoring: base 25 per cell, combo multiplier uncapped, line bonus huge
-    const baseMultiplier = Math.max(1, newCombo * 2)
-    let pts = shape.cells.length * 25 * Math.max(1, Math.floor(baseMultiplier / 2))
 
     if (linesCleared > 0) {
-      newCombo += linesCleared // combo grows by lines cleared, not just +1
-      const multiplier = 5 + newCombo * 8 // starts at 13, grows fast
-      pts += linesCleared * 120 * multiplier
+      // Combo increases by 1 per placement that clears lines (not per line)
+      newCombo += 1
+
+      // Scoring: base points for cells + line clear bonus with combo multiplier
+      const comboMultiplier = Math.max(1, newCombo)
+      let pts_lines = linesCleared * 100 * comboMultiplier
       // Bonus for multi-line clears
-      if (linesCleared >= 2) pts += linesCleared * 500 * Math.floor(multiplier / 2)
-      if (linesCleared >= 3) pts += 3000 * newCombo
-      if (linesCleared >= 4) pts += 10000 * newCombo
+      if (linesCleared >= 2) pts_lines += linesCleared * 200 * comboMultiplier
+      if (linesCleared >= 3) pts_lines += 1000 * comboMultiplier
+      if (linesCleared >= 4) pts_lines += 3000 * comboMultiplier
+
+      const pts_cells = shape.cells.length * 10
+      const pts_total = pts_cells + pts_lines
 
       // Show combo text
-      if (newCombo >= 1) {
+      if (newCombo >= 2) {
         const cid = ++comboIdRef.current
         setComboText({ value: newCombo, id: cid })
         setTimeout(() => setComboText(prev => prev?.id === cid ? null : prev), 1200)
@@ -442,6 +445,12 @@ export default function BlockBlastPage() {
         setTimeout(() => setShaking(false), 200)
       }
 
+      setScore(prev => {
+        const newScore = prev + pts_total
+        scoreRef.current = newScore
+        return newScore
+      })
+
       // Clear cells after animation
       setTimeout(() => {
         setGrid(prev => {
@@ -451,9 +460,8 @@ export default function BlockBlastPage() {
 
           // Board clear bonus
           if (isBoardEmpty(g)) {
-            pts += 360
             setScore(prev2 => {
-              const ns = prev2 + 360
+              const ns = prev2 + 500
               scoreRef.current = ns
               return ns
             })
@@ -472,18 +480,23 @@ export default function BlockBlastPage() {
         })
         setClearingCells(new Set())
       }, 300)
+    } else {
+      // No lines cleared — combo resets to 0
+      newCombo = 0
+
+      // Points just for placing cells (no combo bonus)
+      const pts_cells = shape.cells.length * 10
+      setScore(prev => {
+        const newScore = prev + pts_cells
+        scoreRef.current = newScore
+        return newScore
+      })
     }
-    // Don't reset combo here — only reset when new batch of 3 is generated
 
     setCombo(newCombo)
     comboRef.current = newCombo
     setGrid(newGrid)
     gridStateRef.current = newGrid
-    setScore(prev => {
-      const newScore = prev + pts
-      scoreRef.current = newScore
-      return newScore
-    })
 
     // Remove used shape
     const newShapes = [...shapesRef.current]
@@ -491,12 +504,9 @@ export default function BlockBlastPage() {
     setShapes(newShapes)
     shapesRef.current = newShapes
 
-    // If all 3 placed, generate new batch — RESET COMBO HERE
+    // If all 3 placed, generate new batch (combo persists across batches!)
     const remaining = newShapes.filter(Boolean) as Shape[]
     if (remaining.length === 0) {
-      // Reset combo when new batch starts (like real Block Blast)
-      setCombo(0)
-      comboRef.current = 0
       const delay = linesCleared > 0 ? 400 : 150
       setTimeout(() => {
         const fresh = generateShapes()
