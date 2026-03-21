@@ -354,7 +354,7 @@ export default function SchedulePage() {
       <BetaDisclaimer />
 
       {/* Header */}
-      <div className="flex items-center justify-between pt-1">
+      <div className="flex items-center justify-between pt-1" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '0ms', opacity: 0 }}>
         <div>
           <h1 className="text-2xl font-bold gradient-text">Raspored</h1>
           <p className="text-xs text-[#6b6b80] mt-1">
@@ -373,7 +373,7 @@ export default function SchedulePage() {
       </div>
 
       {/* Class/section selector */}
-      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] p-4 space-y-3">
+      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] p-4 space-y-3" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '60ms', opacity: 0 }}>
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <label className="text-[10px] text-[#6b6b80] font-medium uppercase tracking-wider mb-2 block">Razred</label>
@@ -415,14 +415,14 @@ export default function SchedulePage() {
       </div>
 
       {/* Day selector pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex gap-2 overflow-x-auto pb-1" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '120ms', opacity: 0 }}>
         {DAY_SHORT.map((day, i) => {
           const isToday = new Date().getDay() === i + 1
           return (
             <button
               key={day}
               onClick={() => setActiveDay(i)}
-              className={`flex-1 min-w-0 py-2.5 px-2 rounded-2xl text-xs font-semibold transition-all duration-200 relative ${
+              className={`flex-1 min-w-0 py-1.5 px-1.5 rounded-xl text-xs font-semibold transition-all duration-200 relative ${
                 activeDay === i
                   ? 'bg-[#7c5cfc] text-white shadow-[0_0_16px_rgba(124,92,252,0.3)]'
                   : 'bg-white/[0.04] text-[#6b6b80] hover:bg-white/[0.08] hover:text-[#e8e8f0]'
@@ -438,7 +438,7 @@ export default function SchedulePage() {
       </div>
 
       {/* Weekly overview grid */}
-      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] overflow-hidden">
+      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '180ms', opacity: 0 }}>
         <div className="px-4 py-3 border-b border-[#1a1a2e]">
           <h3 className="text-sm font-semibold text-[#e8e8f0]">Sedmični pregled</h3>
         </div>
@@ -446,12 +446,12 @@ export default function SchedulePage() {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-[#1a1a2e]">
-                <th className="p-2 text-left text-[#6b6b80] font-medium w-8">#</th>
+                <th className="p-1.5 text-left text-[#6b6b80] font-medium w-8">#</th>
                 {DAY_SHORT.map((d, di) => (
                   <th
                     key={d}
                     onClick={() => setActiveDay(di)}
-                    className={`p-2 text-center font-medium cursor-pointer transition-colors ${
+                    className={`p-1.5 text-center font-medium cursor-pointer transition-colors ${
                       activeDay === di ? 'text-[#7c5cfc]' : 'text-[#6b6b80] hover:text-[#e8e8f0]'
                     }`}
                   >
@@ -463,7 +463,7 @@ export default function SchedulePage() {
             <tbody>
               {PERIODS.map((period) => (
                 <tr key={period} className="border-b border-[#1a1a2e]/50">
-                  <td className="p-1.5 text-[#6b6b80] font-medium text-[11px]">{period}</td>
+                  <td className="p-1 text-[#6b6b80] font-medium text-[11px]">{period}</td>
                   {DAYS.map((_, di) => {
                     const subj = schedule[cellKey(di, period)] || ''
                     const color = getSubjectColor(subj)
@@ -491,7 +491,7 @@ export default function SchedulePage() {
       </div>
 
       {/* Schedule for active day */}
-      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] overflow-hidden">
+      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '240ms', opacity: 0 }}>
         <div className="px-5 py-4 border-b border-[#1a1a2e] flex items-center justify-between">
           <h3 className="text-base font-bold text-[#e8e8f0]">{DAYS[activeDay]}</h3>
           <span className="text-xs text-[#6b6b80] px-2.5 py-1 rounded-lg bg-white/[0.04]">

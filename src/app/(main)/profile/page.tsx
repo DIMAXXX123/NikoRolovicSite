@@ -289,7 +289,7 @@ export default function ProfilePage() {
     <div className="space-y-4 animate-fade-in pb-6">
       {showRoleAnim && <RoleAnimation role={profile.role} onDone={handleRoleAnimDone} />}
 
-      <h1 className={`text-2xl font-bold pt-1 ${isCreator ? 'bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 bg-clip-text text-transparent' : 'gradient-text'}`}>
+      <h1 className={`text-2xl font-bold pt-1 ${isCreator ? 'bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 bg-clip-text text-transparent' : 'gradient-text'}`} style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '0ms', opacity: 0 }}>
         Profil
       </h1>
 
@@ -297,6 +297,7 @@ export default function ProfilePage() {
       <div
         className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${gradient} p-[1px] ${glow} cursor-pointer active:scale-[0.98] transition-transform`}
         onClick={() => setShowRoleAnim(true)}
+        style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '60ms', opacity: 0 }}
       >
         <div className="rounded-[calc(1.5rem-1px)] bg-card/95 backdrop-blur-xl p-6">
           {/* Decorative gradient blob */}
@@ -339,7 +340,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Stats row */}
-      <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] p-4">
+      <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] p-4" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '120ms', opacity: 0 }}>
         <div className="grid grid-cols-3 divide-x divide-[#1a1a2e]">
           <div className="flex flex-col items-center gap-1 px-2">
             <span className="text-xs text-muted-foreground">Razred</span>
@@ -358,7 +359,7 @@ export default function ProfilePage() {
 
       {/* Avatar picker */}
       {showAvatarPicker && (
-        <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] animate-fade-in p-4">
+        <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] animate-fade-in p-4" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '180ms', opacity: 0 }}>
           <p className="text-sm font-bold mb-3">Izaberi avatar</p>
           <div className="grid grid-cols-5 gap-2">
             {AVATARS.map((av) => (
@@ -378,7 +379,7 @@ export default function ProfilePage() {
       )}
 
       {/* Info card */}
-      <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] p-5 space-y-3.5">
+      <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] p-5 space-y-3.5" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '240ms', opacity: 0 }}>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Email</span>
           <span className="truncate ml-4 font-medium">{profile.email}</span>
@@ -425,7 +426,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Action buttons */}
-      <div className="space-y-2">
+      <div className="space-y-2" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '300ms', opacity: 0 }}>
         <button
           onClick={() => setShowCalculator(true)}
           className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
@@ -437,16 +438,7 @@ export default function ProfilePage() {
           <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
         </button>
 
-        <button
-          onClick={() => setShowNavEditor(true)}
-          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
-        >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7c5cfc] to-[#5b3fd9] flex items-center justify-center shadow-lg shadow-[#7c5cfc]/15">
-            <Navigation className="w-4.5 h-4.5 text-white" />
-          </div>
-          <span className="flex-1 text-left">Uredi navigaciju</span>
-          <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
-        </button>
+
       </div>
 
       {/* Quick-access cards for pages not in nav */}
@@ -456,6 +448,7 @@ export default function ProfilePage() {
       <button
         onClick={() => setShowSettings(!showSettings)}
         className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
+        style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '360ms', opacity: 0 }}
       >
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-zinc-500 to-zinc-700 flex items-center justify-center">
           <Settings className="w-4.5 h-4.5 text-white" />
@@ -542,6 +535,25 @@ export default function ProfilePage() {
             </button>
           </div>
 
+          {/* Navigation editor */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#7c5cfc]/10 flex items-center justify-center">
+                <Navigation className="w-4 h-4 text-[#7c5cfc]" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Navigacija</p>
+                <p className="text-xs text-muted-foreground">Uredi donji meni</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowNavEditor(true)}
+              className="px-4 py-1.5 rounded-xl bg-[#7c5cfc]/10 text-[#7c5cfc] text-xs font-semibold transition-all active:scale-95 hover:bg-[#7c5cfc]/15"
+            >
+              Uredi
+            </button>
+          </div>
+
           {/* Clear cache */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -582,6 +594,7 @@ export default function ProfilePage() {
         <button
           onClick={() => router.push('/admin')}
           className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
+          style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '420ms', opacity: 0 }}
         >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/15">
             <Shield className="w-4.5 h-4.5 text-white" />

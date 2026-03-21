@@ -569,6 +569,46 @@ export default function BlockBlastPage() {
     hoverPosRef.current = null
   }, [placeBlock])
 
+  // ── Mouse drag handlers (like touch but for mouse) ───────────────────
+  const handleMouseDragStart = useCallback((e: React.MouseEvent, idx: number) => {
+    if (gameOver || !shapes[idx]) return
+    e.preventDefault()
+    isDragging.current = true
+    dragShapeIdx.current = idx
+    setSelectedIdx(idx)
+  }, [gameOver, shapes])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging.current || dragShapeIdx.current === null) return
+    const shape = shapesRef.current[dragShapeIdx.current]
+    if (!shape) return
+    const bounds = getShapeBounds(shape)
+    const pos = getCellFromPoint(e.clientX, e.clientY)
+    if (pos) {
+      const adjRow = pos.row - Math.floor(bounds.rows / 2)
+      const adjCol = pos.col - Math.floor(bounds.cols / 2)
+      const snapped = findNearestValidPosition(gridStateRef.current, shape, adjRow, adjCol)
+      setHoverPos(snapped)
+      hoverPosRef.current = snapped
+    } else {
+      setHoverPos(null)
+      hoverPosRef.current = null
+    }
+  }, [getCellFromPoint])
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDragging.current || dragShapeIdx.current === null) return
+    const hp = hoverPosRef.current
+    const idx = dragShapeIdx.current
+    if (hp !== null && idx !== null) {
+      placeBlock(idx, hp.row, hp.col)
+    }
+    isDragging.current = false
+    dragShapeIdx.current = null
+    setHoverPos(null)
+    hoverPosRef.current = null
+  }, [placeBlock])
+
   // ── Mouse handlers for grid ─────────────────────────────────────────
   const handleGridMouseMove = useCallback((e: React.MouseEvent) => {
     if (selectedIdx === null || !shapes[selectedIdx]) return
@@ -632,6 +672,8 @@ export default function BlockBlastPage() {
       className={`overflow-hidden select-none ${shaking ? 'animate-shake' : ''}`}
       onTouchMove={handleTouchMove as unknown as React.TouchEventHandler<HTMLDivElement>}
       onTouchEnd={handleTouchEnd}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
       style={{ touchAction: 'none' }}
     >
       <style jsx global>{`
@@ -886,6 +928,7 @@ export default function BlockBlastPage() {
               style={{ animationDelay: newShapeAnim ? `${idx * 80}ms` : undefined }}
               onClick={() => setSelectedIdx(isSelected ? null : idx)}
               onTouchStart={(e) => handleTouchStart(e, idx)}
+              onMouseDown={(e) => handleMouseDragStart(e, idx)}
             >
               <div
                 className="grid"
