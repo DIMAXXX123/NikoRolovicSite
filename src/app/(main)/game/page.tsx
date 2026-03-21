@@ -860,10 +860,10 @@ export default function BlockBlastPage() {
       <div className="relative mx-auto w-full" style={{ maxWidth: '360px' }}>
         <div
           ref={gridRef}
-          className="grid rounded-xl p-[3px] border w-full mx-auto"
+          className="grid rounded-xl p-[2px] border w-full mx-auto"
           style={{
             gridTemplateColumns: `repeat(${GRID}, 1fr)`,
-            gap: '2px',
+            gap: '1px',
             aspectRatio: '1/1',
             maxWidth: '352px',
             maxHeight: '352px',
@@ -884,7 +884,7 @@ export default function BlockBlastPage() {
                 <div
                   key={key}
                   className={`
-                    aspect-square rounded-[3px]
+                    aspect-square rounded-[2px]
                     ${cell.filled && cell.justPlaced ? 'cell-placed' : ''}
                     ${isClearing ? 'cell-clearing' : ''}
                     ${isGhost ? 'ghost-cell' : ''}
@@ -896,17 +896,15 @@ export default function BlockBlastPage() {
                         ? `${ghostColor}44`
                         : 'rgba(255,255,255,0.02)',
                     ...(cell.filled ? {
-                      backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)',
-                      border: `2px solid ${darkenColor(cell.color, 50)}`,
-                      borderTop: `2px solid ${darkenColor(cell.color, -30)}`,
-                      borderLeft: `2px solid ${darkenColor(cell.color, -20)}`,
-                      borderRadius: '3px',
+                      backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.08) 35%, transparent 55%)',
+                      boxShadow: `inset 0 1px 0 ${darkenColor(cell.color, -40)}, inset 0 -1px 0 ${darkenColor(cell.color, 60)}, inset 1px 0 0 ${darkenColor(cell.color, -25)}, inset -1px 0 0 ${darkenColor(cell.color, 45)}`,
+                      borderRadius: '2px',
                     } : {
-                      border: '1px solid rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.03)',
                     }),
                     ...(isGhost ? {
                       border: `1px solid ${ghostColor}66`,
-                      borderRadius: '3px',
+                      borderRadius: '2px',
                     } : {}),
                   }}
                 />
@@ -955,16 +953,14 @@ export default function BlockBlastPage() {
                   return (
                     <div
                       key={i}
-                      className="rounded-[3px]"
+                      className="rounded-[2px]"
                       style={{
                         width: cellPx,
                         height: cellPx,
                         backgroundColor: isFilled ? shape.color : 'transparent',
                         ...(isFilled ? {
-                          backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)',
-                          border: `2px solid ${darkenColor(shape.color, 50)}`,
-                          borderTop: `2px solid ${darkenColor(shape.color, -30)}`,
-                          borderLeft: `2px solid ${darkenColor(shape.color, -20)}`,
+                          backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.08) 35%, transparent 55%)',
+                          boxShadow: `inset 0 1px 0 ${darkenColor(shape.color, -40)}, inset 0 -1px 0 ${darkenColor(shape.color, 60)}, inset 1px 0 0 ${darkenColor(shape.color, -25)}, inset -1px 0 0 ${darkenColor(shape.color, 45)}`,
                         } : {}),
                       }}
                     />
