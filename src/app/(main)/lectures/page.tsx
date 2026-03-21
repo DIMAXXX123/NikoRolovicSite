@@ -118,33 +118,8 @@ function generateFlashcards(lecture: Lecture): FlashCard[] {
     } catch {}
   }
 
-  // Fallback: generate from content (strip HTML first)
-  const plainContent = stripHtml(lecture.content)
-  const lines = plainContent.split('\n').filter(l => l.trim().length > 20)
-  const cards: FlashCard[] = []
-
-  for (let i = 0; i < Math.min(lines.length, 5); i++) {
-    const line = lines[i].trim()
-    if (line.includes(':') || line.includes('-') || line.includes('–')) {
-      const sep = line.includes(':') ? ':' : line.includes('–') ? '–' : '-'
-      const parts = line.split(sep)
-      if (parts.length >= 2 && parts[0].trim().length > 3) {
-        cards.push({
-          question: parts[0].trim().replace(/^[-•*]\s*/, ''),
-          answer: parts.slice(1).join(sep).trim(),
-        })
-      }
-    }
-  }
-
-  if (cards.length === 0) {
-    cards.push({
-      question: `Šta je glavna tema lekcije "${lecture.title}"?`,
-      answer: `Ova lekcija pokriva temu: ${lecture.subject} - ${lecture.title}`,
-    })
-  }
-
-  return cards
+  // No quiz data found — return empty (UI will show "quiz not available")
+  return []
 }
 
 function getYouTubeId(url: string): string | null {
@@ -244,15 +219,21 @@ export default function LecturesPage() {
       setQuizScore(0)
       setQuizFinished(false)
       setView('quiz')
-    } else {
-      // Fallback to flashcards
-      const cards = generateFlashcards(lecture)
+      return
+    }
+    // Try flashcards
+    const cards = generateFlashcards(lecture)
+    if (cards.length > 0) {
       setFlashcards(cards)
       setCurrentCard(0)
       setFlipped(false)
       setQuizQuestions([])
       setView('quiz')
+      return
     }
+    // No quiz data at all — stay on lecture, show nothing
+    setQuizQuestions([])
+    setFlashcards([])
   }
 
   function handleQuizAnswer(optionIdx: number) {
@@ -736,28 +717,39 @@ export default function LecturesPage() {
             <Card className="border-border/30 bg-gradient-to-br from-[#7c5cfc]/10 to-[#5b3fd9]/5 backdrop-blur">
               <CardContent className="p-5 text-center space-y-3">
                 <Brain className="w-10 h-10 mx-auto text-[#7c5cfc]" />
-                <h3 className="text-lg font-bold">Provjeri znanje</h3>
-                <p className="text-sm text-muted-foreground">Testiraj koliko si naučio/la iz ove lekcije</p>
-                <button
-                  onClick={() => handleQuiz(selectedLecture)}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] text-white font-medium text-sm transition-all active:scale-[0.98] hover:shadow-lg hover:shadow-[#7c5cfc]/20"
-                >
-                  Započni kviz →
-                </button>
+                {(parseQuizData(selectedLecture.content) || generateFlashcards(selectedLecture).length > 0) ? (
+                  <>
+                    <h3 className="text-lg font-bold">Provjeri znanje</h3>
+                    <p className="text-sm text-muted-foreground">Testiraj koliko si naučio/la iz ove lekcije</p>
+                    <button
+                      onClick={() => handleQuiz(selectedLecture)}
+                      className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] text-white font-medium text-sm transition-all active:scale-[0.98] hover:shadow-lg hover:shadow-[#7c5cfc]/20"
+                    >
+                      Započni kviz →
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-bold">Kviz uskoro</h3>
+                    <p className="text-sm text-muted-foreground">Kviz za ovu lekciju još nije dodat</p>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
         )}
 
-        {/* Quiz button */}
-        <div className="pt-4 border-t border-border/30">
-          <button
-            onClick={() => handleQuiz(selectedLecture)}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]"
-          >
-            <Brain className="w-5 h-5" /> Provjeri znanje
-          </button>
-        </div>
+        {/* Quiz button — only show if quiz data exists */}
+        {(parseQuizData(selectedLecture.content) || generateFlashcards(selectedLecture).length > 0) && (
+          <div className="pt-4 border-t border-border/30">
+            <button
+              onClick={() => handleQuiz(selectedLecture)}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]"
+            >
+              <Brain className="w-5 h-5" /> Provjeri znanje
+            </button>
+          </div>
+        )}
       </div>
     )
   }

@@ -19,7 +19,7 @@ export default function GalleryPage() {
   const [anonymous, setAnonymous] = useState(false)
   const [toast, setToast] = useState('')
   const [likedPhotos, setLikedPhotos] = useState<Record<string, boolean>>({})
-  const [heartAnimId, setHeartAnimId] = useState<string | null>(null)
+  const [floatingHearts, setFloatingHearts] = useState<{ id: number; photoId: string; x: number; y: number; scale: number; rotation: number; drift: number }[]>([])
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({})
   const [showReportConfirm, setShowReportConfirm] = useState<string | null>(null)
@@ -205,18 +205,48 @@ export default function GalleryPage() {
     setTimeout(() => setToast(''), 3000)
   }
 
-  const handleDoubleTap = useCallback((photoId: string) => {
+  const spawnHeart = useCallback((photoId: string, clientX: number, clientY: number) => {
+    const id = Date.now() + Math.random()
+    const heart = {
+      id,
+      photoId,
+      x: clientX,
+      y: clientY,
+      scale: 0.8 + Math.random() * 0.6,
+      rotation: (Math.random() - 0.5) * 40,
+      drift: (Math.random() - 0.5) * 80,
+    }
+    setFloatingHearts(prev => [...prev, heart])
+    setTimeout(() => {
+      setFloatingHearts(prev => prev.filter(h => h.id !== id))
+    }, 1400)
+  }, [])
+
+  const handleDoubleTap = useCallback((photoId: string, e: React.MouseEvent | React.TouchEvent) => {
     const now = Date.now()
     const lastTap = lastTapRef.current[photoId] || 0
+
+    // Get tap coordinates
+    let clientX: number, clientY: number
+    if ('touches' in e) {
+      clientX = e.changedTouches?.[0]?.clientX ?? 0
+      clientY = e.changedTouches?.[0]?.clientY ?? 0
+    } else {
+      clientX = e.clientX
+      clientY = e.clientY
+    }
+
     if (now - lastTap < 300) {
-      toggleLike(photoId)
-      setHeartAnimId(photoId)
-      setTimeout(() => setHeartAnimId(null), 1200)
+      // Double tap — like + heart
+      if (!likedPhotos[photoId]) {
+        toggleLike(photoId)
+      }
+      spawnHeart(photoId, clientX, clientY)
       lastTapRef.current[photoId] = 0
     } else {
       lastTapRef.current[photoId] = now
     }
-  }, [likedPhotos])
+  }, [likedPhotos, spawnHeart])
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -500,10 +530,10 @@ export default function GalleryPage() {
                   </button>
                 </div>
 
-                {/* Photo with double-tap like */}
+                {/* Photo with double-tap like — TikTok style */}
                 <div
                   className="relative select-none w-full"
-                  onClick={() => handleDoubleTap(photo.id)}
+                  onClick={(e) => handleDoubleTap(photo.id, e)}
                 >
                   <img
                     src={photo.image_url}
@@ -512,15 +542,6 @@ export default function GalleryPage() {
                     style={{ maxHeight: '600px' }}
                     draggable={false}
                   />
-
-                  {heartAnimId === photo.id && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <Heart
-                        className="w-32 h-32 md:w-40 md:h-40 fill-red-500 text-red-500 animate-heart-pop"
-                        style={{ filter: 'drop-shadow(0 8px 32px rgba(239, 68, 68, 0.7)) drop-shadow(0 0 60px rgba(239, 68, 68, 0.4))' }}
-                      />
-                    </div>
-                  )}
                 </div>
 
                 {/* Action row + caption */}
@@ -582,6 +603,28 @@ export default function GalleryPage() {
               </>
             )}
           </div>
+        </div>,
+        document.body
+      )}
+
+      {/* FLOATING HEARTS — TikTok style */}
+      {floatingHearts.length > 0 && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[100] pointer-events-none overflow-hidden">
+          {floatingHearts.map((heart) => (
+            <Heart
+              key={heart.id}
+              className="absolute fill-red-500 text-red-500 animate-tiktok-heart"
+              style={{
+                left: heart.x - 20,
+                top: heart.y - 20,
+                width: 40 * heart.scale,
+                height: 40 * heart.scale,
+                '--heart-drift': `${heart.drift}px`,
+                '--heart-rotation': `${heart.rotation}deg`,
+                filter: 'drop-shadow(0 4px 12px rgba(239, 68, 68, 0.6))',
+              } as React.CSSProperties}
+            />
+          ))}
         </div>,
         document.body
       )}
