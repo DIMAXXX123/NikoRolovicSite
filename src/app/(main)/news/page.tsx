@@ -12,7 +12,7 @@ export default function NewsPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [likingIds, setLikingIds] = useState<Set<string>>(new Set())
-  const [heartAnimId, setHeartAnimId] = useState<string | null>(null)
+
   const lastTapRef = useRef<Record<string, number>>({})
   const heartsContainerRef = useRef<HTMLDivElement | null>(null)
   const supabase = createClient()
@@ -161,9 +161,7 @@ export default function NewsPage() {
       if (item && !item.user_liked) {
         toggleLike(newsId, false)
       }
-      setHeartAnimId(newsId)
       spawnHeart(e.clientX, e.clientY)
-      setTimeout(() => setHeartAnimId(null), 600)
       lastTapRef.current[newsId] = 0
     } else {
       lastTapRef.current[newsId] = now
@@ -244,14 +242,6 @@ export default function NewsPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/40 to-transparent" />
 
-                  {heartAnimId === heroItem.id && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                      <Heart
-                        className="w-32 h-32 md:w-40 md:h-40 fill-red-500 text-red-500 drop-shadow-[0_8px_32px_rgba(239,68,68,0.7)] absolute top-1/2 left-1/2 animate-heart-pop"
-                      />
-                    </div>
-                  )}
-
                   <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="px-2.5 py-1 rounded-xl bg-white/10 backdrop-blur-md text-[11px] text-white/80 font-medium">
@@ -302,13 +292,6 @@ export default function NewsPage() {
 
               {!heroItem.image_url && (
                 <div className="relative p-5 space-y-3">
-                  {heartAnimId === heroItem.id && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                      <Heart
-                        className="w-32 h-32 md:w-40 md:h-40 fill-red-500 text-red-500 drop-shadow-[0_8px_32px_rgba(239,68,68,0.7)] absolute top-1/2 left-1/2 animate-heart-pop"
-                      />
-                    </div>
-                  )}
                   <span className="text-xs text-[#6b6b80]">{formatDate(heroItem.created_at)}</span>
                   <h2 className="text-xl font-bold text-[#e8e8f0] leading-snug">{heroItem.title}</h2>
                   <p className="text-[#6b6b80] text-sm leading-relaxed line-clamp-3">{heroItem.content}</p>
@@ -365,14 +348,6 @@ export default function NewsPage() {
               className="group relative rounded-2xl overflow-hidden cursor-pointer select-none bg-[#0c0c14] border border-[#1a1a2e] transition-all duration-250 hover:border-[#7c5cfc]/30 hover:shadow-[0_8px_32px_rgba(124,92,252,0.08)]"
               onClick={(e) => handleDoubleTap(item.id, e)}
             >
-              {heartAnimId === item.id && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                  <Heart
-                    className="w-24 h-24 fill-red-500 text-red-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.6)] absolute top-1/2 left-1/2 animate-heart-pop"
-                  />
-                </div>
-              )}
-
               {item.image_url && (
                 <div className="relative h-48 overflow-hidden">
                   <img
