@@ -422,7 +422,7 @@ export default function BlockBlastPage() {
       if (linesCleared >= 4) pts += 10000 * newCombo
 
       // Show combo text
-      if (newCombo >= 2) {
+      if (newCombo >= 1) {
         const cid = ++comboIdRef.current
         setComboText({ value: newCombo, id: cid })
         setTimeout(() => setComboText(prev => prev?.id === cid ? null : prev), 1200)
@@ -715,13 +715,13 @@ export default function BlockBlastPage() {
           </div>
           <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full border ${comboFlash ? 'combo-flash' : ''}`}
             style={{
-              background: combo >= 2 ? 'rgba(168,85,247,0.15)' : 'rgba(255,255,255,0.05)',
-              borderColor: combo >= 2 ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.1)',
-              boxShadow: combo >= 2 ? '0 0 12px rgba(168,85,247,0.2)' : 'none',
+              background: combo >= 1 ? 'rgba(168,85,247,0.15)' : 'rgba(255,255,255,0.05)',
+              borderColor: combo >= 1 ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.1)',
+              boxShadow: combo >= 1 ? '0 0 12px rgba(168,85,247,0.2)' : 'none',
             }}
           >
-            <Zap className={`w-3.5 h-3.5 ${combo >= 2 ? 'text-purple-400' : 'text-zinc-500'}`} />
-            <span className={`text-sm font-black ${combo >= 2 ? 'text-purple-300' : 'text-zinc-500'}`}>
+            <Zap className={`w-3.5 h-3.5 ${combo >= 1 ? 'text-purple-400' : 'text-zinc-500'}`} />
+            <span className={`text-sm font-black ${combo >= 1 ? 'text-purple-300' : 'text-zinc-500'}`}>
               x{combo >= 1 ? combo : 1}
             </span>
           </div>
