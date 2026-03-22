@@ -932,7 +932,7 @@ export default function AdminLecturesPage() {
           )}
         </div>
 
-        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onImageSelected} />
+        <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={onImageSelected} />
 
         <div className="px-4 py-3 bg-white border-t border-gray-200 safe-area-bottom">
           <Button
