@@ -38,12 +38,14 @@ const MATCHES: Match[] = [
   { id: 'm7', round: '1/8', teamA: 'III2', teamB: 'IV1', scoreA: 20, scoreB: 0, date: '18.3', time: '12:45', played: true, technical: true },
   // Quarter Finals
   { id: 'q1', round: '1/4', teamA: 'IV6', teamB: 'I3', scoreA: 62, scoreB: 46, date: '19.3', time: '12:45', played: true },
-  { id: 'q2', round: '1/4', teamA: 'III5', teamB: 'II4', date: '27.3', time: '12:45', played: false },
-  { id: 'q3', round: '1/4', teamA: 'IV3', teamB: 'II3', date: '23.3', time: '12:45', played: false },
-  { id: 'q4', round: '1/4', teamA: 'III2', teamB: 'III3', date: '26.3', time: '12:45', played: false },
-  // Semi Finals
-  { id: 's1', round: '1/2', teamA: 'IV6', teamB: '?', date: 'TBD', time: '12:45', played: false },
-  { id: 's2', round: '1/2', teamA: '?', teamB: '?', date: 'TBD', time: '12:45', played: false },
+  { id: 'q2', round: '1/4', teamA: 'III5', teamB: 'II4', scoreA: 38, scoreB: 30, date: '27.3', time: '12:45', played: true },
+  { id: 'q3', round: '1/4', teamA: 'IV3', teamB: 'II3', scoreA: 28, scoreB: 45, date: '23.3', time: '12:45', played: true },
+  { id: 'q4', round: '1/4', teamA: 'III2', teamB: 'III3', scoreA: 36, scoreB: 24, date: '26.3', time: '12:45', played: true },
+  // Semi Finals — 31.3  
+  { id: 's1', round: '1/2', teamA: 'IV6', teamB: 'II3', scoreA: 3, scoreB: 4, date: '31.3', time: '12:45', played: true },
+  { id: 's2', round: '1/2', teamA: 'III5', teamB: 'III2', scoreA: 5, scoreB: 2, date: '31.3', time: '12:45', played: true },
+  // Finale
+  { id: 'f1', round: 'finale', teamA: 'II3', teamB: 'III5', date: 'TBD', time: '12:45', played: false },
 ]
 
 const QUALIFIED = ['IV6', 'III5', 'II3', 'III3', 'II4', 'IV3', 'I3', 'III2']
@@ -235,21 +237,21 @@ export default function TournamentPage() {
             {/* Quarter Finals (4 matches, vertically centered between pairs) */}
             <div className="flex flex-col justify-around w-[135px] shrink-0" style={{ gap: '28px', paddingTop: '18px', paddingBottom: '18px' }}>
               <BracketMatch teamA="IV6" teamB="I3" scoreA={62} scoreB={46} />
-              <BracketMatch teamA="IV3" teamB="II3" date="23.3" />
-              <BracketMatch teamA="III5" teamB="II4" date="27.3" />
-              <BracketMatch teamA="III2" teamB="III3" date="26.3" />
+              <BracketMatch teamA="IV3" teamB="II3" scoreA={28} scoreB={45} />
+              <BracketMatch teamA="III5" teamB="II4" scoreA={38} scoreB={30} />
+              <BracketMatch teamA="III2" teamB="III3" scoreA={36} scoreB={24} />
             </div>
 
             {/* Semi Finals (2 matches) */}
             <div className="flex flex-col justify-around w-[135px] shrink-0" style={{ paddingTop: '50px', paddingBottom: '50px' }}>
-              <BracketMatch teamA="IV6" teamB="?" date="TBD" />
+              <BracketMatch teamA="IV6" teamB="II3" scoreA={3} scoreB={4} />
               <div style={{ height: '40px' }} />
-              <BracketMatch teamA="?" teamB="?" />
+              <BracketMatch teamA="III5" teamB="III2" scoreA={5} scoreB={2} />
             </div>
 
             {/* Final (1 match) */}
             <div className="flex flex-col justify-center w-[135px] shrink-0">
-              <BracketMatch teamA="?" teamB="?" isFinal />
+              <BracketMatch teamA="II3" teamB="III5" isFinal />
             </div>
           </div>
         </div>
