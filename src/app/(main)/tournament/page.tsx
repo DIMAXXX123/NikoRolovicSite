@@ -12,6 +12,7 @@ type Match = {
   teamB: string
   scoreA?: number
   scoreB?: number
+  winner?: string
   date: string
   time: string
   played: boolean
@@ -38,12 +39,12 @@ const MATCHES: Match[] = [
   { id: 'm7', round: '1/8', teamA: 'III2', teamB: 'IV1', scoreA: 20, scoreB: 0, date: '18.3', time: '12:45', played: true, technical: true },
   // Quarter Finals
   { id: 'q1', round: '1/4', teamA: 'IV6', teamB: 'I3', scoreA: 62, scoreB: 46, date: '19.3', time: '12:45', played: true },
-  { id: 'q2', round: '1/4', teamA: 'III5', teamB: 'II4', scoreA: 38, scoreB: 30, date: '27.3', time: '12:45', played: true },
-  { id: 'q3', round: '1/4', teamA: 'IV3', teamB: 'II3', scoreA: 28, scoreB: 45, date: '23.3', time: '12:45', played: true },
-  { id: 'q4', round: '1/4', teamA: 'III2', teamB: 'III3', scoreA: 36, scoreB: 24, date: '26.3', time: '12:45', played: true },
+  { id: 'q2', round: '1/4', teamA: 'III5', teamB: 'II4', winner: 'III5', date: '27.3', time: '12:45', played: true },
+  { id: 'q3', round: '1/4', teamA: 'IV3', teamB: 'II3', winner: 'II3', date: '23.3', time: '12:45', played: true },
+  { id: 'q4', round: '1/4', teamA: 'III2', teamB: 'III3', winner: 'III2', date: '26.3', time: '12:45', played: true },
   // Semi Finals — 31.3  
-  { id: 's1', round: '1/2', teamA: 'IV6', teamB: 'II3', scoreA: 3, scoreB: 4, date: '31.3', time: '12:45', played: true },
-  { id: 's2', round: '1/2', teamA: 'III5', teamB: 'III2', scoreA: 5, scoreB: 2, date: '31.3', time: '12:45', played: true },
+  { id: 's1', round: '1/2', teamA: 'IV6', teamB: 'II3', winner: 'II3', date: '31.3', time: '12:45', played: true },
+  { id: 's2', round: '1/2', teamA: 'III5', teamB: 'III2', winner: 'III5', date: '31.3', time: '12:45', played: true },
   // Finale
   { id: 'f1', round: 'finale', teamA: 'II3', teamB: 'III5', date: 'TBD', time: '12:45', played: false },
 ]
@@ -237,16 +238,16 @@ export default function TournamentPage() {
             {/* Quarter Finals (4 matches, vertically centered between pairs) */}
             <div className="flex flex-col justify-around w-[135px] shrink-0" style={{ gap: '28px', paddingTop: '18px', paddingBottom: '18px' }}>
               <BracketMatch teamA="IV6" teamB="I3" scoreA={62} scoreB={46} />
-              <BracketMatch teamA="IV3" teamB="II3" scoreA={28} scoreB={45} />
-              <BracketMatch teamA="III5" teamB="II4" scoreA={38} scoreB={30} />
-              <BracketMatch teamA="III2" teamB="III3" scoreA={36} scoreB={24} />
+              <BracketMatch teamA="IV3" teamB="II3" winner="II3" />
+              <BracketMatch teamA="III5" teamB="II4" winner="III5" />
+              <BracketMatch teamA="III2" teamB="III3" winner="III2" />
             </div>
 
             {/* Semi Finals (2 matches) */}
             <div className="flex flex-col justify-around w-[135px] shrink-0" style={{ paddingTop: '50px', paddingBottom: '50px' }}>
-              <BracketMatch teamA="IV6" teamB="II3" scoreA={3} scoreB={4} />
+              <BracketMatch teamA="IV6" teamB="II3" winner="II3" />
               <div style={{ height: '40px' }} />
-              <BracketMatch teamA="III5" teamB="III2" scoreA={5} scoreB={2} />
+              <BracketMatch teamA="III5" teamB="III2" winner="III5" />
             </div>
 
             {/* Final (1 match) */}
@@ -261,7 +262,7 @@ export default function TournamentPage() {
       {activeTab === 'results' && (
         <div className="space-y-2 animate-fade-in">
           {playedMatches.map((m, i) => {
-            const aWon = (m.scoreA || 0) > (m.scoreB || 0)
+            const aWon = m.winner ? m.winner === m.teamA : (m.scoreA || 0) > (m.scoreB || 0)
             return (
               <div
                 key={m.id}
@@ -280,9 +281,15 @@ export default function TournamentPage() {
                     <span className={`text-sm font-bold ${aWon ? 'text-white' : 'text-zinc-500'}`}>{m.teamA}</span>
                   </div>
                   <div className="flex items-center gap-2 mx-3">
-                    <span className={`text-lg font-black tabular-nums ${aWon ? 'text-green-400' : 'text-zinc-500'}`}>{m.scoreA}</span>
-                    <span className="text-zinc-600 text-xs">:</span>
-                    <span className={`text-lg font-black tabular-nums ${!aWon ? 'text-green-400' : 'text-zinc-500'}`}>{m.scoreB}</span>
+                    {m.scoreA !== undefined ? (
+                      <>
+                        <span className={`text-lg font-black tabular-nums ${aWon ? 'text-green-400' : 'text-zinc-500'}`}>{m.scoreA}</span>
+                        <span className="text-zinc-600 text-xs">:</span>
+                        <span className={`text-lg font-black tabular-nums ${!aWon ? 'text-green-400' : 'text-zinc-500'}`}>{m.scoreB}</span>
+                      </>
+                    ) : (
+                      <span className={`text-sm font-bold ${aWon ? 'text-green-400' : 'text-green-400'}`}>✓ {m.winner}</span>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 flex-1 justify-end">
                     <span className={`text-sm font-bold ${!aWon ? 'text-white' : 'text-zinc-500'}`}>{m.teamB}</span>
@@ -341,21 +348,23 @@ export default function TournamentPage() {
 }
 
 // ── Bracket Match Component ─────────────────────────────────────────────
-function BracketMatch({ teamA, teamB, scoreA, scoreB, date, tech, isBye, isFinal }: {
-  teamA: string; teamB: string; scoreA?: number; scoreB?: number; date?: string; tech?: boolean; isBye?: boolean; isFinal?: boolean
+function BracketMatch({ teamA, teamB, scoreA, scoreB, date, tech, isBye, isFinal, winner }: {
+  teamA: string; teamB: string; scoreA?: number; scoreB?: number; date?: string; tech?: boolean; isBye?: boolean; isFinal?: boolean; winner?: string
 }) {
-  const played = scoreA !== undefined && scoreB !== undefined
-  const aWon = played && scoreA! > scoreB!
-  const bWon = played && scoreB! > scoreA!
+  const played = (scoreA !== undefined && scoreB !== undefined) || !!winner
+  const aWon = winner ? winner === teamA : (scoreA !== undefined && scoreB !== undefined && scoreA! > scoreB!)
+  const bWon = winner ? winner === teamB : (scoreA !== undefined && scoreB !== undefined && scoreB! > scoreA!)
   return (
     <div className={`rounded-lg overflow-hidden border ${isFinal ? 'border-amber-500/40 bg-amber-500/5' : 'border-zinc-700/60 bg-zinc-900/60'}`}>
       <div className={`flex items-center justify-between px-2 py-1.5 border-b border-zinc-700/40 ${aWon ? 'bg-green-500/10' : ''}`}>
         <span className={`text-[11px] font-bold ${isBye && teamA === '—' ? 'text-zinc-600' : aWon ? 'text-green-400' : 'text-zinc-300'}`}>{teamA}</span>
-        {played && <span className={`text-[11px] font-bold tabular-nums ${aWon ? 'text-green-400' : 'text-zinc-500'}`}>{scoreA}</span>}
+        {scoreA !== undefined && <span className={`text-[11px] font-bold tabular-nums ${aWon ? 'text-green-400' : 'text-zinc-500'}`}>{scoreA}</span>}
+        {winner && scoreA === undefined && aWon && <span className="text-[11px] text-green-400">✓</span>}
       </div>
       <div className={`flex items-center justify-between px-2 py-1.5 ${bWon ? 'bg-green-500/10' : ''}`}>
         <span className={`text-[11px] font-bold ${bWon ? 'text-green-400' : teamB === '?' ? 'text-zinc-600' : 'text-zinc-300'}`}>{teamB}</span>
-        {played && <span className={`text-[11px] font-bold tabular-nums ${bWon ? 'text-green-400' : 'text-zinc-500'}`}>{scoreB}</span>}
+        {scoreB !== undefined && <span className={`text-[11px] font-bold tabular-nums ${bWon ? 'text-green-400' : 'text-zinc-500'}`}>{scoreB}</span>}
+        {winner && scoreB === undefined && bWon && <span className="text-[11px] text-green-400">✓</span>}
         {!played && date && <span className="text-[9px] text-zinc-600">{date}</span>}
         {tech && <span className="text-[8px] text-red-400 font-bold">TEH</span>}
       </div>
