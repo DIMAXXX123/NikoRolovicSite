@@ -11,7 +11,7 @@ export default function AuthLayout({
       <div className="absolute top-4 right-4 z-50">
         <ThemeSwitcher />
       </div>
-      <div className="relative w-full max-w-md animate-fade-in">
+      <div className="relative w-full max-w-md animate-fade-in transition-all duration-300 ease-in-out">
         {children}
       </div>
     </div>

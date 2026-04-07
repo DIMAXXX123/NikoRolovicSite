@@ -166,16 +166,14 @@ export default function EDnevnikPage() {
     if (token) fetchEDnevnik(token)
   }
 
-  // Calculate overall average
+  // Calculate overall average — use finalGrade when available, fall back to average
   const overallAvg = data?.subjects
     ? (() => {
-        const finals = data.subjects.filter(s => s.finalGrade && s.finalGrade > 0).map(s => s.finalGrade!)
-        if (finals.length === 0) {
-          const avgs = data.subjects.filter(s => s.average && s.average > 0).map(s => s.average!)
-          if (avgs.length === 0) return null
-          return avgs.reduce((a, b) => a + b, 0) / avgs.length
-        }
-        return finals.reduce((a, b) => a + b, 0) / finals.length
+        const values = data.subjects
+          .map(s => (s.finalGrade && s.finalGrade > 0) ? s.finalGrade : (s.average && s.average > 0) ? s.average : null)
+          .filter((v): v is number => v !== null)
+        if (values.length === 0) return null
+        return values.reduce((a, b) => a + b, 0) / values.length
       })()
     : null
 
@@ -198,7 +196,7 @@ export default function EDnevnikPage() {
   const circumference = 2 * Math.PI * 44
   const avgPercent = overallAvg ? (overallAvg / 5) * 100 : 0
   const offset = circumference - (avgPercent / 100) * circumference
-  const gradedCount = data?.subjects.filter(s => (s.finalGrade && s.finalGrade > 0) || (s.average && s.average > 0)).length || 0
+  const gradedCount = data?.subjects.filter(s => (s.finalGrade && s.finalGrade > 0) || (s.average && s.average > 0)).length ?? 0
 
   // ========== CONNECTED: SHOW GRADES ==========
   if (connected && data) {
@@ -235,14 +233,14 @@ export default function EDnevnikPage() {
             <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
 
-            <div className="relative flex items-center justify-between">
-              <div className="space-y-1.5">
+            <div className="relative flex flex-wrap items-center justify-between gap-4">
+              <div className="space-y-1.5 min-w-0 flex-1">
                 <p className="text-white/70 text-sm font-medium">Ukupan prosjek</p>
                 <p className="text-white text-lg font-bold">{avgLabel(overallAvg)}</p>
                 <p className="text-white/50 text-xs font-medium">{gradedCount}/{data.subjects.length} predmeta</p>
               </div>
 
-              <div className="relative w-24 h-24">
+              <div className="relative w-24 h-24 shrink-0">
                 <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="6" />
                   <circle

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Heart } from 'lucide-react'
 import { BetaDisclaimer } from '@/components/beta-disclaimer'
@@ -11,11 +11,26 @@ export default function NewsPage() {
   const [news, setNews] = useState<NewsItem[]>([])
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [likingIds, setLikingIds] = useState<Set<string>>(new Set())
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
+  const likingIdsRef = useRef<Set<string>>(new Set())
+  const likeDebounceRef = useRef<Record<string, number>>({})
 
   const lastTapRef = useRef<Record<string, number>>({})
   const heartsContainerRef = useRef<HTMLDivElement | null>(null)
   const supabase = createClient()
+
+  const toggleExpand = useCallback((id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
 
   useEffect(() => {
     loadNews()
@@ -72,9 +87,15 @@ export default function NewsPage() {
 
   async function toggleLike(newsId: string, currentlyLiked: boolean) {
     if (!userId) return
-    if (likingIds.has(newsId)) return
+    if (likingIdsRef.current.has(newsId)) return
 
-    setLikingIds((prev) => new Set(prev).add(newsId))
+    // Debounce: prevent rapid-fire likes (300ms cooldown)
+    const now = Date.now()
+    const lastLike = likeDebounceRef.current[newsId] || 0
+    if (now - lastLike < 300) return
+    likeDebounceRef.current[newsId] = now
+
+    likingIdsRef.current.add(newsId)
 
     setNews((prev) =>
       prev.map((item) =>
@@ -115,11 +136,7 @@ export default function NewsPage() {
         )
       )
     } finally {
-      setLikingIds((prev) => {
-        const next = new Set(prev)
-        next.delete(newsId)
-        return next
-      })
+      likingIdsRef.current.delete(newsId)
     }
   }
 
@@ -133,7 +150,7 @@ export default function NewsPage() {
 
     const el = document.createElement('div')
     el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
-    el.style.cssText = `position:absolute;left:${clientX - size / 2}px;top:${clientY - size / 2}px;width:${size}px;height:${size}px;pointer-events:none;`
+    el.style.cssText = `position:absolute;left:${clientX - size / 2}px;top:${clientY - size / 2}px;width:${size}px;height:${size}px;pointer-events:none;will-change:transform;`
 
     container.appendChild(el)
 
@@ -157,11 +174,35 @@ export default function NewsPage() {
     const lastTap = lastTapRef.current[newsId] || 0
 
     if (now - lastTap < 300) {
-      const item = news.find((n) => n.id === newsId)
-      if (item && !item.user_liked) {
-        toggleLike(newsId, false)
-      }
+      // Use functional approach to read current state and avoid stale closure
+      setNews((prev) => {
+        const item = prev.find((n) => n.id === newsId)
+        if (item && !item.user_liked) {
+          toggleLike(newsId, false)
+        }
+        return prev // no mutation, just reading
+      })
       spawnHeart(e.clientX, e.clientY)
+      lastTapRef.current[newsId] = 0
+    } else {
+      lastTapRef.current[newsId] = now
+    }
+  }
+
+  function handleDoubleTapTouch(newsId: string, e: React.TouchEvent) {
+    const now = Date.now()
+    const lastTap = lastTapRef.current[newsId] || 0
+    const touch = e.changedTouches[0]
+
+    if (now - lastTap < 400) {
+      setNews((prev) => {
+        const item = prev.find((n) => n.id === newsId)
+        if (item && !item.user_liked) {
+          toggleLike(newsId, false)
+        }
+        return prev
+      })
+      spawnHeart(touch.clientX, touch.clientY)
       lastTapRef.current[newsId] = 0
     } else {
       lastTapRef.current[newsId] = now
@@ -182,6 +223,9 @@ export default function NewsPage() {
       month: 'short',
     })
   }
+
+  const hasValidImage = (item: NewsItem) =>
+    !!item.image_url && !failedImages.has(item.id)
 
   if (loading) {
     return (
@@ -231,14 +275,19 @@ export default function NewsPage() {
             <article
               key={heroItem.id}
               className="group relative rounded-2xl overflow-hidden cursor-pointer select-none bg-[#0c0c14] border border-[#1a1a2e] transition-all duration-250 hover:border-[#7c5cfc]/30 hover:shadow-[0_8px_32px_rgba(124,92,252,0.08)]"
+              style={{ willChange: 'transform' }}
               onClick={(e) => handleDoubleTap(heroItem.id, e)}
+              onTouchEnd={(e) => handleDoubleTapTouch(heroItem.id, e)}
             >
-              {heroItem.image_url && (
+              {hasValidImage(heroItem) && (
                 <div className="relative h-72 overflow-hidden">
                   <img
-                    src={heroItem.image_url}
+                    src={heroItem.image_url!}
                     alt={heroItem.title}
+                    loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    style={{ willChange: 'transform' }}
+                    onError={() => setFailedImages((prev) => new Set(prev).add(heroItem.id))}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/40 to-transparent" />
 
@@ -290,11 +339,44 @@ export default function NewsPage() {
                 </div>
               )}
 
-              {!heroItem.image_url && (
+              {/* Always show content section below image, or as standalone if no image */}
+              {hasValidImage(heroItem) && heroItem.content && (
+                <div className="px-5 py-4">
+                  <p className={`text-[#6b6b80] text-sm leading-relaxed ${expandedIds.has(heroItem.id) ? '' : 'line-clamp-2'}`}>
+                    {heroItem.content}
+                  </p>
+                  {heroItem.content.length > 120 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleExpand(heroItem.id)
+                      }}
+                      className="text-[#7c5cfc] text-xs font-medium mt-1.5 hover:text-[#9b82fc] transition-colors"
+                    >
+                      {expandedIds.has(heroItem.id) ? 'Prikaži manje' : 'Prikaži više'}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {!hasValidImage(heroItem) && (
                 <div className="relative p-5 space-y-3">
                   <span className="text-xs text-[#6b6b80]">{formatDate(heroItem.created_at)}</span>
                   <h2 className="text-xl font-bold text-[#e8e8f0] leading-snug">{heroItem.title}</h2>
-                  <p className="text-[#6b6b80] text-sm leading-relaxed line-clamp-3">{heroItem.content}</p>
+                  <p className={`text-[#6b6b80] text-sm leading-relaxed ${expandedIds.has(heroItem.id) ? '' : 'line-clamp-3'}`}>
+                    {heroItem.content}
+                  </p>
+                  {heroItem.content && heroItem.content.length > 150 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleExpand(heroItem.id)
+                      }}
+                      className="text-[#7c5cfc] text-xs font-medium hover:text-[#9b82fc] transition-colors"
+                    >
+                      {expandedIds.has(heroItem.id) ? 'Prikaži manje' : 'Prikaži više'}
+                    </button>
+                  )}
                   <div className="flex items-center justify-between pt-3 border-t border-[#1a1a2e]">
                     <div className="flex items-center gap-2.5">
                       {heroItem.author && (
@@ -332,12 +414,6 @@ export default function NewsPage() {
                   </div>
                 </div>
               )}
-
-              {heroItem.image_url && heroItem.content && (
-                <div className="px-5 py-4">
-                  <p className="text-[#6b6b80] text-sm leading-relaxed line-clamp-2">{heroItem.content}</p>
-                </div>
-              )}
             </article>
           )}
 
@@ -346,14 +422,19 @@ export default function NewsPage() {
             <article
               key={item.id}
               className="group relative rounded-2xl overflow-hidden cursor-pointer select-none bg-[#0c0c14] border border-[#1a1a2e] transition-all duration-250 hover:border-[#7c5cfc]/30 hover:shadow-[0_8px_32px_rgba(124,92,252,0.08)]"
+              style={{ willChange: 'transform' }}
               onClick={(e) => handleDoubleTap(item.id, e)}
+              onTouchEnd={(e) => handleDoubleTapTouch(item.id, e)}
             >
-              {item.image_url && (
+              {hasValidImage(item) && (
                 <div className="relative h-48 overflow-hidden">
                   <img
-                    src={item.image_url}
+                    src={item.image_url!}
                     alt={item.title}
+                    loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    style={{ willChange: 'transform' }}
+                    onError={() => setFailedImages((prev) => new Set(prev).add(item.id))}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050508]/60 via-transparent to-transparent" />
                   <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-black/50 backdrop-blur-md text-[10px] text-white/80 font-medium">
@@ -364,7 +445,20 @@ export default function NewsPage() {
 
               <div className="p-5 space-y-3">
                 <h2 className="text-lg font-bold text-[#e8e8f0] leading-snug">{item.title}</h2>
-                <p className="text-[#6b6b80] text-sm leading-relaxed line-clamp-3">{item.content}</p>
+                <p className={`text-[#6b6b80] text-sm leading-relaxed ${expandedIds.has(item.id) ? '' : 'line-clamp-3'}`}>
+                  {item.content}
+                </p>
+                {item.content && item.content.length > 150 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleExpand(item.id)
+                    }}
+                    className="text-[#7c5cfc] text-xs font-medium hover:text-[#9b82fc] transition-colors"
+                  >
+                    {expandedIds.has(item.id) ? 'Prikaži manje' : 'Prikaži više'}
+                  </button>
+                )}
 
                 <div className="flex items-center justify-between pt-3 border-t border-[#1a1a2e]">
                   <div className="flex items-center gap-2.5">
@@ -381,7 +475,7 @@ export default function NewsPage() {
                         </div>
                       </>
                     )}
-                    {!item.image_url && (
+                    {!hasValidImage(item) && (
                       <span className="text-xs text-[#3d3d50]">
                         {formatDate(item.created_at)}
                       </span>

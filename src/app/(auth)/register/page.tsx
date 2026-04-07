@@ -301,11 +301,11 @@ export default function RegisterPage() {
             </svg>
             {googleLoading ? 'Registracija...' : 'Registruj se sa Google'}
           </Button>
-          <div className="text-center">
-            <Link href="/login" className="text-sm text-primary hover:underline">
+          <Link href="/login" className="block">
+            <Button variant="outline" className="w-full border-primary/50 text-primary hover:bg-primary/10 hover:border-primary text-base py-5 font-semibold gap-2">
               Već imaš nalog? Prijavi se
-            </Link>
-          </div>
+            </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>
