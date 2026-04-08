@@ -169,13 +169,11 @@ export default function EDnevnikPage() {
   // Calculate overall average
   const overallAvg = data?.subjects
     ? (() => {
-        const finals = data.subjects.filter(s => s.finalGrade && s.finalGrade > 0).map(s => s.finalGrade!)
-        if (finals.length === 0) {
-          const avgs = data.subjects.filter(s => s.average && s.average > 0).map(s => s.average!)
-          if (avgs.length === 0) return null
-          return avgs.reduce((a, b) => a + b, 0) / avgs.length
-        }
-        return finals.reduce((a, b) => a + b, 0) / finals.length
+        const values = data.subjects
+          .map(s => s.finalGrade && s.finalGrade > 0 ? s.finalGrade : s.average)
+          .filter((v): v is number => v !== null && v !== undefined && v > 0)
+        if (values.length === 0) return null
+        return values.reduce((a, b) => a + b, 0) / values.length
       })()
     : null
 
@@ -210,7 +208,7 @@ export default function EDnevnikPage() {
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="text-xs text-muted-foreground hover:text-[#7c5cfc] transition-colors px-2 py-1 rounded-lg hover:bg-white/[0.04]"
+              className="text-xs text-muted-foreground hover:text-[#7c5cfc] transition-colors px-2 py-1 rounded-lg hover:bg-white/[0.04] animate-press"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Osveži'}
             </button>
@@ -231,7 +229,7 @@ export default function EDnevnikPage() {
 
         {/* Overall average card */}
         {overallAvg !== null && (
-          <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${avgGradient(overallAvg)} p-6 shadow-xl`}>
+          <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${avgGradient(overallAvg)} p-6 shadow-xl animate-card-appear`}>
             <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
 
@@ -270,7 +268,7 @@ export default function EDnevnikPage() {
         )}
 
         {/* Subject cards */}
-        <div className="space-y-2.5">
+        <div className="space-y-2.5 animate-stagger-scale">
           {data.subjects.map((subject) => {
             const isExpanded = expandedSubject === subject.name
 
@@ -281,15 +279,15 @@ export default function EDnevnikPage() {
               >
                 <button
                   onClick={() => setExpandedSubject(isExpanded ? null : subject.name)}
-                  className="w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-white/[0.02] active:bg-white/[0.04]"
+                  className="w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-white/[0.02] active:bg-white/[0.04] min-h-[60px]"
                 >
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm truncate">{subject.name}</h3>
-                    {!isExpanded && subject.grades.length > 0 && (
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        {subject.grades.length} ocjena{subject.average ? ` · prosjek ${subject.average.toFixed(2)}` : ''}
-                      </p>
-                    )}
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {!isExpanded && subject.grades.length > 0
+                        ? `${subject.grades.length} ocjena${subject.average ? ` · prosjek ${subject.average.toFixed(2)}` : ''}`
+                        : '\u00A0'}
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
                     {/* Final grade circle */}
@@ -310,7 +308,7 @@ export default function EDnevnikPage() {
                 </button>
 
                 {isExpanded && (
-                  <div className="px-4 pb-5 space-y-3 animate-fade-in border-t border-[#1a1a2e]">
+                  <div className="px-4 pb-5 space-y-3 animate-expand border-t border-[#1a1a2e]">
                     {/* Average bar */}
                     {subject.average !== null && (
                       <div className="mt-3">
@@ -464,7 +462,7 @@ export default function EDnevnikPage() {
       )}
 
       {/* Token input */}
-      <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] p-5 space-y-4">
+      <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] p-5 space-y-4 animate-fade-in">
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">
             eDnevnik Token

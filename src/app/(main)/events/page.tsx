@@ -275,7 +275,7 @@ export default function EventsPage() {
                 <button
                   key={key}
                   onClick={() => setNewEvent({ ...newEvent, event_type: key as EventType })}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all animate-press ${
                     newEvent.event_type === key
                       ? config.color + ' ring-2 ring-primary/50'
                       : 'bg-muted text-muted-foreground'
@@ -357,7 +357,7 @@ export default function EventsPage() {
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           <button
             onClick={() => setView('calendar')}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1 btn-press ${
+            className={`px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1 btn-press animate-press ${
               view === 'calendar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
             }`}
           >
@@ -365,7 +365,7 @@ export default function EventsPage() {
           </button>
           <button
             onClick={() => setView('list')}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1 btn-press ${
+            className={`px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1 btn-press animate-press ${
               view === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
             }`}
           >
@@ -378,13 +378,13 @@ export default function EventsPage() {
         <div className="space-y-3">
           {/* Month navigation */}
           <div className="flex items-center justify-between">
-            <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-muted transition-all btn-press">
+            <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-muted transition-all btn-press animate-press">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h2 className="text-lg font-semibold animate-fade-in">
+            <h2 key={`${currentMonth}-${currentYear}`} className="text-lg font-semibold animate-fade-in">
               {MONTH_NAMES[currentMonth]} {currentYear}
             </h2>
-            <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-muted transition-all btn-press">
+            <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-muted transition-all btn-press animate-press">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -399,7 +399,7 @@ export default function EventsPage() {
           </div>
 
           {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-1">
+          <div key={`cal-${currentMonth}-${currentYear}`} className="grid grid-cols-7 gap-1 animate-fade-in">
             {/* Empty cells for offset */}
             {Array.from({ length: firstDay }).map((_, i) => (
               <div key={`empty-${i}`} className="aspect-square" />
@@ -463,12 +463,12 @@ export default function EventsPage() {
             <p>Nema predstojećih događaja</p>
           </div>
         ) : (
-          <div className="space-y-3 animate-stagger">
+          <div className="space-y-3 animate-stagger-scale">
             {events.map((event, index) => {
               const type = event.event_type || 'drugo'
               const config = EVENT_TYPE_CONFIG[type] || EVENT_TYPE_CONFIG.drugo
               return (
-                <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur animate-slide-up card-hover overflow-hidden gradient-overlay glow-hover" style={{ animationDelay: `${index * 0.05}s` }}>
+                <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur animate-slide-up card-hover overflow-hidden gradient-overlay glow-hover hover-float" style={{ animationDelay: `${index * 0.05}s` }}>
                   <CardContent className="p-0">
                     <div className="flex min-h-[5rem]">
                       <div className={`flex-shrink-0 w-20 bg-gradient-to-br ${dayColors[index % dayColors.length]} flex flex-col items-center justify-center p-3 rounded-l-xl self-stretch`}>

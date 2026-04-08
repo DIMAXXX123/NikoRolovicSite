@@ -187,8 +187,8 @@ export default function NewsPage() {
     return (
       <div className="space-y-4 pt-2">
         <div className="space-y-1 mb-6">
-          <div className="h-8 w-32 skeleton" />
-          <div className="h-4 w-48 skeleton" />
+          <div className="h-8 w-32 skeleton animate-shimmer" />
+          <div className="h-4 w-48 skeleton animate-shimmer" />
         </div>
         {[1, 2, 3].map((i) => (
           <div key={i} className="rounded-2xl overflow-hidden bg-[#0c0c14] border border-[#1a1a2e]">
@@ -230,17 +230,20 @@ export default function NewsPage() {
           {heroItem && (
             <article
               key={heroItem.id}
-              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none bg-[#0c0c14] border border-[#1a1a2e] transition-all duration-250 hover:border-[#7c5cfc]/30 hover:shadow-[0_8px_32px_rgba(124,92,252,0.08)]"
+              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none bg-[#0c0c14] border border-[#1a1a2e] transition-all duration-250 hover:border-[#7c5cfc]/30 hover:shadow-[0_8px_32px_rgba(124,92,252,0.08)] animate-card-appear"
               onClick={(e) => handleDoubleTap(heroItem.id, e)}
             >
               {heroItem.image_url && (
-                <div className="relative h-72 overflow-hidden">
+                <div className="relative h-72 overflow-hidden bg-[#0c0c14]" style={{ transform: 'translateZ(0)' }}>
                   <img
                     src={heroItem.image_url}
                     alt={heroItem.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="eager"
+                    width={600}
+                    height={288}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/40 to-transparent" />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #050508 0%, rgba(5,5,8,0.4) 40%, transparent 100%)' }} />
 
                   <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
                     <div className="flex items-center gap-2 mb-3">
@@ -272,7 +275,7 @@ export default function NewsPage() {
                           e.stopPropagation()
                           toggleLike(heroItem.id, heroItem.user_liked || false)
                         }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md transition-all duration-200 active:scale-[0.97] hover:bg-red-500/20"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md transition-all duration-200 active:scale-[0.97] hover:bg-red-500/20 animate-press"
                       >
                         <Heart
                           className={`w-5 h-5 transition-all duration-200 ${
@@ -316,7 +319,7 @@ export default function NewsPage() {
                         e.stopPropagation()
                         toggleLike(heroItem.id, heroItem.user_liked || false)
                       }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.97] hover:bg-red-500/10"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.97] hover:bg-red-500/10 animate-press"
                     >
                       <Heart
                         className={`w-5 h-5 transition-all duration-200 ${
@@ -345,17 +348,20 @@ export default function NewsPage() {
           {restItems.map((item) => (
             <article
               key={item.id}
-              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none bg-[#0c0c14] border border-[#1a1a2e] transition-all duration-250 hover:border-[#7c5cfc]/30 hover:shadow-[0_8px_32px_rgba(124,92,252,0.08)]"
+              className="group relative rounded-2xl overflow-hidden cursor-pointer select-none bg-[#0c0c14] border border-[#1a1a2e] transition-all duration-250 hover:border-[#7c5cfc]/30 hover:shadow-[0_8px_32px_rgba(124,92,252,0.08)] hover-float"
               onClick={(e) => handleDoubleTap(item.id, e)}
             >
               {item.image_url && (
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-48 overflow-hidden bg-[#0c0c14]" style={{ transform: 'translateZ(0)' }}>
                   <img
                     src={item.image_url}
                     alt={item.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                    width={600}
+                    height={192}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050508]/60 via-transparent to-transparent" />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(5,5,8,0.6) 0%, transparent 60%)' }} />
                   <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-black/50 backdrop-blur-md text-[10px] text-white/80 font-medium">
                     {formatDateShort(item.created_at)}
                   </div>
@@ -392,7 +398,7 @@ export default function NewsPage() {
                       e.stopPropagation()
                       toggleLike(item.id, item.user_liked || false)
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.97] hover:bg-red-500/10"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.97] hover:bg-red-500/10 animate-press"
                   >
                     <Heart
                       className={`w-4 h-4 transition-all duration-200 ${

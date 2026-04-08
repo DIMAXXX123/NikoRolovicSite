@@ -41,7 +41,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex flex-col items-center gap-1.5 px-4 py-2 transition-all duration-200 ${
+              className={`animate-press relative flex flex-col items-center gap-1.5 px-4 py-2 transition-all duration-200 ${
                 isActive
                   ? 'text-primary'
                   : 'text-[#3d3d50] hover:text-[#6b6b80]'

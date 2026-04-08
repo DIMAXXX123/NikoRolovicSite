@@ -172,19 +172,19 @@ export default function TeachersPage() {
 
       {/* Teachers list */}
       {teachers.length === 0 ? (
-        <div className="h-[40vh] flex flex-col items-center justify-center text-muted-foreground">
+        <div className="h-[40vh] flex flex-col items-center justify-center text-muted-foreground animate-fade-in">
           <UserCheck className="w-12 h-12 mb-3 opacity-30" />
           <p>Nema profesora</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2 animate-stagger-scale">
           {teachers.map(teacher => {
             const currentStatus = statuses[teacher.id] || 'present'
             const cfg = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.present
             const Icon = cfg.icon
 
             return (
-              <Card key={teacher.id} className={`border ${cfg.bg} transition-all`}>
+              <Card key={teacher.id} className={`border ${cfg.bg} transition-all hover-float`}>
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${cfg.bg}`}>
@@ -214,7 +214,7 @@ export default function TeachersPage() {
                             key={key}
                             onClick={() => setStatus(teacher.id, key)}
                             disabled={updating === teacher.id}
-                            className={`text-[10px] px-2.5 py-1 rounded-full border transition-all active:scale-95 ${
+                            className={`text-[10px] px-2.5 py-1 rounded-full border transition-all active:scale-95 animate-press ${
                               active ? `${s.bg} ${s.color} font-semibold` : 'border-border/30 text-muted-foreground hover:border-border'
                             }`}
                           >
@@ -246,7 +246,7 @@ export default function TeachersPage() {
           {!showAdd ? (
             <button
               onClick={() => setShowAdd(true)}
-              className="w-full py-3 rounded-2xl border border-dashed border-border/50 text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all"
+              className="w-full py-3 rounded-2xl border border-dashed border-border/50 text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all animate-press"
             >
               <Plus className="w-4 h-4" /> Dodaj profesora
             </button>

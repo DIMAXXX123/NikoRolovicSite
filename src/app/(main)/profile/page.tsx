@@ -295,7 +295,7 @@ export default function ProfilePage() {
 
       {/* Hero profile card */}
       <div
-        className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${gradient} p-[1px] ${glow} cursor-pointer active:scale-[0.98] transition-transform`}
+        className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${gradient} p-[1px] ${glow} cursor-pointer active:scale-[0.98] transition-transform animate-card-appear`}
         onClick={() => setShowRoleAnim(true)}
         style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '60ms', opacity: 0 }}
       >
@@ -399,7 +399,7 @@ export default function ProfilePage() {
 
         {/* Expandable stats */}
         {showStats && (
-          <div className="pt-3 border-t border-[#1a1a2e] space-y-3 animate-fade-in">
+          <div className="pt-3 border-t border-[#1a1a2e] space-y-3 animate-expand">
             {(profile.role === 'admin' || profile.role === 'creator') && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1.5">
@@ -429,7 +429,7 @@ export default function ProfilePage() {
       <div className="space-y-2" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '300ms', opacity: 0 }}>
         <button
           onClick={() => setShowCalculator(true)}
-          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
+          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98] animate-press hover-float"
         >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-blue-500/15">
             <Calculator className="w-4.5 h-4.5 text-white" />
@@ -447,7 +447,7 @@ export default function ProfilePage() {
       {/* Settings */}
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
+        className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98] animate-press hover-float"
         style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '360ms', opacity: 0 }}
       >
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-zinc-500 to-zinc-700 flex items-center justify-center">
@@ -458,7 +458,7 @@ export default function ProfilePage() {
       </button>
 
       {showSettings && (
-        <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] animate-fade-in p-5 space-y-5">
+        <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] animate-expand p-5 space-y-5">
           {/* Performance mode */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -593,7 +593,7 @@ export default function ProfilePage() {
       {(profile.role === 'admin' || profile.role === 'moderator' || profile.role === 'creator') && (
         <button
           onClick={() => router.push('/admin')}
-          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98]"
+          className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] text-sm font-semibold hover:bg-white/[0.04] transition-all active:scale-[0.98] animate-press hover-float"
           style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '420ms', opacity: 0 }}
         >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/15">
@@ -607,7 +607,7 @@ export default function ProfilePage() {
       <Button
         onClick={handleLogout}
         variant="destructive"
-        className="w-full h-12 rounded-2xl justify-center gap-2 text-sm font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
+        className="w-full h-12 rounded-2xl justify-center gap-2 text-sm font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 animate-press"
       >
         <LogOut className="w-4 h-4" />
         Odjavi se

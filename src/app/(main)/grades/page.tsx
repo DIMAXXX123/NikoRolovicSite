@@ -261,7 +261,7 @@ export default function GradesPage() {
           <button
             key={i}
             onClick={() => { setActiveTrimester(i); setExpandedSubject(null) }}
-            className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 animate-press ${
               activeTrimester === i
                 ? 'bg-gradient-to-br from-[#7c5cfc] to-[#5b3fd9] text-white shadow-lg shadow-[#7c5cfc]/20'
                 : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.04]'
@@ -274,7 +274,7 @@ export default function GradesPage() {
 
       {/* Overall average card with circular progress */}
       {overallAvg !== null && (
-        <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${avgGradient(overallAvg)} p-6 shadow-xl`}>
+        <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${avgGradient(overallAvg)} p-6 shadow-xl animate-card-appear`}>
           {/* Decorative circles */}
           <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -315,7 +315,7 @@ export default function GradesPage() {
       )}
 
       {/* Subject cards */}
-      <div className="space-y-2.5">
+      <div className="space-y-2.5 animate-stagger-scale">
         {subjects.map((subject) => {
           const sg = getSubjectData(grades, activeTrimester, subject)
           const isOptional = OPTIONAL_SUBJECTS.includes(subject)
@@ -324,7 +324,7 @@ export default function GradesPage() {
           return (
             <div
               key={subject}
-              className={`rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] overflow-hidden transition-all duration-300 ${
+              className={`rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] overflow-hidden transition-all duration-300 hover-float ${
                 isExpanded ? 'gradient-overlay' : ''
               }`}
             >
@@ -349,7 +349,7 @@ export default function GradesPage() {
 
               {/* Expanded content */}
               {isExpanded && (
-                <div className="px-4 pb-5 space-y-4 animate-fade-in border-t border-[#1a1a2e]">
+                <div className="px-4 pb-5 space-y-4 animate-expand border-t border-[#1a1a2e]">
                   {isOptional && (
                     <button
                       onClick={() => removeSubject(subject)}

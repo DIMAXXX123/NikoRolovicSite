@@ -422,7 +422,7 @@ export default function SchedulePage() {
             <button
               key={day}
               onClick={() => setActiveDay(i)}
-              className={`flex-1 min-w-0 py-1.5 px-1.5 rounded-xl text-xs font-semibold transition-all duration-200 relative ${
+              className={`flex-1 min-w-0 py-1.5 px-1.5 rounded-xl text-xs font-semibold transition-all duration-200 relative animate-press ${
                 activeDay === i
                   ? 'bg-[#7c5cfc] text-white shadow-[0_0_16px_rgba(124,92,252,0.3)]'
                   : 'bg-white/[0.04] text-[#6b6b80] hover:bg-white/[0.08] hover:text-[#e8e8f0]'
@@ -498,7 +498,7 @@ export default function SchedulePage() {
             {todayClasses} časova
           </span>
         </div>
-        <div className="divide-y divide-[#1a1a2e]/50">
+        <div className="divide-y divide-[#1a1a2e]/50 animate-stagger">
           {PERIODS.map((period) => {
             const key = cellKey(activeDay, period)
             const subject = schedule[key] || ''
@@ -510,10 +510,10 @@ export default function SchedulePage() {
               <div
                 key={period}
                 onClick={() => startEdit(activeDay, period)}
-                className={`flex items-center gap-4 px-5 py-3.5 transition-all border-l-[3px] ${
+                className={`flex items-center gap-4 px-5 py-3.5 transition-all border-l-[3px] hover:bg-white/[0.02] ${
                   subject ? borderColor : 'border-l-transparent'
                 } ${
-                  editing ? 'cursor-pointer hover:bg-white/[0.02] active:bg-white/[0.04]' : ''
+                  editing ? 'cursor-pointer active:bg-white/[0.04]' : ''
                 }`}
               >
                 {/* Period number & time */}
@@ -554,7 +554,7 @@ export default function SchedulePage() {
                       {subject}
                     </div>
                   ) : (
-                    <div className="text-sm text-[#3d3d50] italic flex items-center gap-2">
+                    <div className="text-sm text-[#3d3d50] italic flex items-center gap-2 animate-fade-in">
                       {editing ? (
                         'Dodaj predmet...'
                       ) : (

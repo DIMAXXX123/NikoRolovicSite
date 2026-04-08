@@ -807,3 +807,81 @@ button, a, [role="button"], input, select {
   to { opacity: 1; filter: blur(0); }
 }
 .animate-blur-in { animation: blurIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* ── Universal press feedback ── */
+.animate-press {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.animate-press:active {
+  transform: scale(0.96);
+}
+
+/* ── Expand/collapse ── */
+@keyframes expandDown {
+  from { opacity: 0; max-height: 0; transform: translateY(-4px); }
+  to { opacity: 1; max-height: 600px; transform: translateY(0); }
+}
+.animate-expand {
+  animation: expandDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  overflow: hidden;
+}
+
+/* ── Tab switch ── */
+@keyframes tabSwitch {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-tab-switch {
+  animation: tabSwitch 0.2s ease-out;
+}
+
+/* ── Stagger with scale ── */
+.animate-stagger-scale > * {
+  opacity: 0;
+  animation: scaleStagger 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-stagger-scale > *:nth-child(1) { animation-delay: 0.03s; }
+.animate-stagger-scale > *:nth-child(2) { animation-delay: 0.06s; }
+.animate-stagger-scale > *:nth-child(3) { animation-delay: 0.09s; }
+.animate-stagger-scale > *:nth-child(4) { animation-delay: 0.12s; }
+.animate-stagger-scale > *:nth-child(5) { animation-delay: 0.15s; }
+.animate-stagger-scale > *:nth-child(6) { animation-delay: 0.18s; }
+.animate-stagger-scale > *:nth-child(7) { animation-delay: 0.21s; }
+.animate-stagger-scale > *:nth-child(8) { animation-delay: 0.24s; }
+.animate-stagger-scale > *:nth-child(9) { animation-delay: 0.27s; }
+.animate-stagger-scale > *:nth-child(10) { animation-delay: 0.30s; }
+.animate-stagger-scale > *:nth-child(n+11) { animation-delay: 0.33s; }
+
+/* ── Slide transitions for month/tab navigation ── */
+@keyframes slideFromLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideFromRight {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-from-left {
+  animation: slideFromLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.animate-slide-from-right {
+  animation: slideFromRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Card entrance (v2) ── */
+@keyframes cardAppearV2 {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-card-appear-v2 {
+  animation: cardAppearV2 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Accessibility: respect reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

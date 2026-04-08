@@ -146,7 +146,7 @@ export default function TournamentPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all animate-press ${
               activeTab === tab.id
                 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
                 : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'
@@ -166,11 +166,11 @@ export default function TournamentPage() {
               <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Timer className="w-4 h-4 text-orange-400" /> Sljedeći mečevi
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-2 animate-stagger-scale">
                 {upcomingMatches.map((m, i) => (
                   <div
                     key={m.id}
-                    className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 transition-all hover:border-orange-500/30"
+                    className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 transition-all hover:border-orange-500/30 hover-float"
                     style={{ animationDelay: `${i * 80}ms` }}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -198,7 +198,7 @@ export default function TournamentPage() {
                 <button
                   key={team}
                   onClick={() => toggleFavorite(team)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 animate-press ${
                     favorites.has(team)
                       ? 'bg-orange-500/20 border border-orange-500/40 text-orange-300'
                       : 'bg-zinc-800 border border-zinc-700 text-zinc-300'
@@ -260,13 +260,13 @@ export default function TournamentPage() {
 
       {/* ══════ RESULTS TAB ══════ */}
       {activeTab === 'results' && (
-        <div className="space-y-2 animate-fade-in">
+        <div className="space-y-2 animate-fade-in animate-stagger-scale">
           {playedMatches.map((m, i) => {
             const aWon = m.winner ? m.winner === m.teamA : (m.scoreA || 0) > (m.scoreB || 0)
             return (
               <div
                 key={m.id}
-                className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 transition-all"
+                className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 transition-all hover-float"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -306,7 +306,7 @@ export default function TournamentPage() {
 
       {/* ══════ TEAMS TAB ══════ */}
       {activeTab === 'teams' && (
-        <div className="space-y-2 animate-fade-in">
+        <div className="space-y-2 animate-fade-in animate-stagger-scale">
           {[...teamStats.values()]
             .sort((a, b) => b.wins - a.wins || (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst))
             .map((team, i) => {
@@ -355,7 +355,7 @@ function BracketMatch({ teamA, teamB, scoreA, scoreB, date, tech, isBye, isFinal
   const aWon = winner ? winner === teamA : (scoreA !== undefined && scoreB !== undefined && scoreA! > scoreB!)
   const bWon = winner ? winner === teamB : (scoreA !== undefined && scoreB !== undefined && scoreB! > scoreA!)
   return (
-    <div className={`rounded-lg overflow-hidden border ${isFinal ? 'border-amber-500/40 bg-amber-500/5' : 'border-zinc-700/60 bg-zinc-900/60'}`}>
+    <div className={`rounded-lg overflow-hidden border hover-float transition-all ${isFinal ? 'border-amber-500/40 bg-amber-500/5' : 'border-zinc-700/60 bg-zinc-900/60'}`}>
       <div className={`flex items-center justify-between px-2 py-1.5 border-b border-zinc-700/40 ${aWon ? 'bg-green-500/10' : ''}`}>
         <span className={`text-[11px] font-bold ${isBye && teamA === '—' ? 'text-zinc-600' : aWon ? 'text-green-400' : 'text-zinc-300'}`}>{teamA}</span>
         {scoreA !== undefined && <span className={`text-[11px] font-bold tabular-nums ${aWon ? 'text-green-400' : 'text-zinc-500'}`}>{scoreA}</span>}

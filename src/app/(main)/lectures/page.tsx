@@ -807,7 +807,7 @@ export default function LecturesPage() {
         <div className="flex gap-1 p-1 bg-muted/50 rounded-xl">
           <button
             onClick={() => setActiveSection('content')}
-            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all animate-press ${
               activeSection === 'content' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -816,7 +816,7 @@ export default function LecturesPage() {
           {hasVideo && (
             <button
               onClick={() => setActiveSection('video')}
-              className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all animate-press ${
                 activeSection === 'video' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -825,7 +825,7 @@ export default function LecturesPage() {
           )}
           <button
             onClick={() => setActiveSection('quiz')}
-            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
+            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all animate-press ${
               activeSection === 'quiz' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -1022,14 +1022,14 @@ export default function LecturesPage() {
             <p className="text-sm">Nema lekcija za ovaj predmet</p>
           </div>
         ) : (
-          <div className="space-y-2.5 animate-stagger">
+          <div className="space-y-2.5 animate-stagger-scale">
             {lectures.map((lecture, idx) => {
               const isCurrent = lecture.content?.includes('<!-- CURRENT -->')
               const lDate = parseLectureDate(lecture.content)
               return (
                 <button
                   key={lecture.id}
-                  className={`w-full text-left rounded-2xl border bg-[#0c0c14] cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-4 flex items-center justify-between ${
+                  className={`w-full text-left rounded-2xl border bg-[#0c0c14] cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-4 flex items-center justify-between hover-float ${
                     isCurrent ? 'border-violet-500/30 bg-violet-500/5' : 'border-[#1a1a2e]'
                   }`}
                   onClick={() => handleLectureTap(lecture)}
@@ -1101,11 +1101,11 @@ export default function LecturesPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 animate-stagger">
+      <div className="grid grid-cols-2 gap-3 animate-stagger-scale">
         {allSubjects.map((subject) => (
           <button
             key={subject.name}
-            className="relative rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] cursor-pointer hover:bg-white/[0.05] hover:border-[#7c5cfc]/20 transition-all duration-300 active:scale-[0.96] overflow-hidden group p-5 flex flex-col items-center text-center gap-3"
+            className="relative rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] cursor-pointer hover:bg-white/[0.05] hover:border-[#7c5cfc]/20 transition-all duration-300 active:scale-[0.96] overflow-hidden group p-5 flex flex-col items-center text-center gap-3 hover-float"
             onClick={() => handleSubjectTap(subject.name)}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-[#7c5cfc]/[0.03] to-[#5b3fd9]/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -1128,7 +1128,7 @@ export default function LecturesPage() {
                 }, 100)
               }
             }}
-            className="w-full py-3.5 rounded-2xl border border-dashed border-white/[0.08] text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-[#7c5cfc]/30 hover:text-[#7c5cfc] transition-all active:scale-[0.98]"
+            className="w-full py-3.5 rounded-2xl border border-dashed border-white/[0.08] text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-[#7c5cfc]/30 hover:text-[#7c5cfc] transition-all active:scale-[0.98] animate-press"
           >
             <Plus className="w-4 h-4" />
             Dodaj predmet

@@ -90,7 +90,7 @@ export default function MainLayout({
       </header>
       <ProfileGuard />
       <main className="max-w-md mx-auto px-4 pt-16">
-        <div className="page-content-transition" style={{ opacity, transform: `translateY(${translateY}px)` }}>
+        <div className="page-content-transition animate-fade-in" style={{ opacity, transform: `translateY(${translateY}px)` }}>
           {children}
         </div>
       </main>

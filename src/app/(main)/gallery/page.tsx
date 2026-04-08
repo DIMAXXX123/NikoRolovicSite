@@ -433,7 +433,7 @@ export default function GalleryPage() {
       {/* Upload modal */}
       {showUpload && typeof document !== 'undefined' && createPortal(
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }} className="bg-black/80 backdrop-blur-xl flex items-end sm:items-center justify-center" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
-          <div className="w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-5 animate-slide-up border-t sm:border border-[#1a1a2e]" style={{ background: '#0c0c14' }} onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 space-y-5 animate-slide-up animate-scale-in border-t sm:border border-[#1a1a2e]" style={{ background: '#0c0c14' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-lg text-[#e8e8f0]">Nova fotografija</h2>
               <button onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }} className="p-2 rounded-xl hover:bg-white/[0.06] transition-colors">
@@ -488,7 +488,7 @@ export default function GalleryPage() {
             <Button
               onClick={handleUpload}
               disabled={!selectedFile || uploading}
-              className="w-full h-12 rounded-xl bg-[#7c5cfc] hover:bg-[#6b4fe0] active:scale-[0.97] transition-all text-base font-semibold shadow-lg border-0 text-white"
+              className="w-full h-12 rounded-xl bg-[#7c5cfc] hover:bg-[#6b4fe0] active:scale-[0.97] transition-all text-base font-semibold shadow-lg border-0 text-white animate-press"
             >
               {uploading ? 'Šalje se...' : <><Send className="w-4 h-4 mr-2" />Pošalji</>}
             </Button>
@@ -509,7 +509,7 @@ export default function GalleryPage() {
         </button>
       )}
 
-      <div className="py-3 space-y-6 pb-24">
+      <div className="py-3 space-y-6 pb-24 animate-stagger">
         {photos.length === 0 ? (
           <div className="h-[60vh] flex flex-col items-center justify-center text-[#6b6b80]">
             <div className="w-16 h-16 rounded-3xl bg-[#0c0c14] border border-[#1a1a2e] flex items-center justify-center mb-4">
@@ -551,7 +551,7 @@ export default function GalleryPage() {
 
                   <button
                     onClick={() => setShowReportConfirm(photo.id)}
-                    className="p-2 -mr-2 active:scale-[0.97] transition-all rounded-lg hover:bg-orange-500/10"
+                    className="p-2 -mr-2 active:scale-[0.97] transition-all rounded-lg hover:bg-orange-500/10 animate-press"
                   >
                     <Flag className="w-3.5 h-3.5 text-[#3d3d50] hover:text-orange-400 transition-colors" />
                   </button>
@@ -576,7 +576,7 @@ export default function GalleryPage() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => toggleLike(photo.id)}
-                      className="flex items-center gap-1.5 active:scale-[0.97] transition-all px-2 py-1.5 -ml-2 rounded-xl hover:bg-red-500/10"
+                      className="flex items-center gap-1.5 active:scale-[0.97] transition-all px-2 py-1.5 -ml-2 rounded-xl hover:bg-red-500/10 animate-press"
                     >
                       <Heart
                         className={`w-[22px] h-[22px] transition-all duration-200 ${
@@ -646,7 +646,7 @@ export default function GalleryPage() {
             background: 'linear-gradient(135deg, #7c5cfc, #5b3fd9)',
             boxShadow: '0 4px 16px -4px rgba(124, 92, 252, 0.4), 0 8px 24px -4px rgba(0,0,0,0.3)',
           }}
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white active:scale-[0.97] transition-all animate-bounce-in"
+          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white active:scale-[0.97] transition-all animate-bounce-in animate-press"
         >
           <Camera className="w-6 h-6" />
         </button>,

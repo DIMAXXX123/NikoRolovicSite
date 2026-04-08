@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [appleLoading, setAppleLoading] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [showTour, setShowTour] = useState(false)
   const router = useRouter()
@@ -35,6 +36,21 @@ export default function LoginPage() {
     if (error) {
       setError('Greška pri Google prijavi. Pokušaj ponovo.')
       setGoogleLoading(false)
+    }
+  }
+
+  const handleAppleLogin = async () => {
+    setAppleLoading(true)
+    setError('')
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+    if (error) {
+      setError('Greška pri Apple prijavi. Pokušaj ponovo.')
+      setAppleLoading(false)
     }
   }
 
@@ -87,7 +103,7 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
+    <Card className="animate-fade-in border-border/50 bg-card/50 backdrop-blur-xl">
       <CardHeader className="text-center space-y-2 pb-2">
         <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-2" style={{ background: 'var(--theme-primary, #7c5cfc)' }}>
           <span className="text-2xl font-bold text-white">NR</span>
@@ -135,7 +151,7 @@ export default function LoginPage() {
           {error && (
             <p className="text-destructive text-sm text-center">{error}</p>
           )}
-          <Button type="submit" className="w-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800" disabled={loading}>
+          <Button type="submit" className="animate-press w-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800" disabled={loading}>
             {loading ? 'Prijava...' : 'Prijavi se'}
           </Button>
         </form>
@@ -151,7 +167,7 @@ export default function LoginPage() {
           <Button
             type="button"
             variant="outline"
-            className="w-full py-5 text-base font-semibold gap-3 border-border/50 hover:bg-muted/50"
+            className="animate-press w-full py-5 text-base font-semibold gap-3 border-border/50 hover:bg-muted/50"
             onClick={handleGoogleLogin}
             disabled={googleLoading}
           >
@@ -163,8 +179,20 @@ export default function LoginPage() {
             </svg>
             {googleLoading ? 'Prijava...' : 'Prijavi se sa Google'}
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="animate-press w-full py-5 text-base font-semibold gap-3 border-border/50 hover:bg-muted/50"
+            onClick={handleAppleLogin}
+            disabled={appleLoading || loading}
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+              <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+            </svg>
+            {appleLoading ? 'Prijava...' : 'Prijavi se sa Apple'}
+          </Button>
           <Link href="/register" className="block">
-            <Button variant="outline" className="w-full border-primary/50 text-primary hover:bg-primary/10 hover:border-primary text-base py-5 font-semibold gap-2">
+            <Button variant="outline" className="animate-press w-full border-primary/50 text-primary hover:bg-primary/10 hover:border-primary text-base py-5 font-semibold gap-2">
               <UserPlus className="w-5 h-5" />
               Nemaš nalog? Registruj se
             </Button>
