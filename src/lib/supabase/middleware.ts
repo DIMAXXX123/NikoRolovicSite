@@ -38,13 +38,13 @@ export async function updateSession(request: NextRequest) {
 
   const isCompleteProfile = request.nextUrl.pathname.startsWith('/complete-profile')
 
-  if (!user && !isAuthPage && !isCompleteProfile && request.nextUrl.pathname !== '/') {
-    const url = request.nextUrl.clone()
-    // First visit → register, returning user → login
-    const hasVisited = request.cookies.get('niko_visited')
-    url.pathname = hasVisited ? '/login' : '/register'
-    return NextResponse.redirect(url)
-  }
+  // Auth guard disabled — allow everyone in without login
+  // if (!user && !isAuthPage && !isCompleteProfile && request.nextUrl.pathname !== '/') {
+  //   const url = request.nextUrl.clone()
+  //   const hasVisited = request.cookies.get('niko_visited')
+  //   url.pathname = hasVisited ? '/login' : '/register'
+  //   return NextResponse.redirect(url)
+  // }
 
   // Don't redirect away from complete-profile — user needs to finish registration
   if (user && isAuthPage && !isCompleteProfile) {
