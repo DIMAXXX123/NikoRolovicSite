@@ -9,15 +9,7 @@ export default function Home() {
   const supabase = createClient()
 
   useEffect(() => {
-    async function check() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        router.replace('/news')
-      } else {
-        router.replace('/login')
-      }
-    }
-    check()
+    router.replace('/news')
   }, [])
 
   return (
