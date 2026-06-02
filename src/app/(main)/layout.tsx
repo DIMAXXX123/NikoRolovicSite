@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { BottomNav } from '@/components/bottom-nav'
 import { ProfileGuard } from '@/components/profile-guard'
@@ -14,22 +14,10 @@ export default function MainLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const [opacity, setOpacity] = useState(1)
-  const prevPath = useRef(pathname)
-
-  const [translateY, setTranslateY] = useState(0)
+  const [animKey, setAnimKey] = useState(pathname)
 
   useEffect(() => {
-    if (prevPath.current !== pathname) {
-      setOpacity(0)
-      setTranslateY(8)
-      const t = setTimeout(() => {
-        setOpacity(1)
-        setTranslateY(0)
-      }, 50)
-      prevPath.current = pathname
-      return () => clearTimeout(t)
-    }
+    setAnimKey(pathname)
   }, [pathname])
 
   return (
@@ -90,7 +78,7 @@ export default function MainLayout({
       </header>
       <ProfileGuard />
       <main className="max-w-md mx-auto px-4 pt-16">
-        <div className="page-content-transition animate-fade-in" style={{ opacity, transform: `translateY(${translateY}px)` }}>
+        <div key={animKey} className="animate-fade-in">
           {children}
         </div>
       </main>
