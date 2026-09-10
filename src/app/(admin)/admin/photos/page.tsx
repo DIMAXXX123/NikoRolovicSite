@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
+import { isOptimizableImage } from '@/lib/remote-image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Check, X, Camera, Trash2 } from 'lucide-react'
@@ -126,11 +128,14 @@ export default function AdminPhotosPage() {
                 className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] overflow-hidden hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300"
                 style={{ animationDelay: `${index * 80}ms` }}
               >
-                <div className="relative">
-                  <img
+                <div className="relative aspect-[3/4]">
+                  <Image
                     src={photo.image_url}
                     alt={photo.caption || ''}
-                    className="w-full aspect-[3/4] object-cover"
+                    fill
+                    sizes="(max-width: 480px) 100vw, 448px"
+                    unoptimized={!isOptimizableImage(photo.image_url)}
+                    className="object-cover"
                   />
                   <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/10">
                     <p className="text-white text-sm font-medium">
@@ -182,11 +187,14 @@ export default function AdminPhotosPage() {
                 className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] overflow-hidden hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300"
                 style={{ animationDelay: `${index * 80}ms` }}
               >
-                <div className="relative">
-                  <img
+                <div className="relative aspect-[3/4]">
+                  <Image
                     src={photo.image_url}
                     alt={photo.caption || ''}
-                    className="w-full aspect-[3/4] object-cover"
+                    fill
+                    sizes="(max-width: 480px) 100vw, 448px"
+                    unoptimized={!isOptimizableImage(photo.image_url)}
+                    className="object-cover"
                   />
                   <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/10">
                     <p className="text-white text-sm font-medium">
