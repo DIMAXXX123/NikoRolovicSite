@@ -1,39 +1,48 @@
 import { NextResponse } from 'next/server'
-
-// Rate limiting: In-memory rate limit (resets on deploy). Consider persistent rate limiting for production.
+import { z } from 'zod'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import {
+  classNumberSchema,
+  parseBody,
+  personNameSchema,
+  sectionNumberSchema,
+} from '@/lib/api-validation'
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
 const ADMIN_CHAT_IDS = (process.env.TELEGRAM_ADMIN_IDS || '').split(',').filter(Boolean)
 
-// Simple in-memory rate limit (resets on deploy)
-const requestCounts = new Map<string, number>()
+// Open endpoint (a pupil missing from the roster cannot be signed in yet), so
+// it leans on the shared rate limiter instead of an in-process Map.
+const RequestJoinSchema = z.object({
+  firstName: personNameSchema,
+  lastName: personNameSchema,
+  classNumber: classNumberSchema,
+  sectionNumber: sectionNumberSchema,
+  fingerprint: z.string().trim().max(512).optional(),
+})
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { firstName, lastName, classNumber, sectionNumber, fingerprint } = body
+    const parsed = await parseBody(request, RequestJoinSchema, 'Neispravni podaci')
+    if (!parsed.ok) return parsed.response
 
-    // Input validation
-    if (!firstName || typeof firstName !== 'string' || firstName.length > 100) {
-      return NextResponse.json({ error: 'Neispravno ime' }, { status: 400 })
-    }
-    if (!lastName || typeof lastName !== 'string' || lastName.length > 100) {
-      return NextResponse.json({ error: 'Neispravno prezime' }, { status: 400 })
-    }
-    if (!classNumber || typeof classNumber !== 'number' || classNumber < 1 || classNumber > 4) {
-      return NextResponse.json({ error: 'Neispravan razred' }, { status: 400 })
-    }
-    if (!sectionNumber || typeof sectionNumber !== 'number' || sectionNumber < 1 || sectionNumber > 10) {
-      return NextResponse.json({ error: 'Neispravno odjeljenje' }, { status: 400 })
-    }
+    const { firstName, lastName, classNumber, sectionNumber, fingerprint } = parsed.data
 
-    // Rate limit: max 2 requests per fingerprint
-    const key = fingerprint || `${firstName}_${lastName}`.toLowerCase()
-    const count = requestCounts.get(key) || 0
-    if (count >= 2) {
+    // Max 2 requests per identity and a wider cap per IP, shared across all
+    // serverless instances.
+    const identity = (fingerprint || `${firstName}_${lastName}`).toLowerCase()
+    const perIdentity = await checkRateLimit(`request-join:id:${identity}`, 2, 24 * 60 * 60_000)
+    if (perIdentity.limited) {
       return NextResponse.json({ error: 'Već si poslao maksimalan broj zahtjeva (2)' }, { status: 429 })
     }
-    requestCounts.set(key, count + 1)
+
+    const perIp = await checkRateLimit(`request-join:ip:${clientIp(request)}`, 10, 60 * 60_000)
+    if (perIp.limited) {
+      return NextResponse.json(
+        { error: 'Previše zahtjeva. Pokušaj ponovo kasnije.' },
+        { status: 429, headers: { 'Retry-After': String(perIp.retryAfter) } }
+      )
+    }
 
     // Sanitize display text
     const safeName = `${firstName} ${lastName}`.slice(0, 100)

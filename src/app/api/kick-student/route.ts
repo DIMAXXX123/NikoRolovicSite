@@ -1,42 +1,48 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { getCallerProfile, isValidUUID } from '@/lib/api-auth'
+import { z } from 'zod'
+import { ADMIN_ROLES, getCallerProfile, hasRole } from '@/lib/api-auth'
+import { createServiceClient } from '@/lib/supabase/service'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import {
+  classNumberSchema,
+  parseBody,
+  personNameSchema,
+  sectionNumberSchema,
+  uuidSchema,
+} from '@/lib/api-validation'
 
-// Rate limiting: Consider adding middleware-level rate limiting (e.g., 5 req/min per admin)
+const KickStudentSchema = z
+  .object({
+    profileId: uuidSchema.optional(),
+    firstName: personNameSchema.optional(),
+    lastName: personNameSchema.optional(),
+    classNumber: classNumberSchema.optional(),
+    sectionNumber: sectionNumberSchema.optional(),
+  })
+  .refine((v) => !!v.profileId || (!!v.firstName && !!v.lastName), {
+    message: 'Must provide profileId or first and last name',
+  })
 
 export async function POST(request: Request) {
   try {
     const caller = await getCallerProfile()
-    if (!caller || !['admin', 'creator'].includes(caller.role)) {
+    if (!hasRole(caller, ADMIN_ROLES)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-    if (!serviceKey) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    const rate = await checkRateLimit(`kick-student:${clientIp(request)}`, 10, 60_000)
+    if (rate.limited) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
+      )
     }
 
-    const body = await request.json()
-    const { profileId, firstName, lastName, classNumber, sectionNumber } = body
+    const parsed = await parseBody(request, KickStudentSchema)
+    if (!parsed.ok) return parsed.response
 
-    // Validate inputs
-    if (profileId && (typeof profileId !== 'string' || !isValidUUID(profileId))) {
-      return NextResponse.json({ error: 'Invalid profileId' }, { status: 400 })
-    }
-    if (firstName && typeof firstName !== 'string') {
-      return NextResponse.json({ error: 'Invalid firstName' }, { status: 400 })
-    }
-    if (lastName && typeof lastName !== 'string') {
-      return NextResponse.json({ error: 'Invalid lastName' }, { status: 400 })
-    }
-
-    if (!profileId && !firstName && !lastName) {
-      return NextResponse.json({ error: 'Must provide profileId or name' }, { status: 400 })
-    }
-
-    const supabase = createClient(supabaseUrl, serviceKey)
+    const { profileId, firstName, lastName, classNumber, sectionNumber } = parsed.data
+    const supabase = createServiceClient()
 
     // If we have a profileId, delete profile + auth user
     if (profileId) {

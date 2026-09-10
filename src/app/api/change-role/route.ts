@@ -1,37 +1,35 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { getCallerProfile, isValidUUID } from '@/lib/api-auth'
+import { z } from 'zod'
+import { ADMIN_ROLES, getCallerProfile, hasRole } from '@/lib/api-auth'
+import { createServiceClient } from '@/lib/supabase/service'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { parseBody, uuidSchema } from '@/lib/api-validation'
 
-// Rate limiting: Consider adding middleware-level rate limiting (e.g., 10 req/min per user)
+const ChangeRoleSchema = z.object({
+  userId: uuidSchema,
+  newRole: z.enum(['student', 'moderator', 'admin', 'creator']),
+})
 
 export async function POST(request: Request) {
   try {
     const caller = await getCallerProfile()
-    if (!caller || !['admin', 'creator'].includes(caller.role)) {
+    if (!hasRole(caller, ADMIN_ROLES)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const body = await request.json()
-    const { userId, newRole } = body
-
-    if (!userId || typeof userId !== 'string' || !isValidUUID(userId)) {
-      return NextResponse.json({ error: 'Invalid userId' }, { status: 400 })
+    const rate = await checkRateLimit(`change-role:${clientIp(request)}`, 20, 60_000)
+    if (rate.limited) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
+      )
     }
 
-    const VALID_ROLES = ['student', 'moderator', 'admin', 'creator']
+    const parsed = await parseBody(request, ChangeRoleSchema)
+    if (!parsed.ok) return parsed.response
 
-    if (!newRole || typeof newRole !== 'string' || !VALID_ROLES.includes(newRole)) {
-      return NextResponse.json({ error: 'Invalid role. Must be one of: ' + VALID_ROLES.join(', ') }, { status: 400 })
-    }
-
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-    if (!serviceKey) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
-    }
-
-    const supabase = createClient(supabaseUrl, serviceKey)
+    const { userId, newRole } = parsed.data
+    const supabase = createServiceClient()
 
     const { data, error } = await supabase
       .from('profiles')

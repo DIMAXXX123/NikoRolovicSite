@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { getCallerProfile, isValidUUID } from '@/lib/api-auth'
+import { z } from 'zod'
+import { getCallerProfile } from '@/lib/api-auth'
+import { createServiceClient } from '@/lib/supabase/service'
+import { parseBody, uuidSchema } from '@/lib/api-validation'
+
+const CheckProfileSchema = z.object({ userId: uuidSchema })
 
 export async function POST(request: Request) {
   try {
@@ -9,27 +13,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { userId } = body
+    const parsed = await parseBody(request, CheckProfileSchema)
+    if (!parsed.ok) return NextResponse.json({ exists: false })
 
-    if (!userId || typeof userId !== 'string' || !isValidUUID(userId)) {
-      return NextResponse.json({ exists: false })
-    }
-
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !serviceKey) {
-      return NextResponse.json({ exists: false })
-    }
-
-    const supabase = createClient(supabaseUrl, serviceKey)
-
+    const supabase = createServiceClient()
     const { data } = await supabase
       .from('profiles')
       .select('id')
-      .eq('id', userId)
-      .single()
+      .eq('id', parsed.data.userId)
+      .maybeSingle()
 
     return NextResponse.json({ exists: !!data })
   } catch {

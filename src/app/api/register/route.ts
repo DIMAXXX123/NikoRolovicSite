@@ -1,57 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { z } from 'zod'
+import { createServiceClient } from '@/lib/supabase/service'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import {
+  parseBody,
+  classNumberSchema,
+  emailSchema,
+  passwordSchema,
+  personNameSchema,
+  sectionNumberSchema,
+} from '@/lib/api-validation'
+import { findVerifiedStudent } from '@/lib/verified-students'
 
-function getAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
-
-// Normalize Montenegrin/Serbian Latin diacritics: č→c, ć→c, š→s, ž→z, đ→dj
-function normalizeCG(str: string): string {
-  return str
-    .replace(/[čć]/gi, (m) => m === m.toUpperCase() ? 'C' : 'c')
-    .replace(/š/gi, (m) => m === m.toUpperCase() ? 'S' : 's')
-    .replace(/ž/gi, (m) => m === m.toUpperCase() ? 'Z' : 'z')
-    .replace(/đ/gi, (m) => m === m.toUpperCase() ? 'DJ' : 'dj')
-}
+const RegisterSchema = z.object({
+  firstName: personNameSchema,
+  lastName: personNameSchema,
+  classNumber: classNumberSchema,
+  sectionNumber: sectionNumberSchema,
+  email: emailSchema,
+  password: passwordSchema,
+})
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  const rateLimitExceeded = checkRateLimit(`register:${ip}`, 5, 60_000)
-  if (rateLimitExceeded) {
-    return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
+  const ip = clientIp(req)
+  const rate = await checkRateLimit(`register:${ip}`, 5, 60_000)
+  if (rate.limited) {
+    return NextResponse.json(
+      { error: 'Previše zahtjeva. Pokušaj ponovo kasnije.' },
+      { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
+    )
   }
 
-  const admin = getAdmin()
+  const parsed = await parseBody(req, RegisterSchema, 'Sva polja su obavezna')
+  if (!parsed.ok) return parsed.response
+
+  const { firstName, lastName, classNumber, sectionNumber, email, password } = parsed.data
 
   try {
-    const { firstName, lastName, classNumber, sectionNumber, email, password } = await req.json()
+    // verified_students is service-role only (no RLS policies), so this lookup
+    // can only happen here on the server.
+    const admin = createServiceClient()
 
-    if (!firstName || !lastName || !classNumber || !sectionNumber || !email || !password) {
-      return NextResponse.json({ error: 'Sva polja su obavezna' }, { status: 400 })
-    }
-
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'Lozinka mora imati minimum 6 karaktera' }, { status: 400 })
-    }
-
-    // Check verified_students (with diacritics normalization: č/ć→c, š→s, ž→z, đ→dj)
     const { data: candidates } = await admin
       .from('verified_students')
       .select('id, used, first_name, last_name')
       .eq('class_number', classNumber)
       .eq('section_number', sectionNumber)
 
-    const inputFirst = normalizeCG(firstName.trim().toLowerCase())
-    const inputLast = normalizeCG(lastName.trim().toLowerCase())
-
-    const verified = (candidates || []).find(c =>
-      normalizeCG((c.first_name || '').toLowerCase()) === inputFirst &&
-      normalizeCG((c.last_name || '').toLowerCase()) === inputLast
-    )
+    const verified = findVerifiedStudent(candidates, firstName, lastName)
 
     if (!verified) {
       return NextResponse.json({ error: 'Nismo te pronašli u bazi učenika. Proveri podatke.' }, { status: 404 })
@@ -65,12 +61,12 @@ export async function POST(req: NextRequest) {
 
     // Create user via admin — email auto-confirmed, no OTP needed
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
-      email: email.trim().toLowerCase(),
+      email,
       password,
       email_confirm: true,
       user_metadata: {
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
+        first_name: firstName,
+        last_name: lastName,
         class_number: classNumber,
         section_number: sectionNumber,
       },
@@ -96,16 +92,17 @@ export async function POST(req: NextRequest) {
     // Create profile — use original name from verified_students (with proper diacritics)
     await admin.from('profiles').insert({
       id: authData.user.id,
-      first_name: verified.first_name || firstName.trim(),
-      last_name: verified.last_name || lastName.trim(),
-      email: email.trim().toLowerCase(),
+      first_name: verified.first_name || firstName,
+      last_name: verified.last_name || lastName,
+      email,
       class_number: classNumber,
       section_number: sectionNumber,
       role: 'student',
     })
 
     return NextResponse.json({ ok: true, userId: authData.user.id })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 })
+  } catch (err) {
+    console.error('register failed', err)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

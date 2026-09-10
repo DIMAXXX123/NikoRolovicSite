@@ -1,24 +1,42 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { getCallerProfile } from '@/lib/api-auth'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { parseBody, uuidSchema } from '@/lib/api-validation'
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
 // Admin Telegram IDs who receive moderation notifications
 const ADMIN_CHAT_IDS = (process.env.TELEGRAM_ADMIN_IDS || '').split(',').filter(Boolean)
 
+// Called right after a pupil uploads a photo, so it requires their session:
+// without that anyone could push arbitrary text and image URLs into the
+// moderators' Telegram chat.
+const NotifySchema = z.object({
+  photoId: uuidSchema,
+  imageUrl: z.url().max(2048),
+  userName: z.string().trim().min(1).max(100),
+  caption: z.string().trim().max(500).optional().nullable(),
+})
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { photoId, imageUrl, userName, caption } = body
+    const caller = await getCallerProfile()
+    if (!caller) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    // Input validation
-    if (!photoId || typeof photoId !== 'string') {
-      return NextResponse.json({ error: 'Invalid photoId' }, { status: 400 })
+    const rate = await checkRateLimit(`telegram-notify:${caller.id}:${clientIp(request)}`, 10, 60_000)
+    if (rate.limited) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
+      )
     }
-    if (!imageUrl || typeof imageUrl !== 'string') {
-      return NextResponse.json({ error: 'Invalid imageUrl' }, { status: 400 })
-    }
-    if (!userName || typeof userName !== 'string') {
-      return NextResponse.json({ error: 'Invalid userName' }, { status: 400 })
-    }
+
+    const parsed = await parseBody(request, NotifySchema)
+    if (!parsed.ok) return parsed.response
+
+    const { photoId, imageUrl, userName, caption } = parsed.data
 
     const text = `📸 Nova fotografija za moderaciju!\n\n👤 ${userName}\n${caption ? `💬 ${caption}\n` : ''}🆔 ${photoId}`
 
