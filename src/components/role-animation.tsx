@@ -79,7 +79,7 @@ export function RoleAnimation({ role, onDone }: RoleAnimationProps) {
         @keyframes roleParticleFall {
           0% { opacity: 0; transform: translateY(-40px) rotate(0deg) scale(0); }
           20% { opacity: 1; transform: translateY(0) rotate(30deg) scale(1); }
-          100% { opacity: 0; transform: translateY(100vh) rotate(180deg) scale(0.5); }
+          100% { opacity: 0; transform: translateY(100dvh) rotate(180deg) scale(0.5); }
         }
       `}</style>
     </div>

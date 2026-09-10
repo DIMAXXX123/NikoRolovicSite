@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c5cfc"/>
+      <stop offset="100%" stop-color="#5b3fd9"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.55">
+      <stop offset="0%" stop-color="#7c5cfc" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#7c5cfc" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="#050508"/>
+  <rect x="0" y="0" width="512" height="512" rx="112.64" fill="#050508"/>
+  <rect x="0" y="0" width="512" height="512" rx="112.64" fill="url(#glow)"/>
+  <rect x="10.24" y="10.24" width="491.52" height="491.52" rx="102.4" fill="none" stroke="url(#g)" stroke-opacity="0.45" stroke-width="10.24"/>
+  <text x="256" y="256" font-family="DejaVu Sans, sans-serif" font-size="225.28"
+        font-weight="700" letter-spacing="-6.7584" fill="url(#g)"
+        text-anchor="middle" dominant-baseline="central">NR</text>
+</svg>

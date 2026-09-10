@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050508]">
+      <div className="min-h-dvh flex items-center justify-center bg-[#050508]">
         <div className="w-8 h-8 border-2 border-[#7c5cfc] border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!authorized) return null
 
   return (
-    <div className="min-h-screen bg-[#050508]">
+    <div className="min-h-dvh bg-[#050508]">
       <div className="max-w-md mx-auto px-4 pt-4 pb-8">
         {/* Admin Header */}
         <div className="flex items-center justify-between mb-5">
