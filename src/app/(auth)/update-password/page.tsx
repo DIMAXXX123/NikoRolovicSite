@@ -69,6 +69,7 @@ export default function UpdatePasswordPage() {
             <Label htmlFor="password">Nova lozinka</Label>
             <Input
               id="password"
+              autoComplete="new-password"
               type="password"
               placeholder="••••••••"
               value={password}
@@ -82,6 +83,7 @@ export default function UpdatePasswordPage() {
             <Label htmlFor="confirm">Potvrdi lozinku</Label>
             <Input
               id="confirm"
+              autoComplete="new-password"
               type="password"
               placeholder="••••••••"
               value={confirmPassword}

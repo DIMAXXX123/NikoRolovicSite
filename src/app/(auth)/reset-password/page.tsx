@@ -202,6 +202,7 @@ export default function ResetPasswordPage() {
               <div className="relative">
                 <Input
                   id="password"
+                  autoComplete="new-password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Minimum 6 karaktera"
                   value={password}
@@ -223,6 +224,7 @@ export default function ResetPasswordPage() {
               <Label htmlFor="confirm">Potvrdi lozinku</Label>
               <Input
                 id="confirm"
+                autoComplete="new-password"
                 type="password"
                 placeholder="Ponovi lozinku"
                 value={confirmPassword}
@@ -359,6 +361,7 @@ export default function ResetPasswordPage() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              autoComplete="email"
               type="email"
               placeholder="tvoj@email.com"
               value={email}

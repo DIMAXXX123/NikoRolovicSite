@@ -185,7 +185,7 @@ export function NewsHeroCard({
                 {formatDateShort(item.created_at)}
               </span>
             </div>
-            <h2 className="text-xl font-bold text-white leading-snug mb-3 drop-shadow-lg">
+            <h2 className="text-xl font-bold text-white leading-snug mb-3 drop-shadow-lg break-words">
               {item.title}
             </h2>
             <div className="flex items-center justify-between">
@@ -217,7 +217,7 @@ export function NewsHeroCard({
       {!showImage && (
         <div className="relative p-5 space-y-3">
           <span className="text-xs text-[#6b6b80]">{formatDate(item.created_at)}</span>
-          <h2 className="text-xl font-bold text-[#e8e8f0] leading-snug">{item.title}</h2>
+          <h2 className="text-xl font-bold text-[#e8e8f0] leading-snug break-words">{item.title}</h2>
           <p className={`text-[#6b6b80] text-sm leading-relaxed ${expanded ? '' : 'line-clamp-3'}`}>
             {item.content}
           </p>
@@ -268,7 +268,7 @@ export function NewsRegularCard({
       )}
 
       <div className="p-5 space-y-3">
-        <h2 className="text-lg font-bold text-[#e8e8f0] leading-snug">{item.title}</h2>
+        <h2 className="text-lg font-bold text-[#e8e8f0] leading-snug break-words">{item.title}</h2>
         <p className={`text-[#6b6b80] text-sm leading-relaxed ${expanded ? '' : 'line-clamp-3'}`}>
           {item.content}
         </p>

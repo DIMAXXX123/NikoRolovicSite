@@ -6,7 +6,7 @@ import {
   stripMetadata,
 } from '../../lecture-utils'
 
-const RICH_TEXT_CLASS = `text-foreground/90 leading-relaxed text-[15px]
+const RICH_TEXT_CLASS = `text-foreground/90 leading-relaxed text-[15px] max-w-full break-words
   [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h1]:mt-6 [&_h1]:bg-gradient-to-r [&_h1]:from-[#7c5cfc] [&_h1]:to-[#a78bfa] [&_h1]:bg-clip-text [&_h1]:text-transparent
   [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-[#7c5cfc]
   [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-4
@@ -19,9 +19,13 @@ const RICH_TEXT_CLASS = `text-foreground/90 leading-relaxed text-[15px]
   [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2
   [&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground
   [&_img]:rounded-xl [&_img]:max-w-full
-  [&_hr]:border-border/30 [&_hr]:my-6`
+  [&_hr]:border-border/30 [&_hr]:my-6
+  [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_pre]:rounded-xl [&_pre]:bg-muted/40 [&_pre]:p-3 [&_pre]:text-[13px]
+  [&_code]:break-words [&_pre_code]:whitespace-pre [&_pre_code]:break-normal
+  [&_table]:block [&_table]:overflow-x-auto [&_table]:max-w-full [&_table]:w-full
+  [&_a]:break-words`
 
-const SECTION_TEXT_CLASS = `text-foreground/90 leading-relaxed text-[15px]
+const SECTION_TEXT_CLASS = `text-foreground/90 leading-relaxed text-[15px] max-w-full break-words
   [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-4
   [&_p]:mb-3 [&_p]:leading-7
   [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul]:space-y-1
@@ -31,7 +35,11 @@ const SECTION_TEXT_CLASS = `text-foreground/90 leading-relaxed text-[15px]
   [&_em]:italic
   [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2
   [&_blockquote]:border-l-2 [&_blockquote]:border-primary/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground
-  [&_img]:rounded-xl [&_img]:max-w-full`
+  [&_img]:rounded-xl [&_img]:max-w-full
+  [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_pre]:rounded-xl [&_pre]:bg-muted/40 [&_pre]:p-3 [&_pre]:text-[13px]
+  [&_code]:break-words [&_pre_code]:whitespace-pre [&_pre_code]:break-normal
+  [&_table]:block [&_table]:overflow-x-auto [&_table]:max-w-full [&_table]:w-full
+  [&_a]:break-words`
 
 /**
  * Renders the lecture body on the server — the heaviest part of the page never

@@ -104,6 +104,7 @@ export default function VerifyPage() {
           <Input
             type="text"
             inputMode="numeric"
+            autoComplete="one-time-code"
             placeholder="00000000"
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))}

@@ -107,6 +107,7 @@ export default function RegisterPage() {
               <Label htmlFor="firstName">Ime</Label>
               <Input
                 id="firstName"
+                autoComplete="given-name"
                 placeholder="Marko"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
@@ -118,6 +119,7 @@ export default function RegisterPage() {
               <Label htmlFor="lastName">Prezime</Label>
               <Input
                 id="lastName"
+                autoComplete="family-name"
                 placeholder="Petrović"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
@@ -158,6 +160,7 @@ export default function RegisterPage() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              autoComplete="email"
               type="email"
               placeholder="tvoj@email.com"
               value={email}
@@ -170,6 +173,7 @@ export default function RegisterPage() {
             <Label htmlFor="password">Lozinka</Label>
             <Input
               id="password"
+              autoComplete="new-password"
               type="password"
               placeholder="Minimum 6 karaktera"
               value={password}
@@ -183,6 +187,7 @@ export default function RegisterPage() {
             <Label htmlFor="confirmPassword">Potvrdi lozinku</Label>
             <Input
               id="confirmPassword"
+              autoComplete="new-password"
               type="password"
               placeholder="Ponovi lozinku"
               value={confirmPassword}

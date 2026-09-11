@@ -35,23 +35,23 @@ export default function MainLayout({
               const first = ALL_NAV_ITEMS.find(item => item.id === ids[0])
               if (first) router.push(first.href)
             }}
-            className="flex items-center gap-3 active:scale-[0.97] transition-transform press-ripple rounded-2xl py-1.5 px-1 -ml-1"
+            className="flex min-w-0 items-center gap-3 active:scale-[0.97] transition-transform press-ripple rounded-2xl py-1.5 px-1 -ml-1"
           >
             {/* Logo — gradient circle with glow */}
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,92,252,0.3)] transition-shadow duration-500 hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]"
+              className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,92,252,0.3)] transition-shadow duration-500 hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]"
               style={{
                 background: 'linear-gradient(135deg, #7c5cfc 0%, #5b3fd9 100%)',
               }}
             >
               <span className="text-sm font-black text-white tracking-tight">NR</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-[15px] text-[#e8e8f0] tracking-tight">Niko Rolović</span>
-              <span className="px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-widest rounded-full bg-[#7c5cfc]/10 text-[#7c5cfc]">Beta</span>
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="min-w-0 truncate font-semibold text-[15px] text-[#e8e8f0] tracking-tight">Niko Rolović</span>
+              <span className="shrink-0 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-widest rounded-full bg-[#7c5cfc]/10 text-[#7c5cfc]">Beta</span>
             </div>
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={() => router.push('/tournament')}
               className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20 active:scale-[0.92] transition-all duration-300 hover:from-orange-500/30 hover:to-amber-500/20 hover:shadow-[0_0_20px_rgba(249,115,22,0.15)] hover:border-orange-500/30"

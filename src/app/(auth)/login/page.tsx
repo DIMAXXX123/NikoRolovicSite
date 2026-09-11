@@ -108,6 +108,7 @@ export default function LoginPage() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              autoComplete="email"
               type="email"
               placeholder="tvoj@email.com"
               value={email}
@@ -120,6 +121,7 @@ export default function LoginPage() {
             <Label htmlFor="password">Lozinka</Label>
             <Input
               id="password"
+              autoComplete="current-password"
               type="password"
               placeholder="••••••••"
               value={password}

@@ -10,7 +10,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // manifest.json is excluded on purpose: browsers fetch the web app manifest
+  // without credentials, so the auth guard saw every request as anonymous and
+  // redirected it to /register. Chrome then had no manifest to install from.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|api/|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

@@ -1,0 +1,24 @@
+{
+  "session": "claude/qa-mobile",
+  "date": "2026-09-11",
+  "createdRecords": {
+    "supabaseAuthUsers": [],
+    "databaseRows": [],
+    "note": "Nothing was created in the Supabase project ydcbxqrnmnbceyzqgbui and nothing was written to production. The environment's network policy blocks *.supabase.co and the Vercel deployment, so a production QA account could not have been used even if created. The sweep ran against a local production build backed by a local Supabase stub with synthetic [TEST] fixtures. Nothing to clean up."
+  },
+  "qaIdentity": {
+    "scope": "local stub only, never sent to production",
+    "email": "qa-mob-7f66caa0@example.com",
+    "passwordLocation": ".env.local (git-ignored, discarded with the container)"
+  },
+  "seedBranch": {
+    "expected": "claude/qa-seed",
+    "found": false,
+    "note": "Branch does not exist on origin, so qa-accounts.md and the qa-student@example.com password were unavailable."
+  },
+  "artifacts": {
+    "report": "qa-mobile-report/REPORT.md",
+    "screenshots": "qa-mobile-report/screenshots/",
+    "harness": "not committed (qa-tmp/, .env.local — local only)"
+  }
+}
