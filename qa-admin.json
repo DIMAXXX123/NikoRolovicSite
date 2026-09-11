@@ -24,16 +24,19 @@
   ],
   "created_content": [],
   "cleanup": {
-    "status": "pending",
+    "status": "done",
     "targets": [
       "auth.users + auth.identities + public.profiles for the three qa-adm-* ids above"
     ],
-    "note": "No news/events/lectures/photos rows were created: every write probe ran inside BEGIN ... ROLLBACK, and the UI flows could not be exercised (egress blocked)."
+    "note": "No news/events/lectures/photos rows were created: every write probe ran inside BEGIN ... ROLLBACK, and the UI flows could not be exercised (egress blocked).",
+    "verified_at": "2026-09-11",
+    "result": "All three qa-adm-* auth users, identities and profiles deleted. Real content untouched: news=17, events=6, lectures=437, photos=53, real profiles=29."
   },
   "pre_existing_not_mine": [
     "qa-admin@example.com",
     "qa-moderator@example.com",
     "qa-student@example.com",
     "qa-stud-7f3k9m@example.com"
-  ]
+  ],
+  "recreate_sql_note": "See the session report for a single SQL block that recreates these three accounts if the UI pass is resumed."
 }
