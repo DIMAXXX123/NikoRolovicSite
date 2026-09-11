@@ -1,0 +1,15 @@
+{
+  "name": "qa-auth",
+  "private": true,
+  "type": "module",
+  "description": "Browser QA for the login / registration / profile flows. Kept out of the app's dependencies on purpose.",
+  "scripts": {
+    "seed": "node seed.mjs",
+    "qa": "node run.mjs",
+    "cleanup": "node cleanup.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.2",
+    "playwright": "^1.56.1"
+  }
+}

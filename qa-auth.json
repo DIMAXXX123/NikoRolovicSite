@@ -1,0 +1,17 @@
+{
+  "runId": null,
+  "createdAt": null,
+  "note": "Nijedan red nije napravljen u bazi tokom ove sesije — portal i Supabase nisu bili dostupni iz QA kontejnera (mrežna politika okruženja). Skripta scripts/qa-auth/seed.mjs popunjava ovaj fajl kada se pokrene.",
+  "account": null,
+  "verifiedStudents": [],
+  "registeredUsers": [],
+  "temporary": {
+    "rateLimitBuckets": [
+      {
+        "bucket": "[TEST] qa-auth-probe:login@1789142880",
+        "purpose": "provjera consume_rate_limit() kroz Supabase MCP",
+        "deleted": true
+      }
+    ]
+  }
+}

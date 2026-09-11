@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { rateLimitMessage } from '@/lib/retry-after'
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('')
@@ -69,7 +70,9 @@ export default function RegisterPage() {
     const data = await res.json()
 
     if (!res.ok) {
-      setError(data.error || 'Greška pri registraciji')
+      setError(res.status === 429
+        ? rateLimitMessage(res, 'Previše zahtjeva.')
+        : data.error || 'Greška pri registraciji')
       setLoading(false)
       return
     }

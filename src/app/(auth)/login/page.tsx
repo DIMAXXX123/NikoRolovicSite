@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { UserPlus, Eye } from 'lucide-react'
 import { SuccessAnimation } from '@/components/success-animation'
 import { SiteTour } from '@/components/site-tour'
+import { rateLimitMessage } from '@/lib/retry-after'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -62,7 +63,7 @@ export default function LoginPage() {
       const { error: message } = await res.json().catch(() => ({ error: '' }))
 
       if (res.status === 429) {
-        setError('Previše pokušaja prijave. Pokušaj ponovo kasnije.')
+        setError(rateLimitMessage(res, 'Previše pokušaja prijave.'))
       } else if (typeof message === 'string' && message.includes('Email not confirmed')) {
         setError('Email nije potvrđen. Provjeri inbox.')
       } else {

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Mail, CheckCircle2, Lock, KeyRound, Eye, EyeOff } from 'lucide-react'
+import { rateLimitMessage } from '@/lib/retry-after'
 
 type Step = 'email' | 'code' | 'newPassword' | 'done'
 
@@ -46,8 +47,8 @@ export default function ResetPasswordPage() {
     }).catch(() => null)
 
     if (!res || !res.ok) {
-      setError(res?.status === 429
-        ? 'Previše zahtjeva. Pokušaj ponovo kasnije.'
+      setError(res && res.status === 429
+        ? rateLimitMessage(res, 'Previše zahtjeva.')
         : 'Greška pri slanju koda. Pokušaj ponovo.')
     } else {
       setStep('code')

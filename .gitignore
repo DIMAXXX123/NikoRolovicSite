@@ -45,3 +45,7 @@ next-env.d.ts
 # database dumps (см. README → Резервное копирование)
 backup-*.sql
 *.dump
+
+# QA run output (curated screenshots live in scripts/qa-auth/screenshots/)
+scripts/qa-auth/artifacts/
+scripts/qa-auth/node_modules/
