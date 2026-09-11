@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# database dumps (см. README → Резервное копирование)
+backup-*.sql
+*.dump

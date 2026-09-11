@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Trash2, X, Calendar } from 'lucide-react'
 import type { Event, EventType } from '@/lib/types'
+import { useToast } from '@/components/toast'
 
 const EVENT_TYPE_OPTIONS: { value: EventType; label: string }[] = [
   { value: 'test', label: 'Test' },
@@ -37,12 +38,12 @@ export default function AdminEventsPage() {
   const [eventTime, setEventTime] = useState('')
   const [eventType, setEventType] = useState<EventType>('dogadjaj')
   const [loading, setLoading] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const supabase = createClient()
 
+  const { toast } = useToast()
+
   function showToast(message: string, type: 'success' | 'error' = 'success') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
+    toast(message, { type })
   }
 
   useEffect(() => { loadEvents() }, [])
@@ -98,15 +99,6 @@ export default function AdminEventsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      {toast && (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-2xl text-sm font-medium shadow-lg backdrop-blur-sm animate-slide-down border ${
-          toast.type === 'success'
-            ? 'bg-green-500/90 text-white border-green-400/30'
-            : 'bg-red-500/90 text-white border-red-400/30'
-        }`}>
-          {toast.message}
-        </div>
-      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Kalendar</h1>
         <Button

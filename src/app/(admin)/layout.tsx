@@ -1,72 +1,24 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { getCallerProfile, hasRole, STAFF_ROLES } from '@/lib/api-auth'
+import { AdminHeader } from './admin-header'
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter, usePathname } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft, ShieldCheck } from 'lucide-react'
+/**
+ * Server-side gate for the whole admin area. The role check used to run in a
+ * client effect, so the admin screens rendered for everyone for a moment
+ * before the redirect fired. Now nothing is sent to the browser unless the
+ * session really belongs to a moderator/admin/creator.
+ */
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  // A misconfigured server (no service role key) must not open the panel.
+  const profile = await getCallerProfile().catch(() => null)
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [authorized, setAuthorized] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-  const pathname = usePathname()
-  const supabase = createClient()
-
-  const isSubPage = pathname !== '/admin'
-
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  async function checkAuth() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || (profile.role !== 'admin' && profile.role !== 'moderator' && profile.role !== 'creator')) {
-      router.push('/news')
-      return
-    }
-
-    setAuthorized(true)
-    setLoading(false)
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050508]">
-        <div className="w-8 h-8 border-2 border-[#7c5cfc] border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
-
-  if (!authorized) return null
+  if (!profile) redirect('/login')
+  if (!hasRole(profile, STAFF_ROLES)) redirect('/news')
 
   return (
-    <div className="min-h-screen bg-[#050508]">
+    <div className="min-h-dvh bg-[#050508]">
       <div className="max-w-md mx-auto px-4 pt-4 pb-8">
-        {/* Admin Header */}
-        <div className="flex items-center justify-between mb-5">
-          <Link
-            href={isSubPage ? '/admin' : '/profile'}
-            className="flex items-center gap-2 text-sm text-[#7c5cfc] hover:text-[#7c5cfc]/80 transition-colors group"
-          >
-            <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-[#1a1a2e] flex items-center justify-center group-hover:border-[#7c5cfc]/30 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </div>
-            <span className="font-medium">{isSubPage ? 'Admin panel' : 'Nazad'}</span>
-          </Link>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0c0c14] border border-[#1a1a2e]">
-            <ShieldCheck className="w-4 h-4 text-[#7c5cfc]" />
-            <span className="text-xs font-semibold text-[#7c5cfc]/80 tracking-wide uppercase">Admin Panel</span>
-          </div>
-        </div>
+        <AdminHeader />
         <div className="admin-content">
           {children}
         </div>

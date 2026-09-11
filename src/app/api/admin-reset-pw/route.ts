@@ -1,34 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { getCallerProfile } from '@/lib/api-auth'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { z } from 'zod'
+import { ADMIN_ROLES, getCallerProfile, hasRole } from '@/lib/api-auth'
+import { createServiceClient } from '@/lib/supabase/service'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { emailSchema, parseBody, passwordSchema } from '@/lib/api-validation'
 
 // Admin endpoint — reset user password via service_role
 // Protected by session-based admin/creator role check
+const ResetSchema = z.object({
+  email: emailSchema,
+  newPassword: passwordSchema,
+})
+
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  const rateLimitError = checkRateLimit(`admin-reset-pw:${ip}`, 3, 60_000)
-  if (rateLimitError) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  const rate = await checkRateLimit(`admin-reset-pw:${clientIp(req)}`, 3, 60_000)
+  if (rate.limited) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
+    )
   }
 
   const caller = await getCallerProfile()
-  if (!caller || !['admin', 'creator'].includes(caller.role)) {
+  if (!hasRole(caller, ADMIN_ROLES)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
-  const { email, newPassword } = await req.json()
+  const parsed = await parseBody(req, ResetSchema)
+  if (!parsed.ok) return parsed.response
 
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const { email, newPassword } = parsed.data
+  const admin = createServiceClient()
 
   // Find user by email
   const { data: { users }, error: listErr } = await admin.auth.admin.listUsers()
   if (listErr) return NextResponse.json({ error: listErr.message }, { status: 500 })
 
-  const user = users.find(u => u.email === email.toLowerCase())
+  const user = users.find(u => u.email === email)
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
   // Reset password

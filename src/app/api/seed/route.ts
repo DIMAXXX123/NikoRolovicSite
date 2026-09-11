@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { z } from 'zod'
+import { createServiceClient } from '@/lib/supabase/service'
+import { parseBody } from '@/lib/api-validation'
+import { adminSecretMatches } from '@/lib/admin-secret'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 
 // SECURITY NOTES:
-// - Protected by secret query parameter. In production, consider using
-//   a stronger secret or env variable (process.env.SEED_SECRET).
-// - Rate limiting: This is a one-time setup endpoint. Consider disabling
-//   in production or adding IP-based rate limiting.
+// - Disabled outright in production.
+// - Protected by the ADMIN_SECRET env variable, compared in constant time.
+// - Rate limited through the shared counter.
 // - Uses service role key to bypass RLS for seeding data.
 // - Supabase handles all password hashing (bcrypt) server-side.
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const SeedSchema = z.object({ secret: z.string().min(1).max(256) })
 
 export async function POST(request: Request) {
   try {
@@ -18,21 +20,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Seed endpoint disabled in production' }, { status: 403 })
   }
 
-  const { secret } = await request.json().catch(() => ({ secret: '' }))
+  const rate = await checkRateLimit(`seed:${clientIp(request)}`, 5, 60_000)
+  if (rate.limited) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
+    )
+  }
 
   if (!process.env.ADMIN_SECRET) {
     return NextResponse.json({ error: 'Server configuration error: ADMIN_SECRET not set' }, { status: 500 })
   }
 
-  if (!secret || secret !== process.env.ADMIN_SECRET) {
+  const parsed = await parseBody(request, SeedSchema)
+  if (!parsed.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  if (!adminSecretMatches(parsed.data.secret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  if (!SUPABASE_SERVICE_KEY) {
-    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
-  }
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+  const supabase = createServiceClient()
 
   // Make Dima admin
   await supabase

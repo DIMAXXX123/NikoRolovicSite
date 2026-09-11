@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,7 +12,7 @@ interface VerifiedStudent {
   last_name: string
   class_number: number
   section_number: number
-  email: string
+  email: string | null
   used: boolean
 }
 
@@ -27,31 +26,44 @@ export default function AdminStudentsPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const supabase = createClient()
+  const [loadError, setLoadError] = useState('')
 
   useEffect(() => { loadStudents() }, [])
 
+  // verified_students holds pupils' names and e-mails and is service-role
+  // only, so the roster is read and written through /api/admin/students.
   async function loadStudents() {
-    const { data } = await supabase
-      .from('verified_students')
-      .select('*')
-      .order('class_number', { ascending: true })
-      .order('section_number', { ascending: true })
-      .order('last_name', { ascending: true })
-    if (data) setStudents(data)
+    const res = await fetch('/api/admin/students')
+    if (!res.ok) {
+      setLoadError('Nije moguće učitati spisak učenika.')
+      return
+    }
+    const { students: rows } = await res.json()
+    setLoadError('')
+    setStudents(rows ?? [])
   }
 
   async function addStudent(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
 
-    await supabase.from('verified_students').insert({
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
-      class_number: parseInt(classNumber),
-      section_number: parseInt(sectionNumber),
-      email: email.trim().toLowerCase(),
+    const res = await fetch('/api/admin/students', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        classNumber: parseInt(classNumber),
+        sectionNumber: parseInt(sectionNumber),
+        email: email.trim() ? email.trim().toLowerCase() : undefined,
+      }),
     })
+
+    if (!res.ok) {
+      setLoadError('Nije moguće dodati učenika.')
+      setLoading(false)
+      return
+    }
 
     setFirstName(''); setLastName(''); setEmail('')
     setClassNumber('1'); setSectionNumber('1')
@@ -74,8 +86,8 @@ export default function AdminStudentsPage() {
       }),
     })
 
-    // Also delete from verified_students via client (in case API didn't catch it)
-    await supabase.from('verified_students').delete().eq('id', id)
+    // Also delete the roster row by id (in case the name match didn't catch it)
+    await fetch(`/api/admin/students?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
     loadStudents()
   }
 
@@ -85,7 +97,7 @@ export default function AdminStudentsPage() {
     return students.filter((s) =>
       s.first_name.toLowerCase().includes(q) ||
       s.last_name.toLowerCase().includes(q) ||
-      s.email.toLowerCase().includes(q)
+      (s.email ?? '').toLowerCase().includes(q)
     )
   }, [students, searchQuery])
 
@@ -113,6 +125,12 @@ export default function AdminStudentsPage() {
           className="pl-10 rounded-xl bg-white/[0.04] border-white/[0.08] text-white focus:border-purple-500 focus:ring-purple-500/20 placeholder:text-white/30"
         />
       </div>
+
+      {loadError && (
+        <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          {loadError}
+        </p>
+      )}
 
       <p className="text-sm text-white/40">{filteredStudents.length} od {students.length} učenika</p>
 
