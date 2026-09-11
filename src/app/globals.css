@@ -45,7 +45,7 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-dm-sans), 'DM Sans', system-ui, -apple-system, sans-serif;
     position: relative;
     letter-spacing: -0.01em;
     line-height: 1.65;
@@ -271,17 +271,17 @@
 }
 
 .glass-header-premium {
-  background: rgba(5, 5, 8, 0.8);
+  background: rgba(var(--theme-chrome, 5, 5, 8), 0.8);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(var(--theme-hairline, 255, 255, 255), 0.04);
 }
 
 .glass-header {
-  background: rgba(5, 5, 8, 0.8);
+  background: rgba(var(--theme-chrome, 5, 5, 8), 0.8);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(var(--theme-hairline, 255, 255, 255), 0.04);
 }
 
 .premium-card {
@@ -300,8 +300,8 @@
 }
 
 .glass-card {
-  background: #0c0c14;
-  border: 1px solid #1a1a2e;
+  background: var(--theme-card, #0c0c14);
+  border: 1px solid var(--theme-border, #1a1a2e);
   border-radius: 1rem;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -354,7 +354,7 @@
    V5 BOTTOM NAV — frosted dark glass
    ============================================ */
 .glass-nav-premium {
-  background: rgba(5, 5, 8, 0.85);
+  background: rgba(var(--theme-chrome, 5, 5, 8), 0.85);
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   border-top: 1px solid rgba(124, 92, 252, 0.1);
@@ -362,7 +362,7 @@
 }
 
 .glass-nav {
-  background: rgba(5, 5, 8, 0.9);
+  background: rgba(var(--theme-chrome, 5, 5, 8), 0.9);
   backdrop-filter: blur(32px) saturate(200%);
   -webkit-backdrop-filter: blur(32px) saturate(200%);
   border-top: 1px solid rgba(124, 92, 252, 0.1);
@@ -884,4 +884,168 @@ button, a, [role="button"], input, select {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ============================================
+   KEYBOARD FOCUS
+   Visible only for keyboard/AT users — :focus-visible keeps the ring off
+   taps and mouse clicks, so nothing changes for students on a phone.
+   ============================================ */
+
+:focus-visible {
+  outline: 2px solid var(--theme-primary, #7c5cfc);
+  outline-offset: 2px;
+  border-radius: 0.375rem;
+}
+
+/* Elements with their own rounding keep it under the ring. */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+summary:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 2px solid var(--theme-primary, #7c5cfc);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* Fields also get a soft halo, because their outline sits on a filled box. */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--theme-primary, #7c5cfc);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 4px rgba(124, 92, 252, 0.15);
+}
+
+/* Suppress the ring on pointer interaction only — never on :focus-visible. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Skip link for keyboard users: off-screen until focused. */
+.skip-to-content {
+  position: fixed;
+  top: 0.5rem;
+  left: 50%;
+  transform: translate(-50%, -200%);
+  z-index: 200;
+  padding: 0.625rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--theme-primary, #7c5cfc);
+  color: var(--theme-primary-foreground, #ffffff);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.skip-to-content:focus-visible {
+  transform: translate(-50%, 0);
+}
+
+/* ============================================
+   LIGHT MODE
+   The palette variables already flip (see src/lib/theme.ts); these are the
+   few effects that were written assuming a near-black background.
+   ============================================ */
+
+html:not(.dark) body::after {
+  opacity: 0.55;
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: rgba(103, 65, 232, 0.25);
+}
+
+html:not(.dark) .skeleton {
+  background: linear-gradient(
+    110deg,
+    rgba(16, 16, 32, 0.05) 0%,
+    rgba(16, 16, 32, 0.03) 40%,
+    rgba(16, 16, 32, 0.08) 50%,
+    rgba(16, 16, 32, 0.03) 60%,
+    rgba(16, 16, 32, 0.05) 100%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+html:not(.dark) .gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--theme-foreground, #16161f) 0%,
+    var(--theme-primary, #6741e8) 50%,
+    var(--theme-foreground, #16161f) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* ============================================
+   MOBILE SAFE AREAS
+   viewportFit: 'cover' lets the page run under the iPhone home indicator and
+   the Safari toolbar, so the fixed chrome has to reserve that space itself.
+   content-box keeps the nav's own 70px height intact.
+   ============================================ */
+
+/* Content is pushed clear of the notch and the home indicator. The fixed
+   header/nav still start at the viewport edge, so they pad themselves by the
+   same amount and their own content lands inside the safe area. */
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.glass-header-premium,
+.glass-header {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.glass-nav-premium,
+.glass-nav {
+  box-sizing: content-box;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ============================================
+   LIGHT-MODE COMPATIBILITY SHIM
+   Most screens were written before light mode existed and paint the Midnight
+   dark palette as literal hex values (bg-[#0c0c14], border-[#1a1a2e], …).
+   Remapping those exact utilities onto the palette variables makes them follow
+   the theme without editing 31 page files. Brand purples are left alone — they
+   are the accent in both modes.
+
+   When a screen is rewritten to use the semantic classes (bg-card, text-
+   foreground, border-border), its entry here simply stops matching anything.
+   ============================================ */
+
+html:not(.dark) .bg-\[\#0c0c14\] {
+  background-color: var(--theme-card);
+}
+html:not(.dark) .bg-\[\#050508\],
+html:not(.dark) .bg-\[\#0a0a0f\],
+html:not(.dark) .bg-\[\#09090b\] {
+  background-color: var(--theme-background);
+}
+html:not(.dark) .bg-\[\#1a1a2e\],
+html:not(.dark) .bg-\[\#1a1f35\],
+html:not(.dark) .bg-\[\#1e293b\] {
+  background-color: var(--theme-muted);
+}
+html:not(.dark) .border-\[\#1a1a2e\] {
+  border-color: var(--theme-border);
+}
+html:not(.dark) .text-\[\#e8e8f0\] {
+  color: var(--theme-foreground);
+}
+html:not(.dark) .text-\[\#6b6b80\] {
+  color: var(--theme-muted-foreground);
+}
+html:not(.dark) .text-\[\#3d3d50\] {
+  color: color-mix(in srgb, var(--theme-muted-foreground) 70%, var(--theme-background));
+}
+html:not(.dark) .from-\[\#050508\] {
+  --tw-gradient-from: var(--theme-background);
+}
+html:not(.dark) .via-\[\#050508\] {
+  --tw-gradient-via: var(--theme-background);
 }

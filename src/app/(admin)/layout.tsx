@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!hasRole(profile, STAFF_ROLES)) redirect('/news')
 
   return (
-    <div className="min-h-screen bg-[#050508]">
+    <div className="min-h-dvh bg-[#050508]">
       <div className="max-w-md mx-auto px-4 pt-4 pb-8">
         <AdminHeader />
         <div className="admin-content">

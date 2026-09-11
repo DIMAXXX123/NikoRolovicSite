@@ -6,9 +6,11 @@ import { createClient } from '@/lib/supabase/client'
 import { Camera, X, Send, Heart, Flag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useToast } from '@/components/toast'
 import type { Photo, Profile } from '@/lib/types'
 
 export default function GalleryPage() {
+  const { toast } = useToast()
   const [photos, setPhotos] = useState<(Photo & { user?: Profile })[]>([])
   const [loading, setLoading] = useState(true)
   const [showUpload, setShowUpload] = useState(false)
@@ -17,7 +19,6 @@ export default function GalleryPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [anonymous, setAnonymous] = useState(false)
-  const [toast, setToast] = useState('')
   const [likedPhotos, setLikedPhotos] = useState<Record<string, boolean>>({})
   const heartsContainerRef = useRef<HTMLDivElement | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -201,8 +202,7 @@ export default function GalleryPage() {
     recentReports.push(Date.now())
     localStorage.setItem('photo_reports_log', JSON.stringify(recentReports))
     setShowReportConfirm(null)
-    setToast('Fotografija prijavljena ⚠️')
-    setTimeout(() => setToast(''), 3000)
+    toast('Fotografija prijavljena ⚠️', { type: 'warning' })
   }
 
   // Ensure hearts container exists in DOM (created once, never re-rendered)
@@ -297,9 +297,8 @@ export default function GalleryPage() {
       .upload(fileName, selectedFile)
 
     if (uploadError) {
-      setToast('Greška pri uploadu')
+      toast('Greška pri uploadu', { type: 'error' })
       setUploading(false)
-      setTimeout(() => setToast(''), 3000)
       return
     }
 
@@ -344,8 +343,7 @@ export default function GalleryPage() {
     setCaption('')
     setAnonymous(false)
     setUploading(false)
-    setToast('Fotografija poslata na moderaciju 📸')
-    setTimeout(() => setToast(''), 3000)
+    toast('Fotografija poslata na moderaciju 📸')
   }
 
   function isAnon(photo: any) {
@@ -423,13 +421,6 @@ export default function GalleryPage() {
 
   return (
     <>
-      {/* Toast */}
-      {toast && (
-        <div className="fixed top-18 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#10b981] to-emerald-600 text-white text-sm font-medium shadow-xl shadow-[#10b981]/20 animate-slide-down backdrop-blur-sm">
-          {toast}
-        </div>
-      )}
-
       {/* Upload modal */}
       {showUpload && typeof document !== 'undefined' && createPortal(
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }} className="bg-black/80 backdrop-blur-xl flex items-end sm:items-center justify-center" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>

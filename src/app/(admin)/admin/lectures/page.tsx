@@ -11,6 +11,7 @@ import {
   Sparkles, Loader2, Upload, Wand2
 } from 'lucide-react'
 import type { Lecture } from '@/lib/types'
+import { useToast } from '@/components/toast'
 
 const SUPABASE_URL = 'https://ydcbxqrnmnbceyzqgbui.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkY2J4cXJubW5iY2V5enFnYnVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3Mzg0NjYsImV4cCI6MjA4OTMxNDQ2Nn0.y-lauFU8c9eTP0RJL_zveEF4JE96KiTvJ46FrvYZmfY'
@@ -385,11 +386,11 @@ export default function AdminLecturesPage() {
     if (editorRef.current) editorRef.current.innerHTML = ''
   }
 
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  const { toast } = useToast()
 
   function showToast(message: string, type: 'success' | 'error' = 'success') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
+    toast(message, { type })
   }
 
   async function deleteLecture(id: string) {
@@ -414,11 +415,6 @@ export default function AdminLecturesPage() {
     if (aiResult) {
       return (
         <div className="space-y-4 animate-fade-in pb-8">
-          {toast && (
-            <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-2xl text-sm font-medium shadow-lg backdrop-blur-sm animate-slide-down border ${
-              toast.type === 'success' ? 'bg-green-500/90 text-white border-green-400/30' : 'bg-red-500/90 text-white border-red-400/30'
-            }`}>{toast.message}</div>
-          )}
 
           <button onClick={resetForm} className="text-sm text-purple-400 flex items-center gap-1 hover:gap-2 transition-all">
             <ArrowLeft className="w-4 h-4" /> Nazad
@@ -950,11 +946,6 @@ export default function AdminLecturesPage() {
   // ========== MAIN LIST VIEW ==========
   return (
     <div className="space-y-4 animate-fade-in">
-      {toast && (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-2xl text-sm font-medium shadow-lg backdrop-blur-sm animate-slide-down border ${
-          toast.type === 'success' ? 'bg-green-500/90 text-white border-green-400/30' : 'bg-red-500/90 text-white border-red-400/30'
-        }`}>{toast.message}</div>
-      )}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Lekcije</h1>
         <div className="flex items-center gap-2">
