@@ -2,16 +2,25 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Camera, X, Send, Heart, Flag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/toast'
+import { isOptimizableImage } from '@/lib/remote-image'
 import type { Photo, Profile } from '@/lib/types'
+
+const PHOTOS_PAGE_SIZE = 9
+
+type GalleryPhoto = Photo & { user?: Profile; anonymous?: boolean; _new?: boolean }
 
 export default function GalleryPage() {
   const { toast } = useToast()
-  const [photos, setPhotos] = useState<(Photo & { user?: Profile })[]>([])
+  const [photos, setPhotos] = useState<GalleryPhoto[]>([])
+  const [photoPage, setPhotoPage] = useState(0)
+  const [hasMorePhotos, setHasMorePhotos] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showUpload, setShowUpload] = useState(false)
   const [caption, setCaption] = useState('')
@@ -103,30 +112,59 @@ export default function GalleryPage() {
     }
   }
 
+  // One query for the whole page instead of one per photo.
   async function loadLikeCounts(photoIds: string[]) {
+    if (photoIds.length === 0) return
+    const { data } = await supabase
+      .from('photo_likes')
+      .select('photo_id')
+      .in('photo_id', photoIds)
     const counts: Record<string, number> = {}
-    for (const id of photoIds) {
-      const { count } = await supabase
-        .from('photo_likes')
-        .select('*', { count: 'exact', head: true })
-        .eq('photo_id', id)
-      counts[id] = count || 0
+    for (const id of photoIds) counts[id] = 0
+    for (const row of (data || []) as { photo_id: string }[]) {
+      counts[row.photo_id] = (counts[row.photo_id] || 0) + 1
     }
-    setLikeCounts(counts)
+    setLikeCounts((prev) => ({ ...prev, ...counts }))
   }
 
-  async function loadPhotos() {
+  async function fetchPhotoPage(page: number) {
+    const from = page * PHOTOS_PAGE_SIZE
+    // Ask for one extra row to find out whether another page exists.
     const { data } = await supabase
       .from('photos')
       .select('*, user:profiles!user_id(first_name, last_name, class_number, section_number, role)')
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
-      .limit(50)
-    if (data) {
-      setPhotos(data as any)
-      loadLikeCounts(data.map((p: any) => p.id))
-    }
+      .range(from, from + PHOTOS_PAGE_SIZE)
+    const rows = (data || []) as GalleryPhoto[]
+    return { rows: rows.slice(0, PHOTOS_PAGE_SIZE), hasMore: rows.length > PHOTOS_PAGE_SIZE }
+  }
+
+  async function loadPhotos() {
+    const { rows, hasMore } = await fetchPhotoPage(0)
+    setPhotos(rows)
+    setPhotoPage(0)
+    setHasMorePhotos(hasMore)
+    loadLikeCounts(rows.map((p) => p.id))
     setLoading(false)
+  }
+
+  async function loadMorePhotos() {
+    if (loadingMore || !hasMorePhotos) return
+    setLoadingMore(true)
+    const nextPage = photoPage + 1
+    try {
+      const { rows, hasMore } = await fetchPhotoPage(nextPage)
+      setPhotos((prev) => {
+        const seen = new Set(prev.map((p) => p.id))
+        return [...prev, ...rows.filter((p) => !seen.has(p.id))]
+      })
+      setHasMorePhotos(hasMore)
+      setPhotoPage(nextPage)
+      loadLikeCounts(rows.map((p) => p.id))
+    } finally {
+      setLoadingMore(false)
+    }
   }
 
   async function toggleLike(photoId: string) {
@@ -202,7 +240,7 @@ export default function GalleryPage() {
     recentReports.push(Date.now())
     localStorage.setItem('photo_reports_log', JSON.stringify(recentReports))
     setShowReportConfirm(null)
-    toast('Fotografija prijavljena ⚠️', { type: 'warning' })
+    toast('Fotografija prijavljena ⚠️')
   }
 
   // Ensure hearts container exists in DOM (created once, never re-rendered)
@@ -297,7 +335,7 @@ export default function GalleryPage() {
       .upload(fileName, selectedFile)
 
     if (uploadError) {
-      toast('Greška pri uploadu', { type: 'error' })
+      toast('Greška pri uploadu')
       setUploading(false)
       return
     }
@@ -421,6 +459,7 @@ export default function GalleryPage() {
 
   return (
     <>
+
       {/* Upload modal */}
       {showUpload && typeof document !== 'undefined' && createPortal(
         <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }} className="bg-black/80 backdrop-blur-xl flex items-end sm:items-center justify-center" onClick={() => { setShowUpload(false); setSelectedFile(null); setPreviewUrl(null) }}>
@@ -553,10 +592,16 @@ export default function GalleryPage() {
                   className="relative select-none w-full"
                   onClick={(e) => handleDoubleTap(photo.id, e)}
                 >
-                  <img
+                  <Image
                     src={photo.image_url}
                     alt={photo.caption || ''}
-                    className="w-full object-cover"
+                    // Uploads have no stored dimensions: these reserve a 4:5 box
+                    // before load, then the file's real ratio takes over.
+                    width={800}
+                    height={1000}
+                    sizes="(max-width: 480px) 100vw, 448px"
+                    unoptimized={!isOptimizableImage(photo.image_url)}
+                    className="w-full h-auto object-cover"
                     style={{ maxHeight: '600px' }}
                     draggable={false}
                   />
@@ -597,6 +642,16 @@ export default function GalleryPage() {
               </div>
             )
           })
+        )}
+
+        {hasMorePhotos && (
+          <button
+            onClick={loadMorePhotos}
+            disabled={loadingMore}
+            className="w-full py-3.5 rounded-2xl border border-dashed border-[#1a1a2e] text-sm text-[#6b6b80] hover:border-[#7c5cfc]/30 hover:text-[#7c5cfc] transition-all active:scale-[0.98] disabled:opacity-50"
+          >
+            {loadingMore ? 'Učitavanje…' : 'Učitaj još'}
+          </button>
         )}
       </div>
 
