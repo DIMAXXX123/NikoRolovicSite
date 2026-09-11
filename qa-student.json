@@ -1,0 +1,37 @@
+{
+  "run": {
+    "branch": "claude/qa-student",
+    "date": "2026-09-11",
+    "scope": "Student-facing portal walkthrough (news, events, lectures, schedule/grades, gallery, game/tournament, eDnevnik)",
+    "status": "blocked",
+    "blocker": "The session's egress proxy answers 403 to CONNECT for niko-rolovic-site.vercel.app and ydcbxqrnmnbceyzqgbui.supabase.co. Only GitHub is reachable, so neither the production site nor a local dev build could be driven in a browser. No interactive click-through was performed."
+  },
+  "account_created": {
+    "email": "qa-stud-7f3k9m@example.com",
+    "password": "QaStud!7f3k9m2026",
+    "user_id": "9a570000-0000-4000-a000-00000000f73c",
+    "profile": {
+      "first_name": "[TEST] Qa",
+      "last_name": "Prolaznik",
+      "class_number": 2,
+      "section_number": 1,
+      "role": "student"
+    },
+    "created_in": "auth.users, auth.identities, public.profiles",
+    "cleaned_up": true,
+    "note": "Created because branch claude/qa-seed (which should hold qa-accounts.md) does not exist, so the password for the pre-seeded qa-student@example.com was unavailable. Deleted again at the end of the run since it was never used for testing."
+  },
+  "content_created": [],
+  "content_modified": [],
+  "recreate_sql": "with u as (insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, is_sso_user, is_anonymous) values ('00000000-0000-0000-0000-000000000000','9a570000-0000-4000-a000-00000000f73c','authenticated','authenticated','qa-stud-7f3k9m@example.com',crypt('QaStud!7f3k9m2026', gen_salt('bf')),now(),now(),now(),'{\"provider\":\"email\",\"providers\":[\"email\"]}'::jsonb,'{\"first_name\":\"[TEST] Qa\",\"last_name\":\"Prolaznik\"}'::jsonb,false,false) returning id, email), i as (insert into auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at) select id::text, id, jsonb_build_object('sub', id::text, 'email', email, 'email_verified', true, 'phone_verified', false), 'email', now(), now(), now() from u returning user_id) insert into public.profiles (id, first_name, last_name, email, class_number, section_number, role) select id, '[TEST] Qa', 'Prolaznik', email, 2, 1, 'student' from u;",
+  "seeded_content_verified_present": {
+    "note": "Exact counts via Supabase MCP, read-only. 'tagged' = rows carrying the [TEST] marker; they match the brief exactly.",
+    "news": { "total": 17, "tagged": 9 },
+    "events": { "total": 6, "tagged": 6 },
+    "lectures": { "total": 437, "tagged": 5 },
+    "photos": { "total": 53, "tagged": 8 },
+    "game_scores": { "total": 27 },
+    "news_likes": 0,
+    "photo_likes": 0
+  }
+}

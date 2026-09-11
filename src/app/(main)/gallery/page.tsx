@@ -12,6 +12,34 @@ import { isOptimizableImage } from '@/lib/remote-image'
 import type { Photo, Profile } from '@/lib/types'
 
 const PHOTOS_PAGE_SIZE = 9
+const MAX_PHOTO_BYTES = 8 * 1024 * 1024
+
+function formatMb(bytes: number) {
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+// The `accept` attribute only filters the picker — on Android any file can still
+// be chosen — so non-images and oversized files are rejected here with a reason
+// instead of failing later as a generic upload error.
+function validatePhotoFile(file: File): string | null {
+  if (!file.type.startsWith('image/')) {
+    return 'Možeš poslati samo sliku (JPG, PNG, WEBP ili HEIC).'
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    return `Slika je prevelika (${formatMb(file.size)}). Maksimum je ${formatMb(MAX_PHOTO_BYTES)}.`
+  }
+  return null
+}
+
+function uploadErrorMessage(error: { message?: string; statusCode?: string }): string {
+  const tooLarge =
+    error.statusCode === '413' ||
+    /maximum allowed size|too large|payload too large/i.test(error.message ?? '')
+  if (tooLarge) {
+    return `Slika je prevelika. Maksimum je ${formatMb(MAX_PHOTO_BYTES)}.`
+  }
+  return 'Slanje nije uspjelo. Provjeri internet i pokušaj ponovo.'
+}
 
 type GalleryPhoto = Photo & { user?: Profile; anonymous?: boolean; _new?: boolean }
 
@@ -315,17 +343,37 @@ export default function GalleryPage() {
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
-      setPreviewUrl(URL.createObjectURL(file))
+    // Clear the input so picking the same file again still fires onChange
+    // after a rejection.
+    e.target.value = ''
+    if (!file) return
+
+    const problem = validatePhotoFile(file)
+    if (problem) {
+      toast(problem)
+      return
     }
+
+    setSelectedFile(file)
+    setPreviewUrl(URL.createObjectURL(file))
   }
 
   async function handleUpload() {
     if (!selectedFile) return
+
+    const problem = validatePhotoFile(selectedFile)
+    if (problem) {
+      toast(problem)
+      return
+    }
+
     setUploading(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      toast('Sesija je istekla. Prijavi se ponovo.')
+      setUploading(false)
+      return
+    }
 
     const fileExt = selectedFile.name.split('.').pop()
     const fileName = `${user.id}-${Date.now()}.${fileExt}`
@@ -335,7 +383,7 @@ export default function GalleryPage() {
       .upload(fileName, selectedFile)
 
     if (uploadError) {
-      toast('Greška pri uploadu')
+      toast(uploadErrorMessage(uploadError))
       setUploading(false)
       return
     }
