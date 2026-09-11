@@ -1,6 +1,6 @@
 // Simple script to insert 30 Math II lectures
 const SUPABASE_URL = 'https://ydcbxqrnmnbceyzqgbui.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkY2J4cXJubW5iY2V5enFnYnVpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzczODQ2NiwiZXhwIjoyMDg5MzE0NDY2fQ.uAN6Ng7D-2XqgRLm3PbORRzaVjK0_lMEKPGf2pgYxyg';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const AUTHOR_ID = '241c9077-b700-4400-8f96-20e3a650eef4';
 
 // Simple array of 30 lectures without special formatting
