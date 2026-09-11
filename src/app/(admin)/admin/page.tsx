@@ -40,10 +40,13 @@ export default function AdminPage() {
     init()
   }, [])
 
-  const visibleLinks = adminLinks.filter(link => {
-    if (link.href === '/admin/roles') return userRole === 'admin' || userRole === 'creator'
-    return true
-  })
+  // Moderators are let into the admin area (STAFF_ROLES) for news and photo
+  // moderation only. Events, lectures and roles are admin/creator in RLS, so
+  // showing those tiles to a moderator just leads to a raw
+  // "violates row-level security policy" error on save.
+  const adminOnly = ['/admin/roles', '/admin/events', '/admin/lectures']
+  const isAdmin = userRole === 'admin' || userRole === 'creator'
+  const visibleLinks = adminLinks.filter(link => !adminOnly.includes(link.href) || isAdmin)
 
   return (
     <div className="space-y-6 animate-fade-in">

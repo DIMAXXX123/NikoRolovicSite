@@ -3,11 +3,50 @@
 // The OpenAI key NEVER leaves the server.
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const STAFF_ROLES = ['moderator', 'admin', 'creator'];
+
+/**
+ * Resolves the caller from the Authorization bearer token and returns their
+ * role, or null when the token is missing/invalid/has no profile.
+ *
+ * This endpoint spends the school's OpenAI budget, so it must not rely on the
+ * caller having gone through the admin UI — the function is reachable
+ * directly over the internet.
+ */
+async function callerRole(req: Request): Promise<string | null> {
+  const authHeader = req.headers.get('Authorization') ?? '';
+  const token = authHeader.toLowerCase().startsWith('bearer ')
+    ? authHeader.slice(7).trim()
+    : '';
+  if (!token) return null;
+
+  const url = Deno.env.get('SUPABASE_URL');
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !serviceKey) return null;
+
+  const admin = createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const { data: { user }, error } = await admin.auth.getUser(token);
+  if (error || !user) return null;
+
+  // Role is read with the service key so the caller cannot influence the row.
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  return (profile?.role as string | undefined) ?? null;
+}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -16,7 +55,16 @@ serve(async (req) => {
   }
 
   try {
-    // 1. Parse request body (auth handled by app-side session check)
+    // 1. Authorise: staff only. Anything else must not reach the OpenAI call.
+    const role = await callerRole(req);
+    if (!role || !STAFF_ROLES.includes(role)) {
+      return new Response(JSON.stringify({ error: 'Nemate dozvolu za ovu akciju' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 2. Parse request body
     const { images, subject, customPrompt, mode, lectureText, targetLanguage } = await req.json();
 
     const openaiKey = Deno.env.get('OPENAI_API_KEY');

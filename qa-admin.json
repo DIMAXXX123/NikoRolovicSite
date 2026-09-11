@@ -1,0 +1,39 @@
+{
+  "session": "claude/qa-admin",
+  "date": "2026-09-11",
+  "note": "Branch claude/qa-seed does not exist, so no shared passwords were available. Per the fallback instruction these accounts were created by this session via Supabase (project ydcbxqrnmnbceyzqgbui).",
+  "created_accounts": [
+    {
+      "email": "qa-adm-k4x9z2@example.com",
+      "user_id": "c1a70000-0000-4000-b000-000000000101",
+      "role": "admin",
+      "password": "QaProbe!2026#nr"
+    },
+    {
+      "email": "qa-adm-m7v3q8@example.com",
+      "user_id": "c1a70000-0000-4000-b000-000000000102",
+      "role": "moderator",
+      "password": "QaProbe!2026#nr"
+    },
+    {
+      "email": "qa-adm-p2r6t5@example.com",
+      "user_id": "c1a70000-0000-4000-b000-000000000103",
+      "role": "student",
+      "password": "QaProbe!2026#nr"
+    }
+  ],
+  "created_content": [],
+  "cleanup": {
+    "status": "pending",
+    "targets": [
+      "auth.users + auth.identities + public.profiles for the three qa-adm-* ids above"
+    ],
+    "note": "No news/events/lectures/photos rows were created: every write probe ran inside BEGIN ... ROLLBACK, and the UI flows could not be exercised (egress blocked)."
+  },
+  "pre_existing_not_mine": [
+    "qa-admin@example.com",
+    "qa-moderator@example.com",
+    "qa-student@example.com",
+    "qa-stud-7f3k9m@example.com"
+  ]
+}
