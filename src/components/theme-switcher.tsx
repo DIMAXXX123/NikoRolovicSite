@@ -53,6 +53,30 @@ function applyTheme(themeKey: string) {
   })
 }
 
+/** Re-applies the saved theme on load. Renders nothing. */
+export function ThemeInit() {
+  useEffect(() => {
+    applyTheme(localStorage.getItem('nr-theme') || themes[0].key)
+  }, [])
+  return null
+}
+
+/** Current theme + a cycler — for the settings row on the profile page. */
+export function useThemeCycle() {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  useEffect(() => {
+    const idx = themes.findIndex(t => t.key === localStorage.getItem('nr-theme'))
+    if (idx >= 0) setCurrentIndex(idx)
+  }, [])
+  const cycle = () => {
+    const next = (currentIndex + 1) % themes.length
+    setCurrentIndex(next)
+    applyTheme(themes[next].key)
+    localStorage.setItem('nr-theme', themes[next].key)
+  }
+  return { name: themes[currentIndex].name, color: themes[currentIndex].color, cycle }
+}
+
 export function ThemeSwitcher() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showPopup, setShowPopup] = useState(false)

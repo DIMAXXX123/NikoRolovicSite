@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { BottomNav } from '@/components/bottom-nav'
 import { ProfileGuard } from '@/components/profile-guard'
-import { ThemeSwitcher } from '@/components/theme-switcher'
+import { ThemeInit } from '@/components/theme-switcher'
+import { NotificationBell } from '@/components/notification-bell'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { getNavConfig, ALL_NAV_ITEMS } from '@/lib/nav-config'
 
@@ -78,10 +79,11 @@ export default function MainLayout({
                 ))}
               </div>
             </button>
-            <ThemeSwitcher />
+            <NotificationBell />
           </div>
         </div>
       </header>
+      <ThemeInit />
       <ProfileGuard />
       <main id="main-content" className="max-w-md mx-auto px-4 pt-20 pb-[100px]">
         {/* A crash inside a page keeps the header and the bottom nav alive. */}
