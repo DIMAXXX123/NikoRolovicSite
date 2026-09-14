@@ -10,8 +10,8 @@ export const DEMO_PASSWORD = 'Demo-Eo4mqBPYkd8aW8z6TbLOr2Fw'
 
 export const DEMO_ACCOUNTS: Record<DemoRole, { email: string; label: string; home: string; color: string; description: string }> = {
   ucenik: { email: 'demo-ucenik@nikorolovic.app', label: 'Učenik', home: '/lectures', color: '#1CB0F6', description: 'Lekcije, domaći, ocjene, kviz' },
-  nastavnik: { email: 'demo-nastavnik@nikorolovic.app', label: 'Nastavnik', home: '/nastavnik', color: '#58CC02', description: 'Moje lekcije, razredi, domaći' },
-  direktor: { email: 'demo-admin@nikorolovic.app', label: 'Direktor', home: '/direktor', color: '#FFC800', description: 'Pregled škole, analitika, AI' },
+  nastavnik: { email: 'demo-nastavnik@nikorolovic.app', label: 'Nastavnik', home: '/profile', color: '#58CC02', description: 'Moje lekcije, razredi, domaći' },
+  direktor: { email: 'demo-admin@nikorolovic.app', label: 'Direktor', home: '/profile', color: '#FFC800', description: 'Pregled škole, analitika, AI' },
 }
 
 export function readDemoRole(): DemoRole {
