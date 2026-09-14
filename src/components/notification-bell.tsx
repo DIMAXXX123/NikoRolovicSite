@@ -19,6 +19,8 @@ export const NOTIFICATIONS_READ_KEY = 'notifications_read'
 const NO_READ: Record<string, string> = {}
 const HOMEWORK_WINDOW_DAYS = 14
 const EVENT_WINDOW_DAYS = 7
+/** Only this many notices are shown as new; the rest wait under "Starija". */
+const MAX_NEW = 2
 
 type Notification = {
   id: string
@@ -139,8 +141,9 @@ export function NotificationBell() {
   const rootRef = useRef<HTMLDivElement>(null)
 
   const isRead = (n: Notification) => !!read[n.id] || (n.kind === 'homework' && !!done[n.id.slice(3)])
-  const unread = all.filter(n => !isRead(n))
-  const old = all.filter(isRead)
+  const pending = all.filter(n => !isRead(n))
+  const unread = pending.slice(0, MAX_NEW)
+  const old = [...pending.slice(MAX_NEW), ...all.filter(isRead)]
 
   const markRead = useCallback((ids: string[]) => {
     const current = readStore(NOTIFICATIONS_READ_KEY)
