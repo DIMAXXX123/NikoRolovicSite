@@ -9,9 +9,10 @@ import { parseHomework } from '@/app/(main)/lectures/lecture-utils'
 import { HOMEWORK_DONE_KEY } from '@/app/(main)/lectures/[subject]/[id]/homework-card'
 
 // ---------------------------------------------------------------------------
-// Header bell. Rendered only while something is unread; a tap on an item
-// marks it read and jumps to the page it belongs to. Read flags live on the
-// device — `notifications_read` → { [id]: ISO timestamp }.
+// Header bell. Badge counts the unread; a tap on an item marks it read and
+// jumps to the page it belongs to. Read items stay behind "Starija" so old
+// notices can be found again. Read flags live on the device —
+// `notifications_read` → { [id]: ISO timestamp }.
 // ---------------------------------------------------------------------------
 
 export const NOTIFICATIONS_READ_KEY = 'notifications_read'
@@ -134,9 +135,12 @@ export function NotificationBell() {
   const read = useLocalJson<Record<string, string>>(NOTIFICATIONS_READ_KEY, NO_READ)
   const done = useLocalJson<Record<string, string>>(HOMEWORK_DONE_KEY, NO_READ)
   const [open, setOpen] = useState(false)
+  const [showOld, setShowOld] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
-  const unread = all.filter(n => !read[n.id] && !(n.kind === 'homework' && done[n.id.slice(3)]))
+  const isRead = (n: Notification) => !!read[n.id] || (n.kind === 'homework' && !!done[n.id.slice(3)])
+  const unread = all.filter(n => !isRead(n))
+  const old = all.filter(isRead)
 
   const markRead = useCallback((ids: string[]) => {
     const current = readStore(NOTIFICATIONS_READ_KEY)
@@ -150,7 +154,10 @@ export function NotificationBell() {
   }, [])
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      setShowOld(false)
+      return
+    }
     function onPointer(e: PointerEvent) {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false)
     }
@@ -165,8 +172,6 @@ export function NotificationBell() {
     }
   }, [open])
 
-  if (unread.length === 0) return null
-
   function openItem(n: Notification) {
     markRead([n.id])
     setOpen(false)
@@ -178,31 +183,39 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="relative w-10 h-10 rounded-xl flex items-center justify-center bg-background border-2 border-border shadow-[0_3px_0_var(--color-border)] text-[#FF9600] transition-[transform,box-shadow] duration-[120ms] hover:-translate-y-[1px] active:translate-y-[3px] active:shadow-none"
+        className={`relative w-10 h-10 rounded-xl flex items-center justify-center bg-background border-2 border-border shadow-[0_3px_0_var(--color-border)] transition-[transform,box-shadow] duration-[120ms] hover:-translate-y-[1px] active:translate-y-[3px] active:shadow-none ${unread.length > 0 ? 'text-[#FF9600]' : 'text-muted-foreground'}`}
         title="Obavještenja"
-        aria-label={`Obavještenja (${unread.length})`}
+        aria-label={`Obavještenja (${unread.length} nepročitanih)`}
         aria-expanded={open}
       >
         <Bell className="w-5 h-5" strokeWidth={2.4} />
-        <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-[#FF4B4B] border-2 border-background text-primary-foreground text-[10px] font-black leading-none flex items-center justify-center tabular-nums">
-          {unread.length > 9 ? '9+' : unread.length}
-        </span>
+        {unread.length > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-[#FF4B4B] border-2 border-background text-primary-foreground text-[10px] font-black leading-none flex items-center justify-center tabular-nums">
+            {unread.length > 9 ? '9+' : unread.length}
+          </span>
+        )}
       </button>
 
       {open && (
         <div className="absolute right-0 top-full mt-2 w-[calc(100vw-32px)] max-w-[340px] rounded-2xl bg-card border-2 border-border shadow-[0_4px_0_var(--color-border)] overflow-hidden animate-fade-in z-50">
           <div className="flex items-center justify-between px-4 h-11 border-b-2 border-border">
             <span className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Obavještenja</span>
-            <button
-              type="button"
-              onClick={() => { markRead(unread.map(n => n.id)); setOpen(false) }}
-              className="text-[12px] font-extrabold text-secondary uppercase tracking-[0.04em]"
-            >
-              Pročitano
-            </button>
+            {unread.length > 0 && (
+              <button
+                type="button"
+                onClick={() => markRead(unread.map(n => n.id))}
+                className="text-[12px] font-extrabold text-secondary uppercase tracking-[0.04em]"
+              >
+                Pročitano
+              </button>
+            )}
           </div>
           <ul className="max-h-[60vh] overflow-y-auto">
-            {unread.map(n => {
+            {unread.length === 0 && (
+              <li className="px-4 py-5 text-center text-[13px] font-bold text-muted-foreground">Nema novih obavještenja</li>
+            )}
+            {(showOld ? [...unread, ...old] : unread).map(n => {
+              const seen = isRead(n)
               const Icon = n.kind === 'homework' ? BookOpen : CalendarDays
               const tint = n.kind === 'homework'
                 ? 'bg-[#FFF4C4] text-[#C79000]'
@@ -212,9 +225,9 @@ export function NotificationBell() {
                   <button
                     type="button"
                     onClick={() => openItem(n)}
-                    className="w-full min-h-16 px-4 py-3 flex items-center gap-3 text-left transition-colors active:bg-muted"
+                    className={`w-full min-h-16 px-4 py-3 flex items-center gap-3 text-left transition-colors active:bg-muted ${seen ? 'opacity-60' : ''}`}
                   >
-                    <span className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${tint}`}>
+                    <span className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${seen ? 'bg-muted text-muted-foreground' : tint}`}>
                       <Icon className="w-5 h-5" strokeWidth={2.4} />
                     </span>
                     <span className="flex-1 min-w-0">
@@ -227,6 +240,15 @@ export function NotificationBell() {
               )
             })}
           </ul>
+          {old.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowOld(v => !v)}
+              className="w-full h-11 border-t-2 border-border text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground active:bg-muted"
+            >
+              {showOld ? 'Sakrij starija' : `Starija obavještenja (${old.length})`}
+            </button>
+          )}
         </div>
       )}
     </div>
