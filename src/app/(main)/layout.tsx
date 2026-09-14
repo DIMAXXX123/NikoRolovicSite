@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { BottomNav } from '@/components/bottom-nav'
 import { ProfileGuard } from '@/components/profile-guard'
-import { ThemeSwitcher } from '@/components/theme-switcher'
+import { ThemeInit } from '@/components/theme-switcher'
+import { NotificationBell } from '@/components/notification-bell'
 import { getNavConfig, ALL_NAV_ITEMS } from '@/lib/nav-config'
 
 const HEADER_ICON_BUTTON =
@@ -74,10 +75,11 @@ export default function MainLayout({
                 ))}
               </div>
             </button>
-            <ThemeSwitcher />
+            <NotificationBell />
           </div>
         </div>
       </header>
+      <ThemeInit />
       <ProfileGuard />
       <main className="max-w-md mx-auto px-4 pt-20 pb-[100px]">
         <div key={animKey} className="animate-fade-in">

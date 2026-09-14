@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users, UserRound, Gamepad2, Trophy, ClipboardList } from 'lucide-react'
+import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users, UserRound, Gamepad2, Trophy, ClipboardList, Palette } from 'lucide-react'
+import { useThemeCycle } from '@/components/theme-switcher'
 import { RoleBadge } from '@/components/role-badge'
 import { GuestLoginButton } from '@/components/guest-login-button'
 import { RoleAnimation } from '@/components/role-animation'
@@ -99,6 +100,7 @@ export default function ProfilePage() {
   const [lang, setLang] = useState('sr')
   const [notifications, setNotifications] = useState(true)
   const [fontSize, setFontSize] = useState('normal')
+  const theme = useThemeCycle()
   const [activeUsers, setActiveUsers] = useState<number | null>(null)
   const [prevActiveUsers, setPrevActiveUsers] = useState<number | null>(null)
   const [animKey, setAnimKey] = useState(0)
@@ -337,6 +339,22 @@ export default function ProfilePage() {
               className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
             >
               {guestFontLabels[fontSize]}
+            </Button>
+          </div>
+          <div className={ROW_CLASS}>
+            <div className={ROW_ICON_CLASS} style={tint(theme.color)}>
+              <Palette className="w-5 h-5" strokeWidth={2.4} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={ROW_TITLE_CLASS}>Tema</p>
+              <p className={ROW_SUB_CLASS}>Boja aplikacije</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={theme.cycle}
+              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
+            >
+              {theme.name}
             </Button>
           </div>
           <div className={ROW_CLASS}>
@@ -637,6 +655,22 @@ export default function ProfilePage() {
           </div>
 
           {/* Navigation editor */}
+          <div className={ROW_CLASS}>
+            <div className={ROW_ICON_CLASS} style={tint(theme.color)}>
+              <Palette className="w-5 h-5" strokeWidth={2.4} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={ROW_TITLE_CLASS}>Tema</p>
+              <p className={ROW_SUB_CLASS}>Boja aplikacije</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={theme.cycle}
+              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
+            >
+              {theme.name}
+            </Button>
+          </div>
           <div className={ROW_CLASS}>
             <div className={ROW_ICON_CLASS} style={tint('#CE82FF')}>
               <Navigation className="w-5 h-5" strokeWidth={2.4} />
