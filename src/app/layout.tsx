@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
+import { AutoLogin } from "@/components/auto-login";
 
 const nunito = Nunito({
   weight: ["700", "800", "900"],
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body
         className={`${nunito.variable} ${nunito.className} min-h-screen bg-background overflow-x-hidden`}
       >
+        <AutoLogin />
         {children}
       </body>
     </html>
