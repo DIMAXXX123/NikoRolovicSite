@@ -2,6 +2,7 @@ import { CheckCircle2, ImageIcon } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import {
   formatMath,
+  parseHomework,
   parseKeyTerms,
   parseSections,
   parseSummary,
@@ -9,6 +10,7 @@ import {
   stripMetadata,
 } from '../../lecture-utils'
 import { KeyTermsChips } from './lecture-tabs'
+import { HomeworkCard } from './homework-card'
 
 // ---------------------------------------------------------------------------
 // Pure helpers shared with the page (server) and the preview page (client).
@@ -167,16 +169,23 @@ function SectionBody({ text }: { text: string }) {
  * reaches the browser as JavaScript. Each `## ` section becomes a numbered
  * card carrying `data-lecture-section` so the client shell can track
  * reading progress without re-parsing the content.
+ *
+ * Homework (the HOMEWORK block) is not a section: the gold card opens the
+ * body so nobody misses it, and a compact repeat closes it right above the
+ * practice CTA. `lectureId` keys the per-device "done" flag.
  */
-export function LectureContent({ content }: { content: string }) {
+export function LectureContent({ content, lectureId }: { content: string; lectureId: string }) {
   const cleanContent = stripMetadata(content)
   const keyTerms = parseKeyTerms(content)
   const summary = parseSummary(content)
+  const homework = parseHomework(content)
   const sections = parseSections(cleanContent)
   const hasSections = sections.some((s) => s.heading)
 
   return (
     <div className="space-y-4">
+      {homework && <HomeworkCard lectureId={lectureId} homework={homework} />}
+
       {hasSections ? (
         sections.map((section, i) => (
           <Card
@@ -220,6 +229,8 @@ export function LectureContent({ content }: { content: string }) {
           </p>
         </Card>
       )}
+
+      {homework && <HomeworkCard lectureId={lectureId} homework={homework} compact />}
     </div>
   )
 }

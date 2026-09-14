@@ -14,9 +14,11 @@ import { DEFAULT_SUBJECTS, OPTIONAL_SUBJECTS } from '../subjects'
 import { SubjectIcon } from '../subject-icon'
 
 const MAX_PHOTOS = 8
+const MAX_HW_PHOTOS = 4
 const MAX_SIDE = 1600
 
 type Length = 'kratka' | 'srednja' | 'detaljna'
+type Photo = { file: File; url: string }
 
 const CHIP = 'h-11 px-4 rounded-xl border-2 text-[12px] font-extrabold uppercase tracking-[0.04em] flex items-center justify-center gap-2 transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
 const CHIP_ON = 'border-secondary-light-border bg-secondary-light text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]'
@@ -38,11 +40,96 @@ async function compressImage(file: File): Promise<Blob> {
   return await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b ?? file), 'image/jpeg', 0.85))
 }
 
+/** Compress + upload photos to the private bucket; returns 'lecture-photos/…' paths. */
+async function uploadPhotos(supabase: ReturnType<typeof createClient>, photos: Photo[], jobId: string, prefix: string, label: string) {
+  const paths: string[] = []
+  for (let i = 0; i < photos.length; i++) {
+    const blob = await compressImage(photos[i].file)
+    const path = `jobs/${jobId}/${prefix}-${i + 1}.jpg`
+    const { error: upErr } = await supabase.storage.from('lecture-photos').upload(path, blob, { contentType: 'image/jpeg' })
+    if (upErr) throw new Error(`${label} ${i + 1}: ${upErr.message}`)
+    paths.push(`lecture-photos/${path}`)
+  }
+  return paths
+}
+
+/** Camera / gallery picker with a thumbnail grid (shared by lecture photos and homework photos). */
+function PhotoPicker({ photos, setPhotos, max, altPrefix, onChange }: {
+  photos: Photo[]
+  setPhotos: (fn: (prev: Photo[]) => Photo[]) => void
+  max: number
+  altPrefix: string
+  onChange?: () => void
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function addFiles(list: FileList | null) {
+    if (!list) return
+    const incoming = Array.from(list).filter((f) => f.type.startsWith('image/'))
+    setPhotos((prev) => [...prev, ...incoming.map((file) => ({ file, url: URL.createObjectURL(file) }))].slice(0, max))
+    onChange?.()
+  }
+
+  return (
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        capture="environment"
+        className="hidden"
+        onChange={(e) => { addFiles(e.target.files); e.target.value = '' }}
+      />
+      {photos.length > 0 && (
+        <div className="grid grid-cols-3 gap-2">
+          {photos.map((p, i) => (
+            <div key={p.url} className="relative aspect-square rounded-xl overflow-hidden border-2 border-border bg-muted">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={p.url} alt={`${altPrefix} ${i + 1}`} className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => {
+                  URL.revokeObjectURL(p.url)
+                  setPhotos((prev) => prev.filter((x) => x.url !== p.url))
+                }}
+                aria-label={`Ukloni ${altPrefix.toLowerCase()} ${i + 1}`}
+                className="absolute top-1 right-1 w-11 h-11 rounded-full bg-card border-2 border-border flex items-center justify-center text-foreground shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px] active:shadow-none"
+              >
+                <X className="w-4 h-4" strokeWidth={2.8} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      {photos.length < max && (
+        <div className="grid grid-cols-2 gap-2">
+          <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
+            <Camera className="w-5 h-5" strokeWidth={2.6} /> Slikaj
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              const input = fileInputRef.current
+              if (!input) return
+              input.removeAttribute('capture')
+              input.click()
+              input.setAttribute('capture', 'environment')
+            }}
+          >
+            <ImagePlus className="w-5 h-5" strokeWidth={2.6} /> Iz galerije
+          </Button>
+        </div>
+      )}
+    </>
+  )
+}
+
 export function NovaLekcijaForm({ userId, defaultClass }: { userId: string | null; defaultClass: number | null }) {
   const router = useRouter()
   const params = useSearchParams()
   const supabase = useMemo(() => createClient(), [])
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const subjects = useMemo(() => [...DEFAULT_SUBJECTS, ...OPTIONAL_SUBJECTS], [])
   const [subject, setSubject] = useState(() => {
@@ -55,22 +142,18 @@ export function NovaLekcijaForm({ userId, defaultClass }: { userId: string | nul
   const [length, setLength] = useState<Length>('srednja')
   const [wantQuiz, setWantQuiz] = useState(true)
   const [wantFlashcards, setWantFlashcards] = useState(true)
-  const [photos, setPhotos] = useState<{ file: File; url: string }[]>([])
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [hwPhotos, setHwPhotos] = useState<Photo[]>([])
+  const [hwNote, setHwNote] = useState('')
+  const [hwDue, setHwDue] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos])
-
-  function addFiles(list: FileList | null) {
-    if (!list) return
-    const incoming = Array.from(list).filter((f) => f.type.startsWith('image/'))
-    setPhotos((prev) => [...prev, ...incoming.map((file) => ({ file, url: URL.createObjectURL(file) }))].slice(0, MAX_PHOTOS))
-    setError(null)
-  }
-
-  function removePhoto(i: number) {
-    setPhotos((prev) => prev.filter((_, idx) => idx !== i))
-  }
+  // Release blob URLs only on unmount — revoking on every change would kill the
+  // thumbnails that are still on screen.
+  const urlsRef = useRef<string[]>([])
+  urlsRef.current = [...photos, ...hwPhotos].map((p) => p.url)
+  useEffect(() => () => urlsRef.current.forEach((u) => URL.revokeObjectURL(u)), [])
 
   async function submit() {
     if (submitting) return
@@ -82,14 +165,9 @@ export function NovaLekcijaForm({ userId, defaultClass }: { userId: string | nul
     setError(null)
     try {
       const jobId = crypto.randomUUID()
-      const paths: string[] = []
-      for (let i = 0; i < photos.length; i++) {
-        const blob = await compressImage(photos[i].file)
-        const path = `jobs/${jobId}/slika-${i + 1}.jpg`
-        const { error: upErr } = await supabase.storage.from('lecture-photos').upload(path, blob, { contentType: 'image/jpeg' })
-        if (upErr) throw new Error(`Slika ${i + 1}: ${upErr.message}`)
-        paths.push(`lecture-photos/${path}`)
-      }
+      const paths = await uploadPhotos(supabase, photos, jobId, 'slika', 'Slika')
+      const hwPaths = await uploadPhotos(supabase, hwPhotos, jobId, 'domaci', 'Slika domaćeg')
+      const homeworkNote = [hwNote.trim(), hwDue ? `Rok: ${hwDue}` : ''].filter(Boolean).join('\n') || null
       const { error: insErr } = await supabase.from('lecture_jobs').insert({
         id: jobId,
         user_id: userId,
@@ -101,6 +179,8 @@ export function NovaLekcijaForm({ userId, defaultClass }: { userId: string | nul
         want_quiz: wantQuiz,
         want_flashcards: wantFlashcards,
         photo_paths: paths,
+        homework_photo_paths: hwPaths,
+        homework_note: homeworkNote,
       })
       if (insErr) throw new Error(insErr.message)
       router.push(`/lectures/nova/${jobId}`)
@@ -169,53 +249,22 @@ export function NovaLekcijaForm({ userId, defaultClass }: { userId: string | nul
       {/* Photos */}
       <Card className="space-y-3">
         <p className="text-[12px] leading-none text-muted-foreground font-extrabold uppercase tracking-[0.04em]">Fotografije (opciono) · {photos.length}/{MAX_PHOTOS}</p>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          capture="environment"
-          className="hidden"
-          onChange={(e) => { addFiles(e.target.files); e.target.value = '' }}
-        />
-        {photos.length > 0 && (
-          <div className="grid grid-cols-3 gap-2">
-            {photos.map((p, i) => (
-              <div key={p.url} className="relative aspect-square rounded-xl overflow-hidden border-2 border-border bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.url} alt={`Slika ${i + 1}`} className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removePhoto(i)}
-                  aria-label={`Ukloni sliku ${i + 1}`}
-                  className="absolute top-1 right-1 w-11 h-11 rounded-full bg-card border-2 border-border flex items-center justify-center text-foreground shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px] active:shadow-none"
-                >
-                  <X className="w-4 h-4" strokeWidth={2.8} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-        {photos.length < MAX_PHOTOS && (
-          <div className="grid grid-cols-2 gap-2">
-            <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
-              <Camera className="w-5 h-5" strokeWidth={2.6} /> Slikaj
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                const input = fileInputRef.current
-                if (!input) return
-                input.removeAttribute('capture')
-                input.click()
-                input.setAttribute('capture', 'environment')
-              }}
-            >
-              <ImagePlus className="w-5 h-5" strokeWidth={2.6} /> Iz galerije
-            </Button>
-          </div>
-        )}
+        <PhotoPicker photos={photos} setPhotos={setPhotos} max={MAX_PHOTOS} altPrefix="Slika" onChange={() => setError(null)} />
+      </Card>
+
+      {/* Homework */}
+      <Card className="space-y-3">
+        <p className="text-[12px] leading-none text-muted-foreground font-extrabold uppercase tracking-[0.04em]">Domaći (opciono) · {hwPhotos.length}/{MAX_HW_PHOTOS}</p>
+        <p className="text-[13px] font-bold text-muted-foreground">Slikaj stranu udžbenika sa zadacima — AI upiše zadatke i kratko uputstvo kako se rade.</p>
+        <PhotoPicker photos={hwPhotos} setPhotos={setHwPhotos} max={MAX_HW_PHOTOS} altPrefix="Zadaci" />
+        <div>
+          <Label htmlFor="nova-hw-note">Šta učenici treba da urade</Label>
+          <Textarea id="nova-hw-note" value={hwNote} onChange={(e) => setHwNote(e.target.value)} placeholder="Zadaci 1–5 na strani 57, rok petak" className="mt-1.5 min-h-[96px]" maxLength={600} />
+        </div>
+        <div>
+          <Label htmlFor="nova-hw-due">Rok</Label>
+          <Input id="nova-hw-due" type="date" value={hwDue} onChange={(e) => setHwDue(e.target.value)} className="mt-1.5" />
+        </div>
       </Card>
 
       {/* Options */}

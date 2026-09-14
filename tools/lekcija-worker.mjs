@@ -9,6 +9,9 @@
  * uzima zadatak (fotografije + predmet/razred/tema), generiše kompletnu lekciju
  * (sekcije, ključni pojmovi, sažetak, kviz, kartice) i upisuje je u tabelu
  * `lectures`. Sajt odmah prikazuje lekciju svima.
+ * Ako zadatak ima domaći (homework_photo_paths / homework_note), fotografije zadataka idu u
+ * javni bucket `lecture-images/<lectureId>/domaci-N.jpg`, a u sadržaj lekcije se upisuje blok
+ * HOMEWORK:{"text","tasks":[{"label","what","how"}],"images":[url],"due"}:HOMEWORK (poslije SUMMARY, prije QUIZ_DATA).
  *
  * Kako generiše — dva režima, bira se automatski:
  *   1) ANTHROPIC_API_KEY postavljen  → direktno Claude API (preporučeno; lekcija košta par centi).
@@ -107,6 +110,17 @@ async function downloadPhoto(path) {
   return { bytes: Buffer.from(await res.arrayBuffer()), type: type.split(';')[0] }
 }
 
+/** Upload bytes to the PUBLIC bucket `lecture-images`; returns the public URL. */
+async function uploadPublicImage(objectPath, bytes, type) {
+  const res = await fetch(`${STORAGE}/object/lecture-images/${objectPath}`, {
+    method: 'POST',
+    headers: { apikey: HEADERS.apikey, Authorization: HEADERS.Authorization, 'Content-Type': type || 'image/jpeg', 'x-upsert': 'true' },
+    body: bytes,
+  })
+  if (!res.ok) throw new Error(`Upload ${objectPath}: ${res.status} ${(await res.text()).slice(0, 200)}`)
+  return `${CONFIG.SUPABASE_URL}/storage/v1/object/public/lecture-images/${objectPath}`
+}
+
 // ───── Prompt ────────────────────────────────────────────────────────────────
 const LENGTH_HINT = {
   kratka: '2–3 sekcije, svaka 60–120 riječi',
@@ -114,14 +128,26 @@ const LENGTH_HINT = {
   detaljna: '5–7 sekcija, svaka 150–250 riječi, sa primjerima',
 }
 
-function buildPrompt(job, photoCount) {
+function buildPrompt(job, photoCount, hwPhotoCount = 0) {
   const source = photoCount > 0
     ? `Izvor: ${photoCount} fotografija (stranice udžbenika ili tabla).${job.topic ? ` Tema: ${job.topic}.` : ''}`
     : `Izvor: samo ovaj zahtjev nastavnika (nema fotografija). Tema: ${job.topic}.`
+  const hwNote = String(job.homework_note || '').trim()
+  const hasHomework = hwPhotoCount > 0 || hwNote.length > 0
+  const homeworkSection = hasHomework
+    ? `DOMAĆI ZADATAK (obavezno popuni polje "homework")
+- Materijal za domaći je ODVOJEN od gradiva lekcije: ${hwPhotoCount > 0 ? `${hwPhotoCount} fotografija zadataka za domaći (${hwPhotoCount === 1 ? 'slika označena kao "domaći"' : 'slike označene kao "domaći"'}) — te fotografije NE koristi kao izvor za tekst lekcije, samo za domaći.` : 'nema fotografija zadataka.'}${hwNote ? `\n- Uputstvo nastavnika za domaći: ${hwNote}` : ''}
+- "homework.text": 1–3 obične rečenice — šta učenici treba da urade i kako (bez HTML-a).
+- "homework.tasks": zadaci pročitani sa fotografija (i/ili iz uputstva), 0–8 stavki. "label" = oznaka kako je štampana (npr. "Zadatak 3" ili "Zadaci 1–4 (str. 57)"), "what" = zadatak u jednoj rečenici, "how" = kratak nagovještaj metode/postupka — NIKAD puno rješenje ni krajnji rezultat.
+- "homework.due": rok u formatu "YYYY-MM-DD" ako je naveden u uputstvu (npr. "Rok: 2026-09-18"), inače null.
+`
+    : `DOMAĆI ZADATAK: nema materijala za domaći — vrati "homework": null.
+`
   return `Ti si nastavnik u Gimnaziji "Niko Rolović" (Bar, Crna Gora). Napiši JEDNU lekciju za učenike ${job.class_number}. razreda gimnazije iz predmeta "${job.subject}".
 ${source}
 ${job.notes ? `Napomene nastavnika: ${job.notes}\n` : ''}Dužina: ${LENGTH_HINT[job.length] || LENGTH_HINT.srednja}.
 
+${homeworkSection}
 ${CONFIG.WEB_RESEARCH ? `ISTRAŽIVANJE PRIJE PISANJA (obavezno, 2–4 pretrage, ne više)
 - Pretraži kako se ova tema obrađuje u crnogorskom gimnazijskom programu za ${job.class_number}. razred: predmetni program Zavoda za školstvo (zzs.gov.me), udžbenici Zavoda za udžbenike i nastavna sredstva (zuns.me), ispitni katalozi Ispitnog centra (iccg.co.me), portali gov.me / mps.gov.me. Korisni upiti: "${job.subject} ${job.class_number}. razred gimnazija program zzs.gov.me", "${job.topic || job.subject} udžbenik gimnazija Crna Gora".
 - Uskladi obim, redosljed pojmova, terminologiju i oznake sa tim što nađeš (npr. termini kako ih koriste crnogorski udžbenici, a ne prevodi sa engleskog). Ako ništa relevantno ne nađeš, piši po standardnom gimnazijskom gradivu i ne izmišljaj izvore.
@@ -146,14 +172,20 @@ ODGOVORI ISKLJUČIVO JEDNIM JSON OBJEKTOM (bez teksta prije i poslije, bez markd
   "keyTerms": [{"term": "pojam", "definition": "objašnjenje"}],
   "summary": "sažetak u 2–3 rečenice",
   "quiz": [{"question": "pitanje", "options": ["A","B","C","D"], "correct": 0, "explanation": "zašto"}],
-  "flashcards": [{"front": "pojam", "back": "objašnjenje"}]
+  "flashcards": [{"front": "pojam", "back": "objašnjenje"}],
+  "homework": ${hasHomework ? '{"text": "šta uraditi i kako, 1–3 rečenice", "tasks": [{"label": "Zadatak 3", "what": "šta se traži", "how": "kratak nagovještaj metode"}], "due": "YYYY-MM-DD" ili null}' : 'null'}
 }`
 }
 
 // ───── Generation: Claude API (mode 1) ───────────────────────────────────────
-async function generateViaApi(prompt, photos) {
+const toImageBlock = (p) => ({ type: 'image', source: { type: 'base64', media_type: p.type, data: p.bytes.toString('base64') } })
+
+async function generateViaApi(prompt, photos, hwPhotos = []) {
   const content = [
-    ...photos.map((p) => ({ type: 'image', source: { type: 'base64', media_type: p.type, data: p.bytes.toString('base64') } })),
+    ...(photos.length ? [{ type: 'text', text: `Fotografije gradiva lekcije (${photos.length}):` }] : []),
+    ...photos.map(toImageBlock),
+    ...(hwPhotos.length ? [{ type: 'text', text: `Fotografije zadataka za domaći (${hwPhotos.length}) — NISU izvor lekcije:` }] : []),
+    ...hwPhotos.map(toImageBlock),
     { type: 'text', text: prompt },
   ]
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -172,21 +204,32 @@ async function generateViaApi(prompt, photos) {
 }
 
 // ───── Generation: Claude Code CLI (mode 2) ──────────────────────────────────
-async function generateViaCli(prompt, photos) {
+const imageExt = (type) => (type.includes('png') ? 'png' : type.includes('webp') ? 'webp' : 'jpg')
+
+async function generateViaCli(prompt, photos, hwPhotos = []) {
   const dir = await mkdtemp(join(tmpdir(), 'nr-lekcija-'))
   try {
     const names = []
     for (let i = 0; i < photos.length; i++) {
-      const ext = photos[i].type.includes('png') ? 'png' : photos[i].type.includes('webp') ? 'webp' : 'jpg'
-      const name = `slika-${i + 1}.${ext}`
+      const name = `slika-${i + 1}.${imageExt(photos[i].type)}`
       await writeFile(join(dir, name), photos[i].bytes)
       names.push(name)
     }
-    const full = names.length
-      ? `Prvo pročitaj (Read) ove slike iz tekućeg foldera, redom: ${names.join(', ')}. Ne pravi i ne mijenjaj nikakve fajlove.\n\n${prompt}`
+    const hwNames = []
+    for (let i = 0; i < hwPhotos.length; i++) {
+      const name = `domaci-${i + 1}.${imageExt(hwPhotos[i].type)}`
+      await writeFile(join(dir, name), hwPhotos[i].bytes)
+      hwNames.push(name)
+    }
+    const readParts = [
+      ...(names.length ? [`slike gradiva lekcije: ${names.join(', ')}`] : []),
+      ...(hwNames.length ? [`fotografije zadataka za domaći (NISU izvor lekcije): ${hwNames.join(', ')}`] : []),
+    ]
+    const full = readParts.length
+      ? `Prvo pročitaj (Read) ove slike iz tekućeg foldera, redom — ${readParts.join('; ')}. Ne pravi i ne mijenjaj nikakve fajlove.\n\n${prompt}`
       : `${prompt}\n\n${CONFIG.WEB_RESEARCH ? 'Osim WebSearch/WebFetch ne koristi druge alate i ne pravi fajlove.' : 'Ne koristi alate i ne pravi fajlove — samo odgovori.'}`
     await writeFile(join(dir, 'prompt.txt'), full)
-    const tools = [...(names.length ? ['Read'] : []), ...(CONFIG.WEB_RESEARCH ? ['WebSearch', 'WebFetch'] : [])]
+    const tools = [...(readParts.length ? ['Read'] : []), ...(CONFIG.WEB_RESEARCH ? ['WebSearch', 'WebFetch'] : [])]
     const args = ['-p', full, '--output-format', 'json', '--model', CONFIG.CLAUDE_MODEL, '--max-turns', CONFIG.WEB_RESEARCH ? '16' : '6']
     if (tools.length) args.push('--allowedTools', tools.join(','))
     const out = await new Promise((resolve, reject) => {
@@ -222,15 +265,51 @@ function extractJson(text) {
   return JSON.parse(text.slice(start, end + 1))
 }
 
-const safeText = (s) => String(s ?? '').replace(/<[^>]*>/g, '').replace(/</g, '‹').replace(/:SUMMARY|:KEY_TERMS|:QUIZ_DATA|:LECTURE_DATE/g, (m) => m.replace(':', ': ')).trim()
+const safeText = (s) => String(s ?? '').replace(/<[^>]*>/g, '').replace(/</g, '‹').replace(/:SUMMARY|:KEY_TERMS|:QUIZ_DATA|:LECTURE_DATE|:HOMEWORK/g, (m) => m.replace(':', ': ')).trim()
 
-function buildLectureContent(r) {
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+const dueFromNote = (note) => {
+  const m = String(note || '').match(/Rok:\s*(\d{4}-\d{2}-\d{2})/i)
+  return m ? m[1] : null
+}
+
+/**
+ * Normalize the model's `homework` into the HOMEWORK marker contract:
+ * {"text", "tasks":[{"label","what","how"}], "images":[url], "due"}. Returns null when there is nothing to publish.
+ */
+function normalizeHomework(raw, note, imageUrls) {
+  const hw = raw && typeof raw === 'object' ? raw : {}
+  const noteText = String(note || '').replace(/^\s*Rok:.*$/gim, '').trim()
+  const text = safeText(hw.text) || safeText(noteText)
+  const tasks = (Array.isArray(hw.tasks) ? hw.tasks : [])
+    .filter((t) => t && typeof t === 'object')
+    .map((t) => ({ label: safeText(t.label), what: safeText(t.what), how: safeText(t.how) }))
+    .filter((t) => t.label || t.what)
+    .slice(0, 8)
+  const images = (imageUrls || []).map((u) => safeText(u)).filter(Boolean).slice(0, 4)
+  const dueRaw = typeof hw.due === 'string' && ISO_DATE.test(hw.due.trim()) ? hw.due.trim() : null
+  const due = dueRaw || dueFromNote(note)
+  if (!text && !tasks.length && !images.length) return null
+  return { text, tasks, images, due }
+}
+
+/** Stored lecture body. Order: LECTURE_DATE → sections → KEY_TERMS → SUMMARY → HOMEWORK → QUIZ_DATA (always last). */
+function buildLectureContent(r, homework = null) {
   const today = new Date().toISOString().split('T')[0]
   let content = `LECTURE_DATE:${today}:LECTURE_DATE\n\n`
   for (const s of r.sections || []) content += `## ${safeText(s.heading)}\n\n${safeText(s.content)}\n\n`
   const keyTerms = (r.keyTerms || []).map((k) => ({ term: safeText(k.term), definition: safeText(k.definition) })).filter((k) => k.term)
   if (keyTerms.length) content += `KEY_TERMS:${JSON.stringify(keyTerms)}:KEY_TERMS\n\n`
   if (r.summary) content += `SUMMARY:${safeText(r.summary)}:SUMMARY\n\n`
+  if (homework) {
+    const hw = {
+      text: safeText(homework.text),
+      tasks: (homework.tasks || []).map((t) => ({ label: safeText(t.label), what: safeText(t.what), how: safeText(t.how) })),
+      images: (homework.images || []).map(safeText),
+      due: homework.due ? safeText(homework.due) : null,
+    }
+    content += `HOMEWORK:${JSON.stringify(hw)}:HOMEWORK\n\n`
+  }
   const questions = (r.quiz || [])
     .filter((q) => q && q.question && Array.isArray(q.options) && q.options.length >= 2)
     .map((q) => ({
@@ -250,10 +329,16 @@ async function processJob(job) {
   const photos = []
   for (const p of job.photo_paths || []) photos.push(await downloadPhoto(p))
   if (!photos.length && !(job.topic && job.topic.trim())) throw new Error('Zadatak nema ni temu ni fotografije')
+  // Homework photos are separate: never a lecture source, only material for the "homework" field.
+  const hwPhotos = []
+  for (const p of (job.homework_photo_paths || []).slice(0, 4)) hwPhotos.push(await downloadPhoto(p))
+  const hwNote = String(job.homework_note || '').trim()
+  const hasHomework = hwPhotos.length > 0 || hwNote.length > 0
+  if (hasHomework) log(`  · domaći: ${hwPhotos.length} slika${hwNote ? ' · ' + hwNote.replace(/\s+/g, ' ').slice(0, 80) : ''}`)
 
   await setProgress(job.id, CONFIG.WEB_RESEARCH ? 'Istražujem program i pišem lekciju…' : 'Pišem lekciju…')
-  const prompt = buildPrompt(job, photos.length)
-  const raw = CONFIG.ANTHROPIC_API_KEY ? await generateViaApi(prompt, photos) : await generateViaCli(prompt, photos)
+  const prompt = buildPrompt(job, photos.length, hwPhotos.length)
+  const raw = CONFIG.ANTHROPIC_API_KEY ? await generateViaApi(prompt, photos, hwPhotos) : await generateViaCli(prompt, photos, hwPhotos)
   const result = extractJson(raw)
   if (!result.title || !Array.isArray(result.sections) || !result.sections.length) throw new Error('Nepotpun odgovor modela (nema naslova/sekcija)')
 
@@ -265,6 +350,23 @@ async function processJob(job) {
     { Prefer: 'return=representation' }
   )
   const lectureId = lecture[0].id
+
+  // Homework: publish photos to the public bucket, then patch the HOMEWORK block into the stored content.
+  if (hasHomework) {
+    await setProgress(job.id, 'Objavljujem domaći…')
+    const imageUrls = []
+    for (let i = 0; i < hwPhotos.length; i++) {
+      imageUrls.push(await uploadPublicImage(`${lectureId}/domaci-${i + 1}.jpg`, hwPhotos[i].bytes, 'image/jpeg'))
+    }
+    const homework = normalizeHomework(result.homework, hwNote, imageUrls)
+    if (homework) {
+      await rest('PATCH', `lectures?id=eq.${lectureId}`, { content: buildLectureContent(result, homework) })
+      log(`  · domaći objavljen: ${homework.tasks.length} zadataka, ${homework.images.length} slika${homework.due ? ', rok ' + homework.due : ''}${result.homework ? '' : ' (model nije vratio homework — tekst iz uputstva)'}`)
+    } else {
+      log('  · domaći preskočen: nema teksta, zadataka ni slika')
+    }
+  }
+
   await rest('PATCH', `lecture_jobs?id=eq.${job.id}`, { status: 'done', progress: 'Gotovo', lecture_id: lectureId, updated_at: new Date().toISOString() })
   log(`✔ Lekcija "${result.title}" → /lectures/${encodeURIComponent(job.subject)}/${lectureId}`)
 }

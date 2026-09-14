@@ -65,7 +65,7 @@ export default async function LectureDetailPage({
       flashcards={quizData?.flashcards ?? []}
       prev={prev}
       next={next}
-      content={<LectureContent content={lecture.content} />}
+      content={<LectureContent content={lecture.content} lectureId={lecture.id} />}
     />
   )
 }
