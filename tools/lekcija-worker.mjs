@@ -50,6 +50,8 @@ const CONFIG = {
   CLAUDE_BIN: process.env.CLAUDE_BIN || (process.platform === 'win32' ? 'claude.exe' : 'claude'),
   CLAUDE_MODEL: process.env.CLAUDE_MODEL || 'sonnet',
   POLL_MS: Number(process.env.POLL_MS || 5000),
+  // Istraži crnogorski program (Zavod za školstvo, udžbenici, ispitni katalozi) prije pisanja. WEB_RESEARCH=0 isključuje.
+  WEB_RESEARCH: process.env.WEB_RESEARCH !== '0',
   // Author used when a guest (no user id) queued the job.
   FALLBACK_AUTHOR_ID: '241c9077-b700-4400-8f96-20e3a650eef4',
 }
@@ -120,7 +122,12 @@ function buildPrompt(job, photoCount) {
 ${source}
 ${job.notes ? `Napomene nastavnika: ${job.notes}\n` : ''}Dužina: ${LENGTH_HINT[job.length] || LENGTH_HINT.srednja}.
 
-STROGO
+${CONFIG.WEB_RESEARCH ? `ISTRAŽIVANJE PRIJE PISANJA (obavezno, 2–4 pretrage, ne više)
+- Pretraži kako se ova tema obrađuje u crnogorskom gimnazijskom programu za ${job.class_number}. razred: predmetni program Zavoda za školstvo (zzs.gov.me), udžbenici Zavoda za udžbenike i nastavna sredstva (zuns.me), ispitni katalozi Ispitnog centra (iccg.co.me), portali gov.me / mps.gov.me. Korisni upiti: "${job.subject} ${job.class_number}. razred gimnazija program zzs.gov.me", "${job.topic || job.subject} udžbenik gimnazija Crna Gora".
+- Uskladi obim, redosljed pojmova, terminologiju i oznake sa tim što nađeš (npr. termini kako ih koriste crnogorski udžbenici, a ne prevodi sa engleskog). Ako ništa relevantno ne nađeš, piši po standardnom gimnazijskom gradivu i ne izmišljaj izvore.
+- Ne kopiraj tekst sa sajtova doslovno — piši svojim riječima. Ne navodi linkove u lekciji.
+
+` : ''}STROGO
 - Drži se ISKLJUČIVO zadate teme i onoga što je na fotografijama. Ne dodaj druge teme, uvode o školi ili predmetu, motivacione pasuse, savjete za učenje, „zanimljivosti“ ni zaključke van teme.
 - Ako je tema uska, lekcija je kratka — ne razvlači. Ne ponavljaj isto u više sekcija.
 - Jezik: crnogorski/srpski, ijekavica, latinica. Jasno, za srednjoškolce, bez fraza „u ovoj lekciji ćemo“.
@@ -152,7 +159,12 @@ async function generateViaApi(prompt, photos) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'x-api-key': CONFIG.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-    body: JSON.stringify({ model: CONFIG.ANTHROPIC_MODEL, max_tokens: 8192, messages: [{ role: 'user', content }] }),
+    body: JSON.stringify({
+      model: CONFIG.ANTHROPIC_MODEL,
+      max_tokens: 8192,
+      messages: [{ role: 'user', content }],
+      ...(CONFIG.WEB_RESEARCH ? { tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 4 }] } : {}),
+    }),
   })
   const data = await res.json()
   if (!res.ok) throw new Error(`Claude API ${res.status}: ${JSON.stringify(data).slice(0, 300)}`)
@@ -172,10 +184,11 @@ async function generateViaCli(prompt, photos) {
     }
     const full = names.length
       ? `Prvo pročitaj (Read) ove slike iz tekućeg foldera, redom: ${names.join(', ')}. Ne pravi i ne mijenjaj nikakve fajlove.\n\n${prompt}`
-      : `${prompt}\n\nNe koristi alate i ne pravi fajlove — samo odgovori.`
+      : `${prompt}\n\n${CONFIG.WEB_RESEARCH ? 'Osim WebSearch/WebFetch ne koristi druge alate i ne pravi fajlove.' : 'Ne koristi alate i ne pravi fajlove — samo odgovori.'}`
     await writeFile(join(dir, 'prompt.txt'), full)
-    const args = ['-p', full, '--output-format', 'json', '--model', CONFIG.CLAUDE_MODEL, '--max-turns', '6']
-    if (names.length) args.push('--allowedTools', 'Read')
+    const tools = [...(names.length ? ['Read'] : []), ...(CONFIG.WEB_RESEARCH ? ['WebSearch', 'WebFetch'] : [])]
+    const args = ['-p', full, '--output-format', 'json', '--model', CONFIG.CLAUDE_MODEL, '--max-turns', CONFIG.WEB_RESEARCH ? '16' : '6']
+    if (tools.length) args.push('--allowedTools', tools.join(','))
     const out = await new Promise((resolve, reject) => {
       const child = spawn(CONFIG.CLAUDE_BIN, args, { cwd: dir, stdio: ['ignore', 'pipe', 'pipe'] })
       let stdout = '', stderr = ''
@@ -235,7 +248,7 @@ async function processJob(job) {
   for (const p of job.photo_paths || []) photos.push(await downloadPhoto(p))
   if (!photos.length && !(job.topic && job.topic.trim())) throw new Error('Zadatak nema ni temu ni fotografije')
 
-  await setProgress(job.id, CONFIG.ANTHROPIC_API_KEY ? 'Pišem lekciju (Claude API)…' : 'Pišem lekciju (Claude Code)…')
+  await setProgress(job.id, CONFIG.WEB_RESEARCH ? 'Istražujem program i pišem lekciju…' : 'Pišem lekciju…')
   const prompt = buildPrompt(job, photos.length)
   const raw = CONFIG.ANTHROPIC_API_KEY ? await generateViaApi(prompt, photos) : await generateViaCli(prompt, photos)
   const result = extractJson(raw)
@@ -257,7 +270,7 @@ async function processJob(job) {
 let stopping = false
 process.on('SIGINT', () => { stopping = true; log('Zaustavljam…') })
 
-log(`NR Lekcija Worker · režim: ${CONFIG.ANTHROPIC_API_KEY ? 'Claude API (' + CONFIG.ANTHROPIC_MODEL + ')' : 'Claude Code CLI (' + CONFIG.CLAUDE_BIN + ' --model ' + CONFIG.CLAUDE_MODEL + ')'} · čekam zadatke…`)
+log(`NR Lekcija Worker · režim: ${CONFIG.ANTHROPIC_API_KEY ? 'Claude API (' + CONFIG.ANTHROPIC_MODEL + ')' : 'Claude Code CLI (' + CONFIG.CLAUDE_BIN + ' --model ' + CONFIG.CLAUDE_MODEL + ')'} · web istraživanje: ${CONFIG.WEB_RESEARCH ? 'uključeno' : 'isključeno'} · čekam zadatke…`)
 while (!stopping) {
   try {
     const job = await claimJob()
