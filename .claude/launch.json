@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "niko-dev",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": [
+        "/c",
+        ".claude\\dev.cmd"
+      ],
+      "port": 3000
+    }
+  ]
+}
