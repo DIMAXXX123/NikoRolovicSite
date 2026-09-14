@@ -74,8 +74,8 @@ export function NovaLekcijaForm({ userId, defaultClass }: { userId: string | nul
 
   async function submit() {
     if (submitting) return
-    if (photos.length === 0) {
-      setError('Dodaj bar jednu fotografiju udžbenika ili table.')
+    if (photos.length === 0 && topic.trim().length < 3) {
+      setError('Napiši temu lekcije ili dodaj fotografiju udžbenika / table.')
       return
     }
     setSubmitting(true)
@@ -125,12 +125,50 @@ export function NovaLekcijaForm({ userId, defaultClass }: { userId: string | nul
         <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading flex items-center gap-2">
           <Sparkles className="w-6 h-6 text-primary-text" strokeWidth={2.6} /> Nova lekcija
         </h1>
-        <p className="text-[13px] font-bold text-muted-foreground mt-1">Slikaj stranicu udžbenika ili tablu — AI napiše lekciju sa kvizom i karticama za par minuta.</p>
+        <p className="text-[13px] font-bold text-muted-foreground mt-1">Napiši temu ili slikaj udžbenik / tablu — AI napiše lekciju sa kvizom i karticama za par minuta.</p>
       </div>
+
+      {/* Subject + class */}
+      <Card className="space-y-4">
+        <div>
+          <Label htmlFor="nova-subject">Predmet</Label>
+          <div className="flex items-center gap-3 mt-1.5">
+            {selected && <SubjectIcon name={selected.name} emoji={selected.emoji} size="sm" />}
+            <select
+              id="nova-subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="flex-1 h-[50px] rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground focus:border-secondary focus:bg-card focus:outline-none"
+            >
+              {subjects.map((s) => (
+                <option key={s.name} value={s.name}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div>
+          <Label>Razred</Label>
+          <div className="grid grid-cols-4 gap-2 mt-1.5">
+            {[1, 2, 3, 4].map((n) => (
+              <button key={n} type="button" onClick={() => setClassNumber(n)} className={`${CHIP} ${classNumber === n ? CHIP_ON : CHIP_OFF}`} aria-pressed={classNumber === n}>
+                {n}.
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="nova-topic">Tema / šta da napiše</Label>
+          <Input id="nova-topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="npr. Njutnovi zakoni — samo tri zakona sa primjerima" className="mt-1.5" maxLength={200} />
+        </div>
+        <div>
+          <Label htmlFor="nova-notes">Napomene (opciono)</Label>
+          <Textarea id="nova-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Šta da naglasi, koji dio da preskoči, nivo težine…" className="mt-1.5 min-h-[96px]" maxLength={600} />
+        </div>
+      </Card>
 
       {/* Photos */}
       <Card className="space-y-3">
-        <p className="text-[12px] leading-none text-muted-foreground font-extrabold uppercase tracking-[0.04em]">Fotografije · {photos.length}/{MAX_PHOTOS}</p>
+        <p className="text-[12px] leading-none text-muted-foreground font-extrabold uppercase tracking-[0.04em]">Fotografije (opciono) · {photos.length}/{MAX_PHOTOS}</p>
         <input
           ref={fileInputRef}
           type="file"
@@ -180,44 +218,6 @@ export function NovaLekcijaForm({ userId, defaultClass }: { userId: string | nul
         )}
       </Card>
 
-      {/* Subject + class */}
-      <Card className="space-y-4">
-        <div>
-          <Label htmlFor="nova-subject">Predmet</Label>
-          <div className="flex items-center gap-3 mt-1.5">
-            {selected && <SubjectIcon name={selected.name} emoji={selected.emoji} size="sm" />}
-            <select
-              id="nova-subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="flex-1 h-[50px] rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground focus:border-secondary focus:bg-card focus:outline-none"
-            >
-              {subjects.map((s) => (
-                <option key={s.name} value={s.name}>{s.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div>
-          <Label>Razred</Label>
-          <div className="grid grid-cols-4 gap-2 mt-1.5">
-            {[1, 2, 3, 4].map((n) => (
-              <button key={n} type="button" onClick={() => setClassNumber(n)} className={`${CHIP} ${classNumber === n ? CHIP_ON : CHIP_OFF}`} aria-pressed={classNumber === n}>
-                {n}.
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <Label htmlFor="nova-topic">Tema (opciono)</Label>
-          <Input id="nova-topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="npr. Njutnovi zakoni" className="mt-1.5" maxLength={120} />
-        </div>
-        <div>
-          <Label htmlFor="nova-notes">Napomene (opciono)</Label>
-          <Textarea id="nova-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Šta da naglasi, koji dio da preskoči, nivo težine…" className="mt-1.5 min-h-[96px]" maxLength={600} />
-        </div>
-      </Card>
-
       {/* Options */}
       <Card className="space-y-4">
         <div>
@@ -246,7 +246,7 @@ export function NovaLekcijaForm({ userId, defaultClass }: { userId: string | nul
         </p>
       )}
 
-      <Button type="button" className="w-full" size="lg" onClick={submit} disabled={submitting || photos.length === 0}>
+      <Button type="button" className="w-full" size="lg" onClick={submit} disabled={submitting || (photos.length === 0 && topic.trim().length < 3)}>
         {submitting ? <Loader2 className="w-5 h-5 animate-spin" strokeWidth={2.6} /> : <Sparkles className="w-5 h-5" strokeWidth={2.6} />}
         {submitting ? 'Šaljem…' : 'Napravi lekciju'}
       </Button>

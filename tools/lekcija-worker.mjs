@@ -113,18 +113,24 @@ const LENGTH_HINT = {
 }
 
 function buildPrompt(job, photoCount) {
-  return `Ti si nastavnik u Gimnaziji "Niko Rolović" (Bar, Crna Gora). Na osnovu ${photoCount} fotografija (stranice udžbenika ili tabla) napiši KOMPLETNU lekciju za učenike ${job.class_number}. razreda gimnazije iz predmeta "${job.subject}".
-${job.topic ? `Tema: ${job.topic}\n` : ''}${job.notes ? `Napomene nastavnika: ${job.notes}\n` : ''}
-Dužina: ${LENGTH_HINT[job.length] || LENGTH_HINT.srednja}.
+  const source = photoCount > 0
+    ? `Izvor: ${photoCount} fotografija (stranice udžbenika ili tabla).${job.topic ? ` Tema: ${job.topic}.` : ''}`
+    : `Izvor: samo ovaj zahtjev nastavnika (nema fotografija). Tema: ${job.topic}.`
+  return `Ti si nastavnik u Gimnaziji "Niko Rolović" (Bar, Crna Gora). Napiši JEDNU lekciju za učenike ${job.class_number}. razreda gimnazije iz predmeta "${job.subject}".
+${source}
+${job.notes ? `Napomene nastavnika: ${job.notes}\n` : ''}Dužina: ${LENGTH_HINT[job.length] || LENGTH_HINT.srednja}.
 
-PRAVILA
-- Jezik: crnogorski/srpski, ijekavica, latinica. Jasno, za srednjoškolce, bez fraza „u ovoj lekciji“.
-- Koristi SAMO ono što je na fotografijama plus opšte poznato gradivo te teme; ne izmišljaj brojke, imena i datume kojih nema.
+STROGO
+- Drži se ISKLJUČIVO zadate teme i onoga što je na fotografijama. Ne dodaj druge teme, uvode o školi ili predmetu, motivacione pasuse, savjete za učenje, „zanimljivosti“ ni zaključke van teme.
+- Ako je tema uska, lekcija je kratka — ne razvlači. Ne ponavljaj isto u više sekcija.
+- Jezik: crnogorski/srpski, ijekavica, latinica. Jasno, za srednjoškolce, bez fraza „u ovoj lekciji ćemo“.
+- Ne izmišljaj brojke, imena, datume i formule kojih nema u izvoru ili u standardnom gradivu te teme.
 - Formule i hemijske oznake pišu se Unicode znakovima (x², H₂O, →, ≤); NIKAD HTML, NIKAD znak "<" u tekstu.
-- Tekst sekcija: obični pasusi razdvojeni praznim redom; nabrajanja kao redovi koji počinju sa "- ". Bez markdown zvjezdica.
-- Kviz: ${job.want_quiz ? '6–8 pitanja' : '0 pitanja (prazan niz)'}, svako sa TAČNO 4 opcije i indeksom tačne (0–3), plus kratko objašnjenje.
-- Kartice: ${job.want_flashcards ? '6–10 kartica (pojam → objašnjenje)' : '0 kartica (prazan niz)'}.
-- Ključni pojmovi: 4–8.
+- Tekst sekcija: obični pasusi razdvojeni praznim redom; nabrajanja kao redovi koji počinju sa "- ". Bez markdown zvjezdica i bez naslova unutar teksta.
+- Kviz: ${job.want_quiz ? '5–8 pitanja SAMO iz ove lekcije' : '0 pitanja (prazan niz)'}, svako sa TAČNO 4 opcije i indeksom tačne (0–3), plus objašnjenje u jednoj rečenici.
+- Kartice: ${job.want_flashcards ? '5–8 kartica SAMO iz ove lekcije (pojam → objašnjenje)' : '0 kartica (prazan niz)'}.
+- Ključni pojmovi: 3–6, samo oni koji se pojavljuju u lekciji.
+- Naslov: kratak, bez broja lekcije i bez naziva predmeta.
 
 ODGOVORI ISKLJUČIVO JEDNIM JSON OBJEKTOM (bez teksta prije i poslije, bez markdown ograda):
 {
@@ -164,9 +170,12 @@ async function generateViaCli(prompt, photos) {
       await writeFile(join(dir, name), photos[i].bytes)
       names.push(name)
     }
-    const full = `Prvo pročitaj (Read) ove slike iz tekućeg foldera, redom: ${names.join(', ')}.\n\n${prompt}`
+    const full = names.length
+      ? `Prvo pročitaj (Read) ove slike iz tekućeg foldera, redom: ${names.join(', ')}. Ne pravi i ne mijenjaj nikakve fajlove.\n\n${prompt}`
+      : `${prompt}\n\nNe koristi alate i ne pravi fajlove — samo odgovori.`
     await writeFile(join(dir, 'prompt.txt'), full)
-    const args = ['-p', full, '--output-format', 'json', '--model', CONFIG.CLAUDE_MODEL, '--allowedTools', 'Read']
+    const args = ['-p', full, '--output-format', 'json', '--model', CONFIG.CLAUDE_MODEL, '--max-turns', '6']
+    if (names.length) args.push('--allowedTools', 'Read')
     const out = await new Promise((resolve, reject) => {
       const child = spawn(CONFIG.CLAUDE_BIN, args, { cwd: dir, stdio: ['ignore', 'pipe', 'pipe'] })
       let stdout = '', stderr = ''
@@ -193,7 +202,7 @@ async function generateViaCli(prompt, photos) {
 function extractJson(text) {
   const start = text.indexOf('{')
   const end = text.lastIndexOf('}')
-  if (start < 0 || end < 0) throw new Error('Model nije vratio JSON')
+  if (start < 0 || end < 0) throw new Error('AI nije mogao napisati lekciju iz ovog materijala: ' + String(text).replace(/\s+/g, ' ').slice(0, 220))
   return JSON.parse(text.slice(start, end + 1))
 }
 
@@ -221,10 +230,10 @@ function buildLectureContent(r) {
 
 // ───── One job ───────────────────────────────────────────────────────────────
 async function processJob(job) {
-  log(`▶ Zadatak ${job.id.slice(0, 8)} · ${job.subject} · ${job.class_number}. razred · ${job.photo_paths.length} slika`)
+  log(`▶ Zadatak ${job.id.slice(0, 8)} · ${job.subject} · ${job.class_number}. razred · ${(job.photo_paths || []).length} slika${job.topic ? ' · ' + job.topic : ''}`)
   const photos = []
-  for (const p of job.photo_paths) photos.push(await downloadPhoto(p))
-  if (!photos.length) throw new Error('Zadatak nema fotografija')
+  for (const p of job.photo_paths || []) photos.push(await downloadPhoto(p))
+  if (!photos.length && !(job.topic && job.topic.trim())) throw new Error('Zadatak nema ni temu ni fotografije')
 
   await setProgress(job.id, CONFIG.ANTHROPIC_API_KEY ? 'Pišem lekciju (Claude API)…' : 'Pišem lekciju (Claude Code)…')
   const prompt = buildPrompt(job, photos.length)
