@@ -204,7 +204,10 @@ async function generateViaCli(prompt, photos) {
       throw new Error(/authenticate|OAuth|login/i.test(msg) ? `Claude Code nije prijavljen na ovom računaru — pokreni \`claude\` i uradi /login. (${msg})` : `Claude Code: ${msg}`)
     }
     if (out.code !== 0 && !parsed) throw new Error(`claude izašao sa kodom ${out.code}: ${(out.stderr || out.stdout).slice(0, 300)}`)
-    if (parsed && typeof parsed.result === 'string') return parsed.result
+    if (parsed && typeof parsed.result === 'string') {
+      if (parsed.num_turns) log(`  · Claude Code: ${parsed.num_turns} koraka${parsed.duration_ms ? ', ' + Math.round(parsed.duration_ms / 1000) + ' s' : ''}`)
+      return parsed.result
+    }
     return out.stdout
   } finally {
     await rm(dir, { recursive: true, force: true })
