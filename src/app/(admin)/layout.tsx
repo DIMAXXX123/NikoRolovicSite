@@ -15,10 +15,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const isSubPage = pathname !== '/admin'
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
   async function checkAuth() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
@@ -37,6 +33,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setAuthorized(true)
     setLoading(false)
   }
+
+  useEffect(() => {
+    async function init() { await checkAuth() }
+    init()
+  }, [])
 
   if (loading) {
     return (

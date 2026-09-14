@@ -1,5 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { Nunito } from "next/font/google";
 import "./globals.css";
+
+const nunito = Nunito({
+  weight: ["700", "800", "900"],
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-nunito",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Gimnazija Niko Rolović",
@@ -11,7 +19,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#050508",
+  themeColor: "#FFFFFF",
 };
 
 export default function RootLayout({
@@ -20,14 +28,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="sr" className="dark">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="min-h-screen bg-background">
+    <html lang="sr">
+      <body
+        className={`${nunito.variable} ${nunito.className} min-h-screen bg-background overflow-x-hidden`}
+      >
         {children}
       </body>
     </html>

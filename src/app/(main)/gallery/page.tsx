@@ -52,22 +52,22 @@ export default function GalleryPage() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'photos', filter: 'status=eq.approved' },
-        async (payload: any) => {
-          const newPhoto = payload.new as Photo
+        async (payload: { new: Photo }) => {
+          const newPhoto = payload.new
           const { data: profile } = await supabase
             .from('profiles')
             .select('first_name, last_name, class_number, section_number, role')
             .eq('id', newPhoto.user_id)
             .single()
-          const photoWithUser = { ...newPhoto, user: profile || undefined } as any
+          const photoWithUser: GalleryPhoto = { ...newPhoto, user: profile || undefined }
           setPhotos((prev) => [photoWithUser, ...prev])
         }
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'photos' },
-        async (payload: any) => {
-          const updated = payload.new as Photo
+        async (payload: { new: Photo }) => {
+          const updated = payload.new
           if (updated.status === 'approved') {
             // Show "new photos" button instead of auto-adding
             setNewPhotosCount(prev => prev + 1)
@@ -77,7 +77,7 @@ export default function GalleryPage() {
               .select('first_name, last_name, class_number, section_number, role')
               .eq('id', updated.user_id)
               .single()
-            const photoWithUser = { ...updated, user: profile || undefined, _new: true } as any
+            const photoWithUser: GalleryPhoto = { ...updated, user: profile || undefined, _new: true }
             setPhotos((prev) => {
               if (prev.some((p) => p.id === updated.id)) return prev
               return [photoWithUser, ...prev]
@@ -105,7 +105,7 @@ export default function GalleryPage() {
         .eq('user_id', user.id)
       if (userLikes) {
         const liked: Record<string, boolean> = {}
-        userLikes.forEach((l: any) => { liked[l.photo_id] = true })
+        userLikes.forEach((l: { photo_id: string }) => { liked[l.photo_id] = true })
         setLikedPhotos(liked)
       }
     }
@@ -345,7 +345,7 @@ export default function GalleryPage() {
       .from('photos')
       .getPublicUrl(fileName)
 
-    const insertData: any = {
+    const insertData: Record<string, unknown> = {
       image_url: publicUrl,
       caption: caption || null,
       user_id: user.id,
@@ -386,7 +386,7 @@ export default function GalleryPage() {
     setTimeout(() => setToast(''), 3000)
   }
 
-  function isAnon(photo: any) {
+  function isAnon(photo: GalleryPhoto) {
     return photo.anonymous === true
   }
 
@@ -405,14 +405,14 @@ export default function GalleryPage() {
     return d.toLocaleDateString('sr-Latn', { day: 'numeric', month: 'short' })
   }
 
-  function getInitials(photo: any) {
+  function getInitials(photo: GalleryPhoto) {
     if (isAnon(photo) || !photo.user) return '?'
     const first = photo.user.first_name?.[0] || ''
     const last = photo.user.last_name?.[0] || ''
     return (first + last).toUpperCase()
   }
 
-  function getDisplayName(photo: any) {
+  function getDisplayName(photo: GalleryPhoto) {
     if (isAnon(photo)) return 'Anonimno'
     if (!photo.user) return 'Nepoznat'
     return `${photo.user.first_name} ${photo.user.last_name}`
@@ -562,7 +562,7 @@ export default function GalleryPage() {
             return (
               <div
                 key={photo.id}
-                className={`rounded-2xl overflow-hidden bg-[#0c0c14] border border-[#1a1a2e] ${(photo as any)._new ? 'animate-slide-down' : 'animate-fade-in'}`}
+                className={`rounded-2xl overflow-hidden bg-[#0c0c14] border border-[#1a1a2e] ${photo._new ? 'animate-slide-down' : 'animate-fade-in'}`}
               >
                 {/* Card header — user info */}
                 <div className="flex items-center gap-3 px-4 py-3">

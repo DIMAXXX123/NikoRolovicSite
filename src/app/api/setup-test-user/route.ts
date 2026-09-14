@@ -65,7 +65,7 @@ export async function POST() {
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
     })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err) {
+    return NextResponse.json({ error: (err as { message?: string }).message }, { status: 500 })
   }
 }

@@ -18,12 +18,6 @@ export default function AdminPhotosPage() {
   const [userRole, setUserRole] = useState<string>('')
   const supabase = createClient()
 
-  useEffect(() => {
-    loadPending()
-    loadApproved()
-    loadUserRole()
-  }, [])
-
   async function loadUserRole() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -49,6 +43,13 @@ export default function AdminPhotosPage() {
       .order('created_at', { ascending: false })
     if (data) setApprovedPhotos(data)
   }
+
+  useEffect(() => {
+    async function init() {
+      await Promise.all([loadPending(), loadApproved(), loadUserRole()])
+    }
+    init()
+  }, [])
 
   async function moderate(photoId: string, status: 'approved' | 'rejected') {
     const { data: { user } } = await supabase.auth.getUser()

@@ -4,6 +4,6 @@
   "description": "Studentski portal Gimnazije Niko Rolović",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#09090b",
-  "theme_color": "#09090b"
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF"
 }

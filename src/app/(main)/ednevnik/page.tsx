@@ -136,8 +136,8 @@ export default function EDnevnikPage() {
       setConnected(true)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(edData))
       localStorage.setItem(TOKEN_KEY, token)
-    } catch (err: any) {
-      setError(err.message || 'Greška pri povezivanju sa eDnevnikom')
+    } catch (err) {
+      setError((err as { message?: string }).message || 'Greška pri povezivanju sa eDnevnikom')
     } finally {
       setLoading(false)
     }

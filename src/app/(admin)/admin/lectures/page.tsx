@@ -250,8 +250,8 @@ export default function AdminLecturesPage() {
       const expanded: Record<number, boolean> = {}
       result.sections.forEach((_, i) => { expanded[i] = true })
       setExpandedSections(expanded)
-    } catch (err: any) {
-      setAiError(err.message || 'Greška pri generisanju')
+    } catch (err) {
+      setAiError((err as { message?: string }).message || 'Greška pri generisanju')
     } finally {
       setAiLoading(false)
     }
@@ -289,8 +289,8 @@ export default function AdminLecturesPage() {
       setAiResult(result)
       setTitle(result.title)
       setImprovePrompt('')
-    } catch (err: any) {
-      setAiError(err.message || 'Greška pri poboljšanju')
+    } catch (err) {
+      setAiError((err as { message?: string }).message || 'Greška pri poboljšanju')
     } finally {
       setImproving(false)
     }
@@ -936,7 +936,7 @@ export default function AdminLecturesPage() {
 
         <div className="px-4 py-3 bg-white border-t border-gray-200 safe-area-bottom">
           <Button
-            onClick={(e) => createLecture(e as any)}
+            onClick={(e) => createLecture(e)}
             disabled={loading || !title.trim()}
             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl h-12 text-base font-medium"
           >

@@ -45,12 +45,15 @@ export default function AdminEventsPage() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  useEffect(() => { loadEvents() }, [])
-
   async function loadEvents() {
     const { data } = await supabase.from('events').select('*').order('event_date', { ascending: true })
     if (data) setEvents(data)
   }
+
+  useEffect(() => {
+    async function init() { await loadEvents() }
+    init()
+  }, [])
 
   async function createEvent(e: React.FormEvent) {
     e.preventDefault()

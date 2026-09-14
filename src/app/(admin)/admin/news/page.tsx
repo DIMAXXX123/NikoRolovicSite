@@ -19,8 +19,6 @@ export default function AdminNewsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
-  useEffect(() => { loadNews() }, [])
-
   async function loadNews() {
     const { data } = await supabase
       .from('news')
@@ -28,6 +26,11 @@ export default function AdminNewsPage() {
       .order('created_at', { ascending: false })
     if (data) setNews(data)
   }
+
+  useEffect(() => {
+    async function init() { await loadNews() }
+    init()
+  }, [])
 
   function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]

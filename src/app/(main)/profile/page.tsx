@@ -119,29 +119,6 @@ export default function ProfilePage() {
     }
   }
 
-  useEffect(() => {
-    loadProfile()
-    fetchActiveUsers()
-    activeUsersInterval.current = setInterval(updateDisplayCount, 1000)
-    const saved = localStorage.getItem('perf_mode')
-    if (saved === 'true') {
-      setPerfMode(true)
-      document.body.classList.add('perf-mode')
-    }
-    const savedAvatar = localStorage.getItem('user_avatar')
-    if (savedAvatar) setAvatarId(savedAvatar)
-    const savedLang = localStorage.getItem('app_lang')
-    if (savedLang) setLang(savedLang)
-    const savedNotif = localStorage.getItem('app_notifications')
-    if (savedNotif !== null) setNotifications(savedNotif === 'true')
-    const savedFont = localStorage.getItem('app_font_size')
-    if (savedFont) setFontSize(savedFont)
-    applyFontSize(savedFont || 'normal')
-    return () => {
-      if (activeUsersInterval.current) clearInterval(activeUsersInterval.current)
-    }
-  }, [])
-
   async function loadProfile() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
@@ -237,6 +214,29 @@ export default function ProfilePage() {
     if (size === 'small') document.documentElement.classList.add('font-small')
     if (size === 'large') document.documentElement.classList.add('font-large')
   }
+
+  useEffect(() => {
+    loadProfile()
+    fetchActiveUsers()
+    activeUsersInterval.current = setInterval(updateDisplayCount, 1000)
+    const saved = localStorage.getItem('perf_mode')
+    if (saved === 'true') {
+      setPerfMode(true)
+      document.body.classList.add('perf-mode')
+    }
+    const savedAvatar = localStorage.getItem('user_avatar')
+    if (savedAvatar) setAvatarId(savedAvatar)
+    const savedLang = localStorage.getItem('app_lang')
+    if (savedLang) setLang(savedLang)
+    const savedNotif = localStorage.getItem('app_notifications')
+    if (savedNotif !== null) setNotifications(savedNotif === 'true')
+    const savedFont = localStorage.getItem('app_font_size')
+    if (savedFont) setFontSize(savedFont)
+    applyFontSize(savedFont || 'normal')
+    return () => {
+      if (activeUsersInterval.current) clearInterval(activeUsersInterval.current)
+    }
+  }, [])
 
   function cycleFontSize() {
     const sizes = ['small', 'normal', 'large'] as const

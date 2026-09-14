@@ -29,8 +29,6 @@ export default function AdminStudentsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const supabase = createClient()
 
-  useEffect(() => { loadStudents() }, [])
-
   async function loadStudents() {
     const { data } = await supabase
       .from('verified_students')
@@ -40,6 +38,11 @@ export default function AdminStudentsPage() {
       .order('last_name', { ascending: true })
     if (data) setStudents(data)
   }
+
+  useEffect(() => {
+    async function init() { await loadStudents() }
+    init()
+  }, [])
 
   async function addStudent(e: React.FormEvent) {
     e.preventDefault()

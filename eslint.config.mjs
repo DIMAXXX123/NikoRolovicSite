@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // One-off seed / puppeteer scratch scripts kept at the repo root — not app code.
+    "*.mjs",
   ]),
 ]);
 

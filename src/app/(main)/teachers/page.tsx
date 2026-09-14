@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
-import { ChevronLeft, ChevronRight, UserCheck, UserX, AlertTriangle, HelpCircle, RefreshCw, Plus, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, UserCheck, UserX, AlertTriangle, HelpCircle, RefreshCw, Plus, Trash2, type LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-const STATUS_CONFIG: Record<string, { label: string; icon: any; color: string; bg: string }> = {
+const STATUS_CONFIG: Record<string, { label: string; icon: LucideIcon; color: string; bg: string }> = {
   present: { label: 'Prisutan/na', icon: UserCheck, color: 'text-green-400', bg: 'bg-green-500/15 border-green-500/30' },
   absent: { label: 'Odsutan/na', icon: UserX, color: 'text-red-400', bg: 'bg-red-500/15 border-red-500/30' },
   sick: { label: 'Boluje', icon: AlertTriangle, color: 'text-orange-400', bg: 'bg-orange-500/15 border-orange-500/30' },
@@ -35,15 +35,6 @@ export default function TeachersPage() {
 
   const canEdit = profile && ['admin', 'creator', 'moderator'].includes(profile.role)
 
-  useEffect(() => {
-    loadProfile()
-    loadTeachers()
-  }, [])
-
-  useEffect(() => {
-    if (teachers.length > 0) loadStatuses()
-  }, [selectedDate, teachers])
-
   async function loadProfile() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
@@ -58,15 +49,28 @@ export default function TeachersPage() {
     setLoading(false)
   }
 
+  useEffect(() => {
+    async function init() {
+      await Promise.all([loadProfile(), loadTeachers()])
+    }
+    init()
+  }, [])
+
   async function loadStatuses() {
     const { data } = await supabase
       .from('teacher_statuses')
       .select('teacher_id, status')
       .eq('date', selectedDate)
     const map: Record<string, string> = {}
-    if (data) data.forEach((s: any) => { map[s.teacher_id] = s.status })
+    if (data) data.forEach((s: { teacher_id: string; status: string }) => { map[s.teacher_id] = s.status })
     setStatuses(map)
   }
+
+  useEffect(() => {
+    if (teachers.length === 0) return
+    async function init() { await loadStatuses() }
+    init()
+  }, [selectedDate, teachers])
 
   async function setStatus(teacherId: string, status: string) {
     if (!canEdit) return

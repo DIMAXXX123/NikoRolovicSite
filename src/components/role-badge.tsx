@@ -1,18 +1,30 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
+import { Badge, badgeVariants } from '@/components/ui/badge'
 import { Shield, Star, Crown } from 'lucide-react'
+import type { VariantProps } from 'class-variance-authority'
 
 interface RoleBadgeProps {
   role: string
   size?: 'sm' | 'md'
 }
 
-const roleConfig = {
-  creator: { label: 'Creator', icon: Crown, className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  admin: { label: 'Admin', icon: Shield, className: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  moderator: { label: 'Mod', icon: Star, className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  student: { label: '', icon: null, className: '' },
+type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>
+
+// Role colours (§2): creator purple, admin red, moderator orange, student blue (no badge).
+const roleConfig: Record<
+  string,
+  { label: string; icon: typeof Crown | null; variant: BadgeVariant; className: string }
+> = {
+  creator: { label: 'Creator', icon: Crown, variant: 'purple', className: '' },
+  admin: { label: 'Admin', icon: Shield, variant: 'destructive', className: '' },
+  moderator: {
+    label: 'Mod',
+    icon: Star,
+    variant: 'outline',
+    className: 'border-[#FFD1A3] bg-[#FFF0E0] text-orange',
+  },
+  student: { label: '', icon: null, variant: 'secondary', className: '' },
 }
 
 export function RoleBadge({ role, size = 'sm' }: RoleBadgeProps) {
@@ -22,8 +34,11 @@ export function RoleBadge({ role, size = 'sm' }: RoleBadgeProps) {
   const Icon = config.icon
 
   return (
-    <Badge className={`${config.className} ${size === 'sm' ? 'text-[10px] px-1.5 py-0' : 'text-xs px-2 py-0.5'} gap-1 inline-flex items-center`}>
-      {Icon && <Icon className={size === 'sm' ? 'w-2.5 h-2.5' : 'w-3 h-3'} />}
+    <Badge
+      variant={config.variant}
+      className={`${config.className} ${size === 'sm' ? 'h-5 text-[10px] px-2' : 'h-6 text-[11px] px-2.5'} gap-1 inline-flex items-center`}
+    >
+      {Icon && <Icon className={size === 'sm' ? 'w-2.5 h-2.5' : 'w-3 h-3'} strokeWidth={2.6} />}
       {config.label}
     </Badge>
   )

@@ -5,7 +5,18 @@ import { usePathname, useRouter } from 'next/navigation'
 import { BottomNav } from '@/components/bottom-nav'
 import { ProfileGuard } from '@/components/profile-guard'
 import { ThemeSwitcher } from '@/components/theme-switcher'
+import { Badge } from '@/components/ui/badge'
 import { getNavConfig, ALL_NAV_ITEMS } from '@/lib/nav-config'
+
+const HEADER_ICON_BUTTON =
+  'w-10 h-10 rounded-xl flex items-center justify-center bg-background border-2 border-border shadow-[0_3px_0_var(--color-border)] transition-[transform,box-shadow] duration-[120ms] hover:-translate-y-[1px] active:translate-y-[3px] active:shadow-none'
+
+// Flat 3×3 mini grid for the Block Blast button (null = empty cell)
+const MINI_GRID: (string | null)[] = [
+  '#FF4B4B', '#EA2B2B', null,
+  null, '#FFC800', '#FF9600',
+  '#58CC02', '#46A302', '#1CB0F6',
+]
 
 export default function MainLayout({
   children,
@@ -21,55 +32,50 @@ export default function MainLayout({
   }, [pathname])
 
   return (
-    <div className="min-h-screen pb-28">
-      {/* V5 Header — 56px, frosted dark glass */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass-header-premium">
-        <div className="max-w-lg mx-auto px-5 h-16 flex items-center justify-between">
+    <div className="min-h-screen">
+      {/* Header — 64px, white, 2px bottom border */}
+      <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-background border-b-2 border-border">
+        <div className="max-w-lg mx-auto px-4 h-16 flex items-center justify-between gap-2">
           <button
             onClick={() => {
               const ids = getNavConfig()
               const first = ALL_NAV_ITEMS.find(item => item.id === ids[0])
               if (first) router.push(first.href)
             }}
-            className="flex items-center gap-3 active:scale-[0.97] transition-transform press-ripple rounded-2xl py-1.5 px-1 -ml-1"
+            className="flex items-center gap-2.5 min-w-0 rounded-2xl py-1.5 px-1 -ml-1 transition-transform duration-[120ms] active:translate-y-[1px]"
           >
-            {/* Logo — gradient circle with glow */}
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,92,252,0.3)] transition-shadow duration-500 hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]"
-              style={{
-                background: 'linear-gradient(135deg, #7c5cfc 0%, #5b3fd9 100%)',
-              }}
-            >
-              <span className="text-sm font-black text-white tracking-tight">NR</span>
+            {/* NR mark — green with 3D edge */}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary shadow-[0_3px_0_var(--color-primary-dark)]">
+              <span className="text-[14px] font-black text-primary-foreground">NR</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-[15px] text-[#e8e8f0] tracking-tight">Niko Rolović</span>
-              <span className="px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-widest rounded-full bg-[#7c5cfc]/10 text-[#7c5cfc]">Beta</span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="font-extrabold text-[15px] text-foreground whitespace-nowrap truncate">Niko Rolović</span>
+              <Badge variant="outline" className="text-[9px] h-5 px-1.5 shrink-0">
+                Beta
+              </Badge>
             </div>
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => router.push('/tournament')}
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20 active:scale-[0.92] transition-all duration-300 hover:from-orange-500/30 hover:to-amber-500/20 hover:shadow-[0_0_20px_rgba(249,115,22,0.15)] hover:border-orange-500/30"
+              className={HEADER_ICON_BUTTON}
               title="Turnir u košarci"
             >
-              <span className="text-lg animate-[basketBounce_2s_ease-in-out_infinite]">🏀</span>
+              <span className="text-lg leading-none">🏀</span>
             </button>
             <button
               onClick={() => router.push('/game')}
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-indigo-500/10 border border-blue-500/20 active:scale-[0.92] transition-all duration-300 hover:from-blue-500/30 hover:to-indigo-500/20 hover:shadow-[0_0_20px_rgba(99,102,241,0.15)] hover:border-blue-500/30 overflow-hidden"
+              className={HEADER_ICON_BUTTON}
               title="Block Blast"
             >
-              <div className="grid grid-cols-3 gap-[1px] w-6 h-6 animate-[blockPulse_3s_ease-in-out_infinite]">
-                <div className="rounded-[2px] bg-red-500" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
-                <div className="rounded-[2px] bg-red-600" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
-                <div className="rounded-[2px]" />
-                <div className="rounded-[2px]" />
-                <div className="rounded-[2px] bg-yellow-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
-                <div className="rounded-[2px] bg-orange-400" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
-                <div className="rounded-[2px] bg-green-500" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
-                <div className="rounded-[2px] bg-green-600" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
-                <div className="rounded-[2px] bg-blue-500" style={{backgroundImage:'linear-gradient(135deg,rgba(255,255,255,0.35),transparent 50%,rgba(0,0,0,0.2))',boxShadow:'inset 0 1px 0 rgba(255,255,255,0.3)'}} />
+              <div className="grid grid-cols-3 gap-[2px] w-6 h-6">
+                {MINI_GRID.map((color, i) => (
+                  <div
+                    key={i}
+                    className="rounded-[2px]"
+                    style={color ? { backgroundColor: color } : undefined}
+                  />
+                ))}
               </div>
             </button>
             <ThemeSwitcher />
@@ -77,7 +83,7 @@ export default function MainLayout({
         </div>
       </header>
       <ProfileGuard />
-      <main className="max-w-md mx-auto px-4 pt-16">
+      <main className="max-w-md mx-auto px-4 pt-16 pb-[100px]">
         <div key={animKey} className="animate-fade-in">
           {children}
         </div>

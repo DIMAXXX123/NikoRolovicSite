@@ -10,6 +10,15 @@ interface SuccessAnimationProps {
 
 export function SuccessAnimation({ message, onComplete, delay = 2000 }: SuccessAnimationProps) {
   const [phase, setPhase] = useState<'enter' | 'show' | 'exit'>('enter')
+  const [particles] = useState(() =>
+    Array.from({ length: 20 }, (_, i) => ({
+      angle: i * 18,
+      distance: 80 + Math.random() * 120,
+      delay: Math.random() * 0.3,
+      size: 4 + Math.random() * 8,
+      color: ['#58CC02', '#1CB0F6', '#FFC800', '#CE82FF', '#FF9600'][i % 5],
+    }))
+  )
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase('show'), 100)
@@ -22,16 +31,16 @@ export function SuccessAnimation({ message, onComplete, delay = 2000 }: SuccessA
     <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-background transition-opacity duration-300 ${phase === 'enter' ? 'opacity-0' : 'opacity-100'}`}>
       {/* Particle burst */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 20 }).map((_, i) => (
+        {particles.map((p, i) => (
           <div
             key={i}
             className="success-particle absolute left-1/2 top-1/2"
             style={{
-              '--angle': `${(i * 18)}deg`,
-              '--distance': `${80 + Math.random() * 120}px`,
-              '--delay': `${Math.random() * 0.3}s`,
-              '--size': `${4 + Math.random() * 8}px`,
-              backgroundColor: ['#a78bfa', '#6d28d9', '#8b5cf6', '#c4b5fd', '#22c55e'][i % 5],
+              '--angle': `${p.angle}deg`,
+              '--distance': `${p.distance}px`,
+              '--delay': `${p.delay}s`,
+              '--size': `${p.size}px`,
+              backgroundColor: p.color,
             } as React.CSSProperties}
           />
         ))}
@@ -44,33 +53,27 @@ export function SuccessAnimation({ message, onComplete, delay = 2000 }: SuccessA
             <circle
               cx="50" cy="50" r="45"
               fill="none"
-              stroke="url(#successGradient)"
-              strokeWidth="3"
+              stroke="#58CC02"
+              strokeWidth="4"
               className="success-circle"
             />
             <polyline
               points="30,52 45,66 72,36"
               fill="none"
-              stroke="#22c55e"
-              strokeWidth="4"
+              stroke="#58CC02"
+              strokeWidth="5"
               strokeLinecap="round"
               strokeLinejoin="round"
               className="success-check"
             />
-            <defs>
-              <linearGradient id="successGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#a78bfa" />
-                <stop offset="100%" stopColor="#22c55e" />
-              </linearGradient>
-            </defs>
           </svg>
-          {/* Glow ring */}
-          <div className="absolute inset-0 rounded-full bg-green-500/10 animate-ping" style={{ animationDuration: '1.5s' }} />
+          {/* Pulse ring */}
+          <div className="absolute inset-0 rounded-full bg-primary-light animate-ping" style={{ animationDuration: '1.5s' }} />
         </div>
 
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold gradient-text">{message}</h1>
-          <p className="text-muted-foreground text-sm animate-pulse">Preusmeravanje...</p>
+          <h1 className="text-[26px] leading-[1.2] font-extrabold text-heading tracking-[-0.01em]">{message}</h1>
+          <p className="text-muted-foreground text-[13px] font-bold animate-pulse">Preusmeravanje...</p>
         </div>
       </div>
     </div>

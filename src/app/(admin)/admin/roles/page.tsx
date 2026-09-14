@@ -44,11 +44,6 @@ export default function AdminRolesPage() {
   const supabase = createClient()
 
   useEffect(() => {
-    loadUsers()
-    loadCustomRoles()
-  }, [])
-
-  useEffect(() => {
     let filtered = users
     if (search) {
       const q = search.toLowerCase()
@@ -82,6 +77,11 @@ export default function AdminRolesPage() {
       if (stored) setCustomRoles(JSON.parse(stored))
     } catch {}
   }
+
+  useEffect(() => {
+    loadUsers()
+    loadCustomRoles()
+  }, [])
 
   function saveCustomRoles(roles: CustomRole[]) {
     setCustomRoles(roles)
