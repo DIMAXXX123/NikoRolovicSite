@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
 import { SubjectGrid } from './subject-grid'
+import { HomeworkBlock, type HomeworkItem } from './homework-block'
+import { parseHomework } from './lecture-utils'
 import type { Profile } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -16,6 +18,22 @@ export default async function LecturesPage() {
     profile = (data as Profile | null) ?? null
   }
 
+  // Current homework for the visitor's class (visitors without a profile see 2. razred).
+  const classNumber = profile?.class_number ?? 2
+  const today = new Date().toISOString().slice(0, 10)
+  const { data: hwRows } = await supabase
+    .from('lectures')
+    .select('id, subject, title, content')
+    .eq('class_number', classNumber)
+    .ilike('content', '%HOMEWORK:%')
+    .order('created_at', { ascending: false })
+    .limit(12)
+  const homework: HomeworkItem[] = ((hwRows ?? []) as { id: string; subject: string; title: string; content: string }[])
+    .map((row) => ({ lectureId: row.id, subject: row.subject, title: row.title, homework: parseHomework(row.content) }))
+    .filter((x): x is HomeworkItem => !!x.homework && (!x.homework.due || x.homework.due >= today))
+    .sort((a, b) => (a.homework.due ?? '9999').localeCompare(b.homework.due ?? '9999'))
+    .slice(0, 4)
+
   return (
     <div className="space-y-5 animate-fade-in pb-4">
 
@@ -29,6 +47,8 @@ export default async function LecturesPage() {
           </p>
         )}
       </div>
+
+      <HomeworkBlock items={homework} />
 
       <Link
         href="/lectures/nova"
