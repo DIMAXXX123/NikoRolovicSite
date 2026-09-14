@@ -1,21 +1,23 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useLoginPrompt } from '@/components/login-prompt'
-import { Camera, X, Send, Heart, Flag } from 'lucide-react'
+import { Camera, X, Send, Flag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { isOptimizableImage } from '@/lib/remote-image'
+import { FloatingHearts, LikeButton, TapLikeSurface } from '@/components/tap-like'
 import type { Photo, Profile } from '@/lib/types'
 
 const PHOTOS_PAGE_SIZE = 9
 
-type GalleryPhoto = Photo & { user?: Profile; anonymous?: boolean; _new?: boolean }
+// `extra_likes` is a plain integer column on photos, added on top of the real like rows.
+type GalleryPhoto = Photo & { user?: Profile; anonymous?: boolean; _new?: boolean; extra_likes?: number | null }
 
 export default function GalleryPage() {
   const [photos, setPhotos] = useState<GalleryPhoto[]>([])
@@ -31,13 +33,11 @@ export default function GalleryPage() {
   const [anonymous, setAnonymous] = useState(false)
   const [toast, setToast] = useState('')
   const [likedPhotos, setLikedPhotos] = useState<Record<string, boolean>>({})
-  const heartsContainerRef = useRef<HTMLDivElement | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({})
   const [showReportConfirm, setShowReportConfirm] = useState<string | null>(null)
   const [reportCooldown, setReportCooldown] = useState(false)
   const [newPhotosCount, setNewPhotosCount] = useState(0)
-  const lastTapRef = useRef<Record<string, number>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { prompt: promptLogin, element: loginPrompt } = useLoginPrompt()
   const supabase = createClient()
@@ -64,7 +64,11 @@ export default function GalleryPage() {
             .eq('id', newPhoto.user_id)
             .single()
           const photoWithUser: GalleryPhoto = { ...newPhoto, user: profile || undefined }
-          setPhotos((prev) => [photoWithUser, ...prev])
+          setPhotos((prev) => {
+            if (prev.some((p) => p.id === newPhoto.id)) return prev
+            return [photoWithUser, ...prev]
+          })
+          loadLikeCounts([photoWithUser])
         }
       )
       .on(
@@ -86,7 +90,7 @@ export default function GalleryPage() {
               if (prev.some((p) => p.id === updated.id)) return prev
               return [photoWithUser, ...prev]
             })
-            loadLikeCounts([updated.id])
+            loadLikeCounts([photoWithUser])
           } else if (updated.status === 'rejected') {
             setPhotos((prev) => prev.filter(p => p.id !== updated.id))
           }
@@ -116,14 +120,25 @@ export default function GalleryPage() {
   }
 
   // One query for the whole page instead of one per photo.
-  async function loadLikeCounts(photoIds: string[]) {
-    if (photoIds.length === 0) return
+  // Displayed count = extra_likes (column on photos) + real photo_likes rows.
+  async function loadLikeCounts(items: Pick<GalleryPhoto, 'id' | 'extra_likes'>[]) {
+    if (items.length === 0) return
+    // Show extra_likes right away (first render, "Učitaj još", realtime) instead of 0
+    // while the photo_likes rows are still loading; never reset a count already shown.
+    setLikeCounts((prev) => {
+      const seeded = { ...prev }
+      for (const item of items) {
+        if (seeded[item.id] === undefined) seeded[item.id] = item.extra_likes || 0
+      }
+      return seeded
+    })
+    const photoIds = items.map((p) => p.id)
     const { data } = await supabase
       .from('photo_likes')
       .select('photo_id')
       .in('photo_id', photoIds)
     const counts: Record<string, number> = {}
-    for (const id of photoIds) counts[id] = 0
+    for (const item of items) counts[item.id] = item.extra_likes || 0
     for (const row of (data || []) as { photo_id: string }[]) {
       counts[row.photo_id] = (counts[row.photo_id] || 0) + 1
     }
@@ -148,7 +163,7 @@ export default function GalleryPage() {
     setPhotos(rows)
     setPhotoPage(0)
     setHasMorePhotos(hasMore)
-    loadLikeCounts(rows.map((p) => p.id))
+    loadLikeCounts(rows)
     setLoading(false)
   }
 
@@ -164,7 +179,7 @@ export default function GalleryPage() {
       })
       setHasMorePhotos(hasMore)
       setPhotoPage(nextPage)
-      loadLikeCounts(rows.map((p) => p.id))
+      loadLikeCounts(rows)
     } finally {
       setLoadingMore(false)
     }
@@ -247,75 +262,10 @@ export default function GalleryPage() {
     setTimeout(() => setToast(''), 3000)
   }
 
-  // Ensure hearts container exists in DOM (created once, never re-rendered)
-  useEffect(() => {
-    let container = document.getElementById('floating-hearts-container') as HTMLDivElement | null
-    if (!container) {
-      container = document.createElement('div')
-      container.id = 'floating-hearts-container'
-      container.style.cssText = 'position:fixed;inset:0;z-index:100;pointer-events:none;overflow:hidden;'
-      document.body.appendChild(container)
-    }
-    heartsContainerRef.current = container
-    return () => {
-      // Don't remove — might still have hearts animating
-    }
-  }, [])
-
-  const spawnHeart = useCallback((clientX: number, clientY: number) => {
-    const container = heartsContainerRef.current
-    if (!container) return
-    const scale = 0.8 + Math.random() * 0.6
-    const size = 80 * scale
-    const driftX = (Math.random() - 0.5) * 80
-    const rot = (Math.random() - 0.5) * 40
-
-    const el = document.createElement('div')
-    el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
-    el.style.cssText = `position:absolute;left:${clientX - size / 2}px;top:${clientY - size / 2}px;width:${size}px;height:${size}px;pointer-events:none;`
-
-    container.appendChild(el)
-
-    const anim = el.animate([
-      { opacity: 1, transform: `scale(0) rotate(0deg) translate(0, 0)` },
-      { opacity: 1, transform: `scale(1.1) rotate(${rot * 0.3}deg) translate(${driftX * 0.15}px, -30px)`, offset: 0.12 },
-      { opacity: 1, transform: `scale(1) rotate(${rot * 0.6}deg) translate(${driftX * 0.4}px, -80px)`, offset: 0.3 },
-      { opacity: 0.6, transform: `scale(0.9) rotate(${rot}deg) translate(${driftX * 0.8}px, -200px)`, offset: 0.65 },
-      { opacity: 0, transform: `scale(0.7) rotate(${rot}deg) translate(${driftX}px, -320px)` },
-    ], {
-      duration: 1400,
-      easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-      fill: 'forwards',
-    })
-
-    anim.onfinish = () => el.remove()
-  }, [])
-
-  const handleDoubleTap = useCallback((photoId: string, e: React.MouseEvent | React.TouchEvent) => {
-    const now = Date.now()
-    const lastTap = lastTapRef.current[photoId] || 0
-
-    // Get tap coordinates
-    let clientX: number, clientY: number
-    if ('touches' in e) {
-      clientX = e.changedTouches?.[0]?.clientX ?? 0
-      clientY = e.changedTouches?.[0]?.clientY ?? 0
-    } else {
-      clientX = e.clientX
-      clientY = e.clientY
-    }
-
-    if (now - lastTap < 300) {
-      // Double tap — like + heart
-      if (!likedPhotos[photoId]) {
-        toggleLike(photoId)
-      }
-      spawnHeart(clientX, clientY)
-      lastTapRef.current[photoId] = 0
-    } else {
-      lastTapRef.current[photoId] = now
-    }
-  }, [likedPhotos, spawnHeart])
+  // Double tap / spam taps only ever like; the button is the only way to unlike.
+  function likeFromTap(photoId: string) {
+    if (!likedPhotos[photoId]) toggleLike(photoId)
+  }
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -477,6 +427,7 @@ export default function GalleryPage() {
   return (
     <>
       {loginPrompt}
+      <FloatingHearts />
       {/* Toast */}
       {toast && (
         <div className="fixed top-18 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-2xl border-2 border-border bg-card text-foreground text-[13px] font-extrabold shadow-[0_2px_0_var(--color-border)] animate-slide-down whitespace-nowrap">
@@ -626,9 +577,9 @@ export default function GalleryPage() {
                 </div>
 
                 {/* Photo with double-tap like — TikTok style */}
-                <div
-                  className="relative select-none w-full rounded-xl overflow-hidden border-2 border-border bg-muted"
-                  onClick={(e) => handleDoubleTap(photo.id, e)}
+                <TapLikeSurface
+                  onLike={() => likeFromTap(photo.id)}
+                  className="relative w-full rounded-xl overflow-hidden border-2 border-border bg-muted"
                 >
                   <Image
                     src={photo.image_url}
@@ -643,37 +594,18 @@ export default function GalleryPage() {
                     style={{ maxHeight: '600px' }}
                     draggable={false}
                   />
-                </div>
+                </TapLikeSurface>
 
                 {/* Action row + caption */}
                 <div>
                   <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      aria-label="Sviđa mi se"
-                      aria-pressed={!!likedPhotos[photo.id]}
-                      onClick={() => toggleLike(photo.id)}
-                      className={
-                        likedPhotos[photo.id]
-                          ? 'border-[#FFB3B5] bg-[#FFDFE0] text-[#EA2B2B] shadow-[0_4px_0_#FFB3B5] hover:bg-[#FFDFE0]'
-                          : 'text-muted-foreground'
-                      }
-                    >
-                      <Heart
-                        strokeWidth={2.4}
-                        className={`size-[22px] transition-colors duration-200 ${
-                          likedPhotos[photo.id] ? 'fill-current' : ''
-                        }`}
-                      />
-                    </Button>
+                    <LikeButton
+                      liked={!!likedPhotos[photo.id]}
+                      count={likeCounts[photo.id] || 0}
+                      onToggle={() => toggleLike(photo.id)}
+                      size="lg"
+                    />
                   </div>
-
-                  {(likeCounts[photo.id] || 0) > 0 && (
-                    <p className="text-[13px] font-extrabold text-foreground mt-2">
-                      {likeCounts[photo.id]} {likeCounts[photo.id] === 1 ? 'lajk' : 'lajkova'}
-                    </p>
-                  )}
 
                   {photo.caption && (
                     <p className="text-[15px] leading-[1.5] font-bold text-foreground mt-1.5">

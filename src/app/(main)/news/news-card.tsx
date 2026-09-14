@@ -1,10 +1,11 @@
 'use client'
 
+import { useCallback } from 'react'
 import Image from 'next/image'
-import { Heart } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { RoleBadge } from '@/components/role-badge'
+import { LikeButton, useTapLike } from '@/components/tap-like'
 import { isOptimizableImage } from '@/lib/remote-image'
 import type { NewsItem } from '@/lib/types'
 
@@ -31,8 +32,23 @@ interface CardProps {
   onToggleExpand: (id: string) => void
   onToggleLike: (id: string, currentlyLiked: boolean) => void
   onImageError: (id: string) => void
-  onTap: (id: string, e: React.MouseEvent) => void
-  onTouchEnd: (id: string, e: React.TouchEvent) => void
+}
+
+/**
+ * TikTok tap rules on the card: double tap likes (never unlikes) and shows a
+ * heart; a single tap toggles the expanded text after the 300 ms wait.
+ */
+function useCardTap(
+  item: NewsItem,
+  onToggleExpand: (id: string) => void,
+  onToggleLike: (id: string, currentlyLiked: boolean) => void
+) {
+  const liked = !!item.user_liked
+  const onLike = useCallback(() => {
+    if (!liked) onToggleLike(item.id, false)
+  }, [item.id, liked, onToggleLike])
+  const onSingleTap = useCallback(() => onToggleExpand(item.id), [item.id, onToggleExpand])
+  return useTapLike({ onLike, onSingleTap })
 }
 
 function CoverImage({
@@ -55,43 +71,10 @@ function CoverImage({
       loading={priority ? undefined : 'lazy'}
       unoptimized={!isOptimizableImage(item.image_url)}
       className="object-cover"
+      // A native image drag would cancel the pointer gesture (mouse double tap on the cover).
+      draggable={false}
       onError={() => onImageError(item.id)}
     />
-  )
-}
-
-function LikeButton({
-  item,
-  onToggleLike,
-  variant,
-}: {
-  item: NewsItem
-  onToggleLike: (id: string, currentlyLiked: boolean) => void
-  variant: 'overlay' | 'plain'
-}) {
-  const iconSize = variant === 'overlay' ? 'size-5' : 'size-4'
-  const liked = !!item.user_liked
-  return (
-    <Button
-      variant="outline"
-      size="icon"
-      aria-pressed={liked}
-      onClick={(e) => {
-        e.stopPropagation()
-        onToggleLike(item.id, item.user_liked || false)
-      }}
-      className={`w-auto min-w-11 gap-1.5 px-3 text-[13px] ${
-        liked
-          ? 'border-[#FFB3B5] bg-[#FFDFE0] text-[#EA2B2B] shadow-[0_4px_0_#FFB3B5] hover:bg-[#FFDFE0]'
-          : 'text-muted-foreground'
-      }`}
-    >
-      <Heart
-        strokeWidth={2.4}
-        className={`${iconSize} transition-colors duration-200 ${liked ? 'fill-current' : ''}`}
-      />
-      <span>{item.likes_count || 0}</span>
-    </Button>
   )
 }
 
@@ -172,15 +155,10 @@ export function NewsHeroCard({
   onToggleExpand,
   onToggleLike,
   onImageError,
-  onTap,
-  onTouchEnd,
 }: CardProps) {
+  const { surfaceProps } = useCardTap(item, onToggleExpand, onToggleLike)
   return (
-    <article
-      className={ARTICLE_CLASS}
-      onClick={(e) => onTap(item.id, e)}
-      onTouchEnd={(e) => onTouchEnd(item.id, e)}
-    >
+    <article className={ARTICLE_CLASS} {...surfaceProps}>
       {showImage && (
         <div className="relative h-64 rounded-xl overflow-hidden border-2 border-border">
           <CoverImage item={item} priority={priority} onImageError={onImageError} />
@@ -216,7 +194,12 @@ export function NewsHeroCard({
         <div className="flex items-center gap-2.5 min-w-0">
           <AuthorChip item={item} size="lg" />
         </div>
-        <LikeButton item={item} onToggleLike={onToggleLike} variant={showImage ? 'overlay' : 'plain'} />
+        <LikeButton
+          liked={!!item.user_liked}
+          count={item.likes_count || 0}
+          onToggle={() => onToggleLike(item.id, item.user_liked || false)}
+          size={showImage ? 'md' : 'sm'}
+        />
       </div>
     </article>
   )
@@ -230,15 +213,10 @@ export function NewsRegularCard({
   onToggleExpand,
   onToggleLike,
   onImageError,
-  onTap,
-  onTouchEnd,
 }: CardProps) {
+  const { surfaceProps } = useCardTap(item, onToggleExpand, onToggleLike)
   return (
-    <article
-      className={ARTICLE_CLASS}
-      onClick={(e) => onTap(item.id, e)}
-      onTouchEnd={(e) => onTouchEnd(item.id, e)}
-    >
+    <article className={ARTICLE_CLASS} {...surfaceProps}>
       {showImage && (
         <div className="relative h-48 rounded-xl overflow-hidden border-2 border-border">
           <CoverImage item={item} priority={priority} onImageError={onImageError} />
@@ -269,7 +247,12 @@ export function NewsRegularCard({
             <span className="text-[12px] font-bold text-muted-foreground">{formatDate(item.created_at)}</span>
           )}
         </div>
-        <LikeButton item={item} onToggleLike={onToggleLike} variant="plain" />
+        <LikeButton
+          liked={!!item.user_liked}
+          count={item.likes_count || 0}
+          onToggle={() => onToggleLike(item.id, item.user_liked || false)}
+          size="sm"
+        />
       </div>
     </article>
   )
