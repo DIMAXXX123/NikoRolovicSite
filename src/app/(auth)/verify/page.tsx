@@ -99,14 +99,14 @@ export default function VerifyPage() {
   }
 
   return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur-xl text-center">
+    <Card className="animate-fade-in text-center">
       <CardHeader className="space-y-4 pb-2">
-        <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-[#7c5cfc]/20 to-violet-700/20 flex items-center justify-center">
-          <Mail className="w-10 h-10 text-primary" />
+        <div className="mx-auto w-16 h-16 rounded-2xl bg-secondary-light border-2 border-secondary-light-border flex items-center justify-center">
+          <Mail className="w-7 h-7 text-secondary" strokeWidth={2.4} />
         </div>
-        <h1 className="text-2xl font-bold">Unesi kod</h1>
-        <p className="text-muted-foreground text-sm">
-          Poslali smo 8-cifreni kod na <span className="text-foreground font-medium">{email}</span>
+        <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Unesi kod</h1>
+        <p className="text-[13px] font-bold text-muted-foreground">
+          Poslali smo 8-cifreni kod na <span className="text-foreground font-extrabold">{email}</span>
         </p>
       </CardHeader>
       <CardContent>
@@ -117,16 +117,16 @@ export default function VerifyPage() {
             placeholder="00000000"
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
-            className="bg-background/50 text-center text-2xl tracking-[0.5em] font-mono"
+            className="text-center text-2xl font-extrabold tracking-[0.5em]"
             maxLength={8}
             required
           />
           {error && (
-            <p className="text-destructive text-sm">{error}</p>
+            <p className="text-destructive text-[13px] font-bold">{error}</p>
           )}
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800"
+            className="w-full"
             disabled={loading || code.length < 6}
           >
             {loading ? 'Provera...' : 'Potvrdi'}
@@ -134,7 +134,7 @@ export default function VerifyPage() {
         </form>
         <button
           onClick={handleResend}
-          className="mt-4 text-sm text-primary hover:underline"
+          className="mt-4 inline-flex min-h-11 items-center text-[15px] font-extrabold text-secondary hover:underline"
         >
           Pošalji kod ponovo
         </button>

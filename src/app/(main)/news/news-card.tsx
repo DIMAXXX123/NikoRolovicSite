@@ -2,6 +2,9 @@
 
 import Image from 'next/image'
 import { Heart } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { RoleBadge } from '@/components/role-badge'
 import { isOptimizableImage } from '@/lib/remote-image'
 import type { NewsItem } from '@/lib/types'
@@ -52,8 +55,7 @@ function CoverImage({
       priority={priority}
       loading={priority ? undefined : 'lazy'}
       unoptimized={!isOptimizableImage(item.image_url)}
-      className="object-cover transition-transform duration-500 group-hover:scale-105"
-      style={{ willChange: 'transform' }}
+      className="object-cover"
       onError={() => onImageError(item.id)}
     />
   )
@@ -68,56 +70,58 @@ function LikeButton({
   onToggleLike: (id: string, currentlyLiked: boolean) => void
   variant: 'overlay' | 'plain'
 }) {
-  const iconSize = variant === 'overlay' ? 'w-5 h-5' : 'w-4 h-4'
+  const iconSize = variant === 'overlay' ? 'size-5' : 'size-4'
+  const liked = !!item.user_liked
   return (
-    <button
+    <Button
+      variant="outline"
+      size="icon"
+      aria-pressed={liked}
       onClick={(e) => {
         e.stopPropagation()
         onToggleLike(item.id, item.user_liked || false)
       }}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.97] ${
-        variant === 'overlay'
-          ? 'bg-white/10 backdrop-blur-md hover:bg-red-500/20'
-          : 'hover:bg-red-500/10'
+      className={`w-auto min-w-11 gap-1.5 px-3 text-[13px] ${
+        liked
+          ? 'border-[#FFB3B5] bg-[#FFDFE0] text-[#EA2B2B] shadow-[0_4px_0_#FFB3B5] hover:bg-[#FFDFE0]'
+          : 'text-muted-foreground'
       }`}
     >
       <Heart
-        className={`${iconSize} transition-all duration-200 ${
-          item.user_liked
-            ? 'fill-red-500 text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]'
-            : variant === 'overlay'
-              ? 'text-white/70'
-              : 'text-[#6b6b80]'
-        }`}
+        strokeWidth={2.4}
+        className={`${iconSize} transition-colors duration-200 ${liked ? 'fill-current' : ''}`}
       />
-      <span
-        className={`text-sm font-medium ${
-          item.user_liked ? 'text-red-400' : variant === 'overlay' ? 'text-white/70' : 'text-[#6b6b80]'
-        }`}
-      >
-        {item.likes_count || 0}
-      </span>
-    </button>
+      <span>{item.likes_count || 0}</span>
+    </Button>
   )
+}
+
+// Role-tinted fallback initials (§4.7): student blue, moderator orange, admin red, creator purple.
+const AVATAR_TINT: Record<string, string> = {
+  student: 'bg-secondary-light text-secondary',
+  moderator: 'bg-[#FFF0E0] text-orange',
+  admin: 'bg-[#FFDFE0] text-[#EA2B2B]',
+  creator: 'bg-[#F3E3FF] text-accent-dark',
 }
 
 function AuthorChip({ item, size }: { item: NewsItem; size: 'lg' | 'sm' }) {
   if (!item.author) return null
   const avatar = size === 'lg' ? 'w-8 h-8 text-xs' : 'w-7 h-7 text-[10px]'
+  const tint = AVATAR_TINT[item.author.role || 'student'] || AVATAR_TINT.student
   return (
     <>
       <div
-        className={`${avatar} rounded-full bg-gradient-to-br from-[#7c5cfc] to-[#5b3fd9] flex items-center justify-center font-bold text-white shadow-md`}
+        className={`${avatar} rounded-full border-2 border-border ${tint} flex items-center justify-center font-extrabold shrink-0`}
       >
         {item.author.first_name?.[0]}
         {item.author.last_name?.[0]}
       </div>
-      <div className={size === 'lg' ? 'flex flex-col' : 'flex items-center gap-2'}>
+      <div className={size === 'lg' ? 'flex flex-col gap-0.5' : 'flex items-center gap-2'}>
         <span
           className={
             size === 'lg'
-              ? 'text-sm font-medium text-[#e8e8f0]/90'
-              : 'text-xs font-medium text-[#e8e8f0]/70'
+              ? 'text-[13px] font-bold text-foreground'
+              : 'text-[12px] font-bold text-muted-foreground'
           }
         >
           {item.author.first_name} {item.author.last_name}
@@ -141,20 +145,24 @@ function ExpandToggle({
 }) {
   if (!item.content || item.content.length <= threshold) return null
   return (
-    <button
+    <Button
+      variant="link"
+      size="sm"
       onClick={(e) => {
         e.stopPropagation()
         onToggleExpand(item.id)
       }}
-      className="text-[#7c5cfc] text-xs font-medium hover:text-[#9b82fc] transition-colors"
+      className="h-11 px-0 text-[12px]"
     >
       {expanded ? 'Prikaži manje' : 'Prikaži više'}
-    </button>
+    </Button>
   )
 }
 
 const ARTICLE_CLASS =
-  'group relative rounded-2xl overflow-hidden cursor-pointer select-none bg-[#0c0c14] border border-[#1a1a2e] transition-all duration-250 hover:border-[#7c5cfc]/30 hover:shadow-[0_8px_32px_rgba(124,92,252,0.08)]'
+  'relative cursor-pointer select-none gap-3 active:translate-y-[2px] active:shadow-none transition-[transform,box-shadow] duration-[80ms]'
+
+const BODY_CLASS = 'text-[15px] leading-[1.5] font-bold text-foreground'
 
 export function NewsHeroCard({
   item,
@@ -168,74 +176,49 @@ export function NewsHeroCard({
   onTouchEnd,
 }: CardProps) {
   return (
-    <article
+    <Card
       className={ARTICLE_CLASS}
-      style={{ willChange: 'transform' }}
       onClick={(e) => onTap(item.id, e)}
       onTouchEnd={(e) => onTouchEnd(item.id, e)}
     >
       {showImage && (
-        <div className="relative h-72 overflow-hidden">
+        <div className="relative h-64 rounded-xl overflow-hidden border-2 border-border">
           <CoverImage item={item} priority={priority} onImageError={onImageError} />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050508] via-[#050508]/40 to-transparent" />
-
-          <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="px-2.5 py-1 rounded-xl bg-white/10 backdrop-blur-md text-[11px] text-white/80 font-medium">
-                {formatDateShort(item.created_at)}
-              </span>
-            </div>
-            <h2 className="text-xl font-bold text-white leading-snug mb-3 drop-shadow-lg">
-              {item.title}
-            </h2>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <AuthorChip item={item} size="lg" />
-              </div>
-              <LikeButton item={item} onToggleLike={onToggleLike} variant="overlay" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showImage && item.content && (
-        <div className="px-5 py-4">
-          <p className={`text-[#6b6b80] text-sm leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}>
-            {item.content}
-          </p>
-          <div className="mt-1.5">
-            <ExpandToggle
-              item={item}
-              expanded={expanded}
-              onToggleExpand={onToggleExpand}
-              threshold={120}
-            />
+          <div className="absolute top-3 left-3 z-10">
+            <Badge variant="outline">{formatDateShort(item.created_at)}</Badge>
           </div>
         </div>
       )}
 
       {!showImage && (
-        <div className="relative p-5 space-y-3">
-          <span className="text-xs text-[#6b6b80]">{formatDate(item.created_at)}</span>
-          <h2 className="text-xl font-bold text-[#e8e8f0] leading-snug">{item.title}</h2>
-          <p className={`text-[#6b6b80] text-sm leading-relaxed ${expanded ? '' : 'line-clamp-3'}`}>
+        <div>
+          <Badge variant="outline">{formatDate(item.created_at)}</Badge>
+        </div>
+      )}
+
+      <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">{item.title}</h2>
+
+      {item.content && (
+        <div>
+          <p className={`${BODY_CLASS} ${expanded ? '' : showImage ? 'line-clamp-2' : 'line-clamp-3'}`}>
             {item.content}
           </p>
           <ExpandToggle
             item={item}
             expanded={expanded}
             onToggleExpand={onToggleExpand}
-            threshold={150}
+            threshold={showImage ? 120 : 150}
           />
-          <div className="flex items-center justify-between pt-3 border-t border-[#1a1a2e]">
-            <div className="flex items-center gap-2.5">
-              <AuthorChip item={item} size="lg" />
-            </div>
-            <LikeButton item={item} onToggleLike={onToggleLike} variant="plain" />
-          </div>
         </div>
       )}
-    </article>
+
+      <div className="flex items-center justify-between gap-3 pt-3 border-t-2 border-border">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <AuthorChip item={item} size="lg" />
+        </div>
+        <LikeButton item={item} onToggleLike={onToggleLike} variant="overlay" />
+      </div>
+    </Card>
   )
 }
 
@@ -251,25 +234,24 @@ export function NewsRegularCard({
   onTouchEnd,
 }: CardProps) {
   return (
-    <article
+    <Card
       className={ARTICLE_CLASS}
-      style={{ willChange: 'transform' }}
       onClick={(e) => onTap(item.id, e)}
       onTouchEnd={(e) => onTouchEnd(item.id, e)}
     >
       {showImage && (
-        <div className="relative h-48 overflow-hidden">
+        <div className="relative h-48 rounded-xl overflow-hidden border-2 border-border">
           <CoverImage item={item} priority={priority} onImageError={onImageError} />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050508]/60 via-transparent to-transparent" />
-          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-black/50 backdrop-blur-md text-[10px] text-white/80 font-medium">
-            {formatDateShort(item.created_at)}
+          <div className="absolute top-3 right-3 z-10">
+            <Badge variant="outline">{formatDateShort(item.created_at)}</Badge>
           </div>
         </div>
       )}
 
-      <div className="p-5 space-y-3">
-        <h2 className="text-lg font-bold text-[#e8e8f0] leading-snug">{item.title}</h2>
-        <p className={`text-[#6b6b80] text-sm leading-relaxed ${expanded ? '' : 'line-clamp-3'}`}>
+      <h2 className="text-[17px] leading-[1.3] font-extrabold text-heading">{item.title}</h2>
+
+      <div>
+        <p className={`${BODY_CLASS} ${expanded ? '' : 'line-clamp-3'}`}>
           {item.content}
         </p>
         <ExpandToggle
@@ -278,17 +260,17 @@ export function NewsRegularCard({
           onToggleExpand={onToggleExpand}
           threshold={150}
         />
-
-        <div className="flex items-center justify-between pt-3 border-t border-[#1a1a2e]">
-          <div className="flex items-center gap-2.5">
-            <AuthorChip item={item} size="sm" />
-            {!showImage && (
-              <span className="text-xs text-[#3d3d50]">{formatDate(item.created_at)}</span>
-            )}
-          </div>
-          <LikeButton item={item} onToggleLike={onToggleLike} variant="plain" />
-        </div>
       </div>
-    </article>
+
+      <div className="flex items-center justify-between gap-3 pt-3 border-t-2 border-border">
+        <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
+          <AuthorChip item={item} size="sm" />
+          {!showImage && (
+            <span className="text-[12px] font-bold text-muted-foreground">{formatDate(item.created_at)}</span>
+          )}
+        </div>
+        <LikeButton item={item} onToggleLike={onToggleLike} variant="plain" />
+      </div>
+    </Card>
   )
 }

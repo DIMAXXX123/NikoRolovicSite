@@ -17,8 +17,8 @@ export default async function NewsPage() {
 
       {/* Page header */}
       <div className="pt-1 pb-1">
-        <h1 className="text-3xl font-bold text-[#e8e8f0] tracking-tight">Novosti</h1>
-        <p className="text-sm text-[#6b6b80] mt-1">Najnovije vijesti iz skole</p>
+        <h1 className="text-[26px] leading-[1.2] font-extrabold text-heading tracking-[-0.01em]">Novosti</h1>
+        <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground mt-1">Najnovije vijesti iz skole</p>
       </div>
 
       <NewsFeed

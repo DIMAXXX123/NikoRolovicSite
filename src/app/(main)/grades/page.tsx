@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { ChevronDown, Plus, X, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 const DEFAULT_SUBJECTS = [
   'Matematika', 'Fizika', 'Hemija', 'Biologija', 'Istorija',
@@ -27,28 +29,37 @@ interface GradeData {
   }
 }
 
+// Solid grade colours (palette §2): 5 green, 4 blue, 3 gold, 2 orange, 1 red.
+// White text is allowed here because the background is a solid coloured fill.
 const GRADE_COLORS: Record<number, string> = {
-  5: 'bg-emerald-500 text-white',
-  4: 'bg-sky-500 text-white',
-  3: 'bg-amber-500 text-white',
-  2: 'bg-orange-500 text-white',
-  1: 'bg-red-500 text-white',
+  5: 'bg-primary text-primary-foreground shadow-[0_2px_0_var(--color-primary-dark)]',
+  4: 'bg-secondary text-[#FFFFFF] shadow-[0_2px_0_var(--color-secondary-dark)]',
+  3: 'bg-gold text-[#4B4B4B] shadow-[0_2px_0_var(--color-gold-dark)]',
+  2: 'bg-orange text-[#FFFFFF] shadow-[0_2px_0_color-mix(in_srgb,#FF9600_80%,black)]',
+  1: 'bg-destructive text-destructive-foreground shadow-[0_2px_0_var(--color-destructive-dark)]',
 }
 
-const GRADE_BG: Record<number, string> = {
-  5: 'bg-emerald-500/15 text-emerald-400 ring-emerald-500/30',
-  4: 'bg-sky-500/15 text-sky-400 ring-sky-500/30',
-  3: 'bg-amber-500/15 text-amber-400 ring-amber-500/30',
-  2: 'bg-orange-500/15 text-orange-400 ring-orange-500/30',
-  1: 'bg-red-500/15 text-red-400 ring-red-500/30',
+// Subject tint for the leading 44px circle (§2 per-subject colours at 18% over white).
+const SUBJECT_COLOR: Record<string, string> = {
+  Fizika: '#1CB0F6',
+  Matematika: '#58CC02',
+  CSBH: '#FF4B4B',
+  Hemija: '#CE82FF',
+  Engleski: '#1CB0F6',
+  Italjanski: '#58CC02',
+  Fizicko: '#FF9600',
+  Likovno: '#FF86D0',
+  Biologija: '#58CC02',
+  Istorija: '#FFC800',
+  Geografija: '#1CB0F6',
+  Njemacki: '#FFC800',
+  Spanski: '#FF9600',
+  'Izborni spanski': '#FF9600',
 }
 
-const GRADE_SHADOW: Record<number, string> = {
-  5: 'shadow-emerald-500/20',
-  4: 'shadow-sky-500/20',
-  3: 'shadow-amber-500/20',
-  2: 'shadow-orange-500/20',
-  1: 'shadow-red-500/20',
+function subjectTint(subject: string): string {
+  const c = SUBJECT_COLOR[subject] ?? '#1CB0F6'
+  return `color-mix(in srgb, ${c} 18%, white)`
 }
 
 const STORAGE_KEY = 'my_grades_data_v2'
@@ -106,14 +117,6 @@ function calcOverallAvg(trimesterData: { [subject: string]: SubjectGrades } | un
   return vals.reduce((a, b) => a + b, 0) / vals.length
 }
 
-function avgGradient(avg: number): string {
-  if (avg >= 4.5) return 'from-emerald-600 to-teal-500'
-  if (avg >= 3.5) return 'from-sky-600 to-cyan-500'
-  if (avg >= 2.5) return 'from-amber-600 to-yellow-500'
-  if (avg >= 1.5) return 'from-orange-600 to-amber-500'
-  return 'from-red-600 to-rose-500'
-}
-
 function avgLabel(avg: number): string {
   if (avg >= 4.5) return 'Odličan'
   if (avg >= 3.5) return 'Vrlo dobar'
@@ -122,13 +125,12 @@ function avgLabel(avg: number): string {
   return 'Nedovoljan'
 }
 
-function avgStrokeColor(avg: number): string {
-  if (avg >= 4.5) return '#10b981'
-  if (avg >= 3.5) return '#0ea5e9'
-  if (avg >= 2.5) return '#f59e0b'
-  if (avg >= 1.5) return '#f97316'
-  return '#ef4444'
-}
+const SECTION_LABEL = 'text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground mb-2.5'
+
+// §7 /grades: grade pickers 1–5 = 44px outline circles, selected = primary fill.
+const PICK_BASE = 'size-11 rounded-full border-2 text-[15px] font-extrabold transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
+const PICK_OUTLINE = 'border-border bg-background text-secondary shadow-[0_2px_0_var(--color-border)]'
+const PICK_SELECTED = 'border-primary bg-primary text-primary-foreground shadow-[0_2px_0_var(--color-primary-dark)]'
 
 export default function GradesPage() {
   const [activeTrimester, setActiveTrimester] = useState(2) // III trimester (current)
@@ -203,14 +205,14 @@ export default function GradesPage() {
     ? subjects.filter(s => trimesterData[s]?.zakljucna && trimesterData[s].zakljucna! > 0).length
     : 0
 
-  function GradePicker({ onSelect }: { onSelect: (v: number) => void }) {
+  function GradePicker({ onSelect, selected = null }: { onSelect: (v: number) => void; selected?: number | null }) {
     return (
-      <div className="flex gap-1.5 mt-1 animate-fade-in">
+      <div className="flex flex-wrap gap-2 animate-fade-in">
         {[5, 4, 3, 2, 1].map((v) => (
           <button
             key={v}
             onClick={() => onSelect(v)}
-            className={`w-9 h-9 rounded-xl text-xs font-bold ${GRADE_COLORS[v]} transition-all active:scale-90 shadow-md ${GRADE_SHADOW[v]}`}
+            className={`${PICK_BASE} ${selected === v ? PICK_SELECTED : PICK_OUTLINE}`}
           >
             {v}
           </button>
@@ -221,10 +223,14 @@ export default function GradesPage() {
 
   function GradeChip({ value, onRemove }: { value: number; onRemove: () => void }) {
     return (
-      <span className={`inline-flex items-center gap-0.5 px-2.5 py-1 rounded-xl text-xs font-bold ${GRADE_COLORS[value]} shadow-md ${GRADE_SHADOW[value]}`}>
+      <span className={`inline-flex h-11 items-center gap-1 rounded-full pl-4 pr-1 text-[15px] font-extrabold ${GRADE_COLORS[value]}`}>
         {value}
-        <button onClick={onRemove} className="ml-0.5 opacity-70 hover:opacity-100">
-          <X className="w-3 h-3" />
+        <button
+          onClick={onRemove}
+          className="flex size-9 items-center justify-center rounded-full opacity-80 transition-opacity hover:opacity-100"
+          aria-label="Ukloni ocjenu"
+        >
+          <X className="size-4" strokeWidth={2.6} />
         </button>
       </span>
     )
@@ -232,39 +238,36 @@ export default function GradesPage() {
 
   function ZakljucnaCircle({ value }: { value: number | null }) {
     if (!value) return (
-      <div className="w-10 h-10 rounded-full bg-white/[0.04] border border-dashed border-[#1a1a2e] flex items-center justify-center">
-        <span className="text-xs text-muted-foreground/50">—</span>
+      <div className="flex size-11 items-center justify-center rounded-full border-2 border-dashed border-border bg-muted">
+        <span className="text-[15px] font-extrabold text-disabled">—</span>
       </div>
     )
     return (
-      <div className={`w-10 h-10 rounded-full ${GRADE_COLORS[value]} flex items-center justify-center shadow-lg ${GRADE_SHADOW[value]} font-bold text-sm`}>
+      <div className={`flex size-11 items-center justify-center rounded-full text-[17px] font-black tabular-nums ${GRADE_COLORS[value]}`}>
         {value}
       </div>
     )
   }
 
-  // Circular progress SVG for average
-  const circumference = 2 * Math.PI * 44
   const avgPercent = overallAvg ? (overallAvg / 5) * 100 : 0
-  const offset = circumference - (avgPercent / 100) * circumference
 
   return (
-    <div className="space-y-5 animate-fade-in pb-8 -mx-4 px-3">
+    <div className="space-y-5 animate-fade-in pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 pt-1">
-        <h1 className="text-2xl font-bold gradient-text">Moje ocjene</h1>
+        <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Moje ocjene</h1>
       </div>
 
-      {/* Trimester pills */}
-      <div className="flex gap-2 p-1.5 bg-white/[0.03] rounded-2xl border border-[#1a1a2e]">
+      {/* Trimester chips (§4.8) */}
+      <div className="flex gap-2">
         {TRIMESTER_LABELS.map((label, i) => (
           <button
             key={i}
             onClick={() => { setActiveTrimester(i); setExpandedSubject(null) }}
-            className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 animate-press ${
+            className={`flex h-11 flex-1 items-center justify-center rounded-xl border-2 px-2 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
               activeTrimester === i
-                ? 'bg-gradient-to-br from-[#7c5cfc] to-[#5b3fd9] text-white shadow-lg shadow-[#7c5cfc]/20'
-                : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.04]'
+                ? 'border-secondary-light-border bg-secondary-light text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]'
+                : 'border-border bg-background text-muted-foreground shadow-[0_2px_0_var(--color-border)]'
             }`}
           >
             {label} Tromj.
@@ -272,50 +275,30 @@ export default function GradesPage() {
         ))}
       </div>
 
-      {/* Overall average card with circular progress */}
+      {/* Overall average card (§4.2 + big number + §4.9 progress) */}
       {overallAvg !== null && (
-        <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${avgGradient(overallAvg)} p-6 shadow-xl animate-card-appear`}>
-          {/* Decorative circles */}
-          <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-
-          <div className="relative flex items-center justify-between">
-            <div className="space-y-1.5">
-              <p className="text-white/70 text-sm font-medium">Ukupan prosjek</p>
-              <p className="text-white text-lg font-bold">{avgLabel(overallAvg)}</p>
-              <p className="text-white/50 text-xs font-medium">{gradedCount}/{subjects.length} predmeta</p>
+        <Card className="animate-card-appear gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              <p className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Ukupan prosjek</p>
+              <p className="text-[17px] font-extrabold leading-[1.3] text-heading">{avgLabel(overallAvg)}</p>
+              <p className="text-[13px] font-bold text-muted-foreground">{gradedCount}/{subjects.length} predmeta</p>
             </div>
-
-            {/* Circular progress */}
-            <div className="relative w-24 h-24">
-              <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="6" />
-                <circle
-                  cx="50" cy="50" r="44"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={offset}
-                  className="animate-circular-progress"
-                  style={{
-                    filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.3))',
-                    ['--circumference' as string]: circumference,
-                    ['--offset' as string]: offset,
-                  }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-black text-white drop-shadow-lg">{overallAvg.toFixed(2)}</span>
-              </div>
-            </div>
+            <span className="shrink-0 text-[36px] font-black leading-none tabular-nums text-heading">
+              {overallAvg.toFixed(2)}
+            </span>
           </div>
-        </div>
+          <div className="h-4 w-full overflow-hidden rounded-full bg-border">
+            <div
+              className="h-full rounded-full bg-primary shadow-[inset_0_4px_0_rgba(255,255,255,0.3)] transition-[width] duration-700"
+              style={{ width: `${avgPercent}%` }}
+            />
+          </div>
+        </Card>
       )}
 
-      {/* Subject cards */}
-      <div className="space-y-2.5 animate-stagger-scale">
+      {/* Subject accordion rows (§4.10) */}
+      <div className="space-y-2.5 animate-stagger">
         {subjects.map((subject) => {
           const sg = getSubjectData(grades, activeTrimester, subject)
           const isOptional = OPTIONAL_SUBJECTS.includes(subject)
@@ -324,44 +307,57 @@ export default function GradesPage() {
           return (
             <div
               key={subject}
-              className={`rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] overflow-hidden transition-all duration-300 hover-float ${
-                isExpanded ? 'gradient-overlay' : ''
+              className={`overflow-hidden rounded-2xl border-2 bg-card transition-colors duration-200 ${
+                isExpanded
+                  ? 'border-primary-light-border shadow-[0_2px_0_var(--color-primary-light-border)]'
+                  : 'border-border shadow-[0_2px_0_var(--color-border)]'
               }`}
             >
               {/* Collapsed header */}
               <button
                 onClick={() => setExpandedSubject(isExpanded ? null : subject)}
-                className="w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-white/[0.02] active:bg-white/[0.04]"
+                className="flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted active:bg-muted"
               >
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-sm truncate">{subject}</h3>
+                <div
+                  className="flex size-11 shrink-0 items-center justify-center rounded-full text-[17px] font-extrabold text-foreground"
+                  style={{ backgroundColor: subjectTint(subject) }}
+                >
+                  {subject.charAt(0)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-[17px] font-extrabold leading-[1.3] text-heading">{subject}</h3>
                   {!isExpanded && (sg.test.length > 0 || sg.pismeni.length > 0) && (
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="mt-0.5 text-[13px] font-bold text-muted-foreground">
                       {sg.test.length + sg.pismeni.length} ocjena
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
                   <ZakljucnaCircle value={sg.zakljucna} />
-                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    strokeWidth={2.6}
+                    className={`size-5 text-disabled transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                  />
                 </div>
               </button>
 
               {/* Expanded content */}
               {isExpanded && (
-                <div className="px-4 pb-5 space-y-4 animate-expand border-t border-[#1a1a2e]">
+                <div className="space-y-4 border-t-2 border-border px-4 pb-5 animate-expand">
                   {isOptional && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => removeSubject(subject)}
-                      className="text-xs text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1 mt-3"
+                      className="mt-3 h-11 px-3 text-destructive hover:text-destructive"
                     >
-                      <Trash2 className="w-3 h-3" /> Ukloni predmet
-                    </button>
+                      <Trash2 strokeWidth={2.6} /> Ukloni predmet
+                    </Button>
                   )}
 
                   {/* Test grades */}
                   <div className="mt-3">
-                    <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest mb-2.5">Test</p>
+                    <p className={SECTION_LABEL}>Test</p>
                     <div className="flex flex-wrap items-center gap-2">
                       {sg.test.map((v, idx) => (
                         <GradeChip key={idx} value={v} onRemove={() => removeMultiGrade(subject, 'test', idx)} />
@@ -371,9 +367,10 @@ export default function GradesPage() {
                       ) : (
                         <button
                           onClick={() => setEditingCell(`${activeTrimester}-${subject}-test`)}
-                          className="w-9 h-9 rounded-xl bg-white/[0.04] text-muted-foreground border border-dashed border-[#1a1a2e] flex items-center justify-center hover:bg-white/[0.08] hover:border-[#7c5cfc]/30 transition-all"
+                          className="flex size-11 items-center justify-center rounded-full border-2 border-dashed border-border bg-background text-secondary transition-colors hover:bg-muted active:bg-muted"
+                          aria-label="Dodaj ocjenu"
                         >
-                          <Plus className="w-3.5 h-3.5" />
+                          <Plus className="size-5" strokeWidth={2.6} />
                         </button>
                       )}
                     </div>
@@ -381,7 +378,7 @@ export default function GradesPage() {
 
                   {/* Pismeni grades */}
                   <div>
-                    <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest mb-2.5">Pismeni</p>
+                    <p className={SECTION_LABEL}>Pismeni</p>
                     <div className="flex flex-wrap items-center gap-2">
                       {sg.pismeni.map((v, idx) => (
                         <GradeChip key={idx} value={v} onRemove={() => removeMultiGrade(subject, 'pismeni', idx)} />
@@ -391,25 +388,26 @@ export default function GradesPage() {
                       ) : (
                         <button
                           onClick={() => setEditingCell(`${activeTrimester}-${subject}-pismeni`)}
-                          className="w-9 h-9 rounded-xl bg-white/[0.04] text-muted-foreground border border-dashed border-[#1a1a2e] flex items-center justify-center hover:bg-white/[0.08] hover:border-[#7c5cfc]/30 transition-all"
+                          className="flex size-11 items-center justify-center rounded-full border-2 border-dashed border-border bg-background text-secondary transition-colors hover:bg-muted active:bg-muted"
+                          aria-label="Dodaj ocjenu"
                         >
-                          <Plus className="w-3.5 h-3.5" />
+                          <Plus className="size-5" strokeWidth={2.6} />
                         </button>
                       )}
                     </div>
                   </div>
 
                   {/* Usmeni + Zaključna in a row */}
-                  <div className="flex gap-6">
-                    <div className="flex-1">
-                      <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest mb-2.5">Usmeni</p>
+                  <div className="flex flex-wrap gap-6">
+                    <div className="min-w-0 flex-1">
+                      <p className={SECTION_LABEL}>Usmeni</p>
                       {editingCell === `${activeTrimester}-${subject}-usmeni` ? (
-                        <div className="flex gap-1.5 animate-fade-in">
+                        <div className="flex flex-wrap gap-2 animate-fade-in">
                           {[5, 4, 3, 2, 1].map((v) => (
                             <button
                               key={v}
                               onClick={() => setSingleGrade(subject, 'usmeni', v)}
-                              className={`w-9 h-9 rounded-xl text-xs font-bold ${GRADE_COLORS[v]} transition-all active:scale-90 shadow-md ${GRADE_SHADOW[v]}`}
+                              className={`${PICK_BASE} ${sg.usmeni === v ? PICK_SELECTED : PICK_OUTLINE}`}
                             >
                               {v}
                             </button>
@@ -417,7 +415,8 @@ export default function GradesPage() {
                           {sg.usmeni !== null && (
                             <button
                               onClick={() => setSingleGrade(subject, 'usmeni', null)}
-                              className="w-9 h-9 rounded-xl text-[10px] bg-white/[0.04] text-muted-foreground border border-white/[0.08]"
+                              className={`${PICK_BASE} ${PICK_OUTLINE} text-muted-foreground`}
+                              aria-label="Obriši ocjenu"
                             >
                               ✕
                             </button>
@@ -426,25 +425,25 @@ export default function GradesPage() {
                       ) : (
                         <button
                           onClick={() => setEditingCell(`${activeTrimester}-${subject}-usmeni`)}
-                          className={`w-11 h-11 rounded-xl text-sm font-bold transition-all active:scale-90 ring-1 ${
+                          className={`flex size-11 items-center justify-center rounded-full text-[17px] font-black tabular-nums transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none ${
                             sg.usmeni
-                              ? `${GRADE_BG[sg.usmeni]}`
-                              : 'bg-white/[0.04] text-muted-foreground/50 border border-dashed border-[#1a1a2e] ring-0'
+                              ? GRADE_COLORS[sg.usmeni]
+                              : 'border-2 border-dashed border-border bg-muted text-disabled'
                           }`}
                         >
                           {sg.usmeni || '—'}
                         </button>
                       )}
                     </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest mb-2.5">Zaključna</p>
+                    <div className="min-w-0 flex-1">
+                      <p className={SECTION_LABEL}>Zaključna</p>
                       {editingCell === `${activeTrimester}-${subject}-zakljucna` ? (
-                        <div className="flex gap-1.5 animate-fade-in">
+                        <div className="flex flex-wrap gap-2 animate-fade-in">
                           {[5, 4, 3, 2, 1].map((v) => (
                             <button
                               key={v}
                               onClick={() => setSingleGrade(subject, 'zakljucna', v)}
-                              className={`w-9 h-9 rounded-xl text-xs font-bold ${GRADE_COLORS[v]} transition-all active:scale-90 shadow-md ${GRADE_SHADOW[v]}`}
+                              className={`${PICK_BASE} ${sg.zakljucna === v ? PICK_SELECTED : PICK_OUTLINE}`}
                             >
                               {v}
                             </button>
@@ -452,7 +451,8 @@ export default function GradesPage() {
                           {sg.zakljucna !== null && (
                             <button
                               onClick={() => setSingleGrade(subject, 'zakljucna', null)}
-                              className="w-9 h-9 rounded-xl text-[10px] bg-white/[0.04] text-muted-foreground border border-white/[0.08]"
+                              className={`${PICK_BASE} ${PICK_OUTLINE} text-muted-foreground`}
+                              aria-label="Obriši ocjenu"
                             >
                               ✕
                             </button>
@@ -461,10 +461,10 @@ export default function GradesPage() {
                       ) : (
                         <button
                           onClick={() => setEditingCell(`${activeTrimester}-${subject}-zakljucna`)}
-                          className={`w-11 h-11 rounded-xl text-sm font-bold transition-all active:scale-90 ring-1 ${
+                          className={`flex size-11 items-center justify-center rounded-full text-[17px] font-black tabular-nums transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none ${
                             sg.zakljucna
-                              ? `${GRADE_BG[sg.zakljucna]}`
-                              : 'bg-white/[0.04] text-muted-foreground/50 border border-dashed border-[#1a1a2e] ring-0'
+                              ? GRADE_COLORS[sg.zakljucna]
+                              : 'border-2 border-dashed border-border bg-muted text-disabled'
                           }`}
                         >
                           {sg.zakljucna || '—'}
@@ -483,31 +483,35 @@ export default function GradesPage() {
       {availableOptional.length > 0 && (
         <div>
           {showAddSubject ? (
-            <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14] p-5 space-y-2.5 animate-fade-in">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-bold">Dodaj predmet</p>
-                <button onClick={() => setShowAddSubject(false)} className="text-muted-foreground p-1 rounded-lg hover:bg-white/[0.04]">
-                  <X className="w-4 h-4" />
-                </button>
+            <Card className="animate-fade-in gap-2.5">
+              <div className="mb-1 flex items-center justify-between">
+                <p className="text-[17px] font-extrabold leading-[1.3] text-heading">Dodaj predmet</p>
+                <Button variant="ghost" size="icon" onClick={() => setShowAddSubject(false)} className="text-muted-foreground" aria-label="Zatvori">
+                  <X strokeWidth={2.6} />
+                </Button>
               </div>
               {availableOptional.map((s) => (
                 <button
                   key={s}
                   onClick={() => addSubject(s)}
-                  className="w-full text-left px-4 py-3 rounded-xl bg-white/[0.04] text-sm font-medium hover:bg-white/[0.08] transition-all active:scale-[0.98]"
+                  className="flex min-h-16 w-full items-center gap-3 rounded-2xl border-2 border-border bg-card px-4 py-3 text-left shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow,background-color] duration-[80ms] hover:bg-muted active:translate-y-[2px] active:shadow-none"
                 >
-                  {s}
+                  <div
+                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-[17px] font-extrabold text-foreground"
+                    style={{ backgroundColor: subjectTint(s) }}
+                  >
+                    {s.charAt(0)}
+                  </div>
+                  <span className="flex-1 text-[17px] font-extrabold leading-[1.3] text-heading">{s}</span>
+                  <Plus className="size-5 text-disabled" strokeWidth={2.6} />
                 </button>
               ))}
-            </div>
+            </Card>
           ) : (
-            <button
-              onClick={() => setShowAddSubject(true)}
-              className="w-full py-4 rounded-2xl border border-dashed border-white/[0.08] text-sm text-muted-foreground hover:bg-white/[0.02] hover:border-[#7c5cfc]/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
-            >
-              <Plus className="w-4 h-4" />
+            <Button variant="outline" onClick={() => setShowAddSubject(true)} className="w-full">
+              <Plus strokeWidth={2.6} />
               Dodaj predmet
-            </button>
+            </Button>
           )}
         </div>
       )}

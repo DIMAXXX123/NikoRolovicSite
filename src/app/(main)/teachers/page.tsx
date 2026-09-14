@@ -6,16 +6,22 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ChevronLeft, ChevronRight, UserCheck, UserX, AlertTriangle, HelpCircle, RefreshCw, Plus, Trash2, type LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 
+// Status tints from the §4.3 palette: green / red / orange / blue / purple.
 const STATUS_CONFIG: Record<string, { label: string; icon: LucideIcon; color: string; bg: string }> = {
-  present: { label: 'Prisutan/na', icon: UserCheck, color: 'text-green-400', bg: 'bg-green-500/15 border-green-500/30' },
-  absent: { label: 'Odsutan/na', icon: UserX, color: 'text-red-400', bg: 'bg-red-500/15 border-red-500/30' },
-  sick: { label: 'Boluje', icon: AlertTriangle, color: 'text-orange-400', bg: 'bg-orange-500/15 border-orange-500/30' },
-  asking: { label: 'Ispituje', icon: HelpCircle, color: 'text-blue-400', bg: 'bg-blue-500/15 border-blue-500/30' },
-  zamjena: { label: 'Zamjena', icon: RefreshCw, color: 'text-cyan-400', bg: 'bg-cyan-500/15 border-cyan-500/30' },
+  present: { label: 'Prisutan/na', icon: UserCheck, color: 'text-primary-text', bg: 'bg-primary-light border-primary-light-border' },
+  absent: { label: 'Odsutan/na', icon: UserX, color: 'text-[#EA2B2B]', bg: 'bg-[#FFDFE0] border-[#FFB3B5]' },
+  sick: { label: 'Boluje', icon: AlertTriangle, color: 'text-[color-mix(in_srgb,#FF9600_80%,black)]', bg: 'bg-[color-mix(in_srgb,#FF9600_18%,white)] border-[color-mix(in_srgb,#FF9600_45%,white)]' },
+  asking: { label: 'Ispituje', icon: HelpCircle, color: 'text-secondary', bg: 'bg-secondary-light border-secondary-light-border' },
+  zamjena: { label: 'Zamjena', icon: RefreshCw, color: 'text-accent-dark', bg: 'bg-[#F3E3FF] border-[#E1BDFF]' },
 }
 
 const STATUS_KEYS = Object.keys(STATUS_CONFIG)
+
+// §4.8 chip
+const CHIP_BASE = 'inline-flex h-11 items-center justify-center rounded-xl border-2 px-3.5 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-60'
+const CHIP_IDLE = 'border-border bg-background text-muted-foreground shadow-[0_2px_0_var(--color-border)]'
 
 type Teacher = { id: string; name: string; subject: string | null }
 type TeacherStatus = { id: string; teacher_id: string; date: string; status: string }
@@ -137,7 +143,7 @@ export default function TeachersPage() {
     return (
       <div className="space-y-3 animate-fade-in">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-20 rounded-2xl bg-muted/30 animate-shimmer" />
+          <div key={i} className="h-20 rounded-2xl skeleton" />
         ))}
       </div>
     )
@@ -147,19 +153,19 @@ export default function TeachersPage() {
     <div className="space-y-4 animate-fade-in">
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-xl font-bold gradient-text">Status profesora</h1>
-        <p className="text-xs text-muted-foreground">Dnevni pregled prisutnosti</p>
+        <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Status profesora</h1>
+        <p className="text-[13px] font-bold text-muted-foreground">Dnevni pregled prisutnosti</p>
       </div>
 
       {/* Date picker */}
-      <div className="flex items-center justify-between">
-        <button onClick={() => changeDate(-1)} className="p-2 rounded-xl hover:bg-muted transition-all">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <span className="text-sm font-semibold">{formatDate(selectedDate)}</span>
-        <button onClick={() => changeDate(1)} className="p-2 rounded-xl hover:bg-muted transition-all">
-          <ChevronRight className="w-5 h-5" />
-        </button>
+      <div className="flex items-center justify-between gap-2">
+        <Button size="icon" onClick={() => changeDate(-1)} aria-label="Prethodni dan">
+          <ChevronLeft strokeWidth={2.6} />
+        </Button>
+        <span className="text-[17px] font-extrabold text-heading">{formatDate(selectedDate)}</span>
+        <Button size="icon" onClick={() => changeDate(1)} aria-label="Sljedeći dan">
+          <ChevronRight strokeWidth={2.6} />
+        </Button>
       </div>
 
       {/* Status legend */}
@@ -167,49 +173,57 @@ export default function TeachersPage() {
         {STATUS_KEYS.map(key => {
           const cfg = STATUS_CONFIG[key]
           return (
-            <span key={key} className={`text-[10px] px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}>
+            <Badge key={key} className={`${cfg.bg} ${cfg.color}`}>
               {cfg.label}
-            </span>
+            </Badge>
           )
         })}
       </div>
 
       {/* Teachers list */}
       {teachers.length === 0 ? (
-        <div className="h-[40vh] flex flex-col items-center justify-center text-muted-foreground animate-fade-in">
-          <UserCheck className="w-12 h-12 mb-3 opacity-30" />
-          <p>Nema profesora</p>
+        <div className="flex h-[40vh] flex-col items-center justify-center animate-fade-in">
+          <div className="mb-3 flex size-16 items-center justify-center rounded-full bg-muted">
+            <UserCheck className="size-8 text-disabled" strokeWidth={2.4} />
+          </div>
+          <p className="text-[17px] font-extrabold text-foreground">Nema profesora</p>
         </div>
       ) : (
-        <div className="space-y-2 animate-stagger-scale">
+        <div className="space-y-2.5 animate-stagger">
           {teachers.map(teacher => {
             const currentStatus = statuses[teacher.id] || 'present'
             const cfg = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.present
             const Icon = cfg.icon
 
             return (
-              <Card key={teacher.id} className={`border ${cfg.bg} transition-all hover-float`}>
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${cfg.bg}`}>
-                      <Icon className={`w-5 h-5 ${cfg.color}`} />
+              <Card key={teacher.id} className="gap-0 p-0">
+                <CardContent className="px-4 py-3">
+                  <div className="flex min-h-10 items-center gap-3">
+                    <div className={`flex size-11 shrink-0 items-center justify-center rounded-full border-2 ${cfg.bg}`}>
+                      <Icon className={`size-5 ${cfg.color}`} strokeWidth={2.4} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{teacher.name}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[17px] font-extrabold leading-[1.3] text-heading">{teacher.name}</p>
                       {teacher.subject && (
-                        <p className="text-xs text-muted-foreground">{teacher.subject}</p>
+                        <p className="text-[13px] font-bold text-muted-foreground">{teacher.subject}</p>
                       )}
                     </div>
                     {canEdit && (
-                      <button onClick={() => deleteTeacher(teacher.id)} className="p-1 text-muted-foreground/30 hover:text-red-400 transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteTeacher(teacher.id)}
+                        className="text-disabled hover:text-destructive"
+                        aria-label="Obriši profesora"
+                      >
+                        <Trash2 strokeWidth={2.4} />
+                      </Button>
                     )}
                   </div>
 
                   {/* Status buttons (for mods/admins) */}
                   {canEdit && (
-                    <div className="flex gap-1.5 mt-2 flex-wrap">
+                    <div className="mt-3 flex flex-wrap gap-2">
                       {STATUS_KEYS.map(key => {
                         const s = STATUS_CONFIG[key]
                         const active = currentStatus === key
@@ -218,8 +232,8 @@ export default function TeachersPage() {
                             key={key}
                             onClick={() => setStatus(teacher.id, key)}
                             disabled={updating === teacher.id}
-                            className={`text-[10px] px-2.5 py-1 rounded-full border transition-all active:scale-95 animate-press ${
-                              active ? `${s.bg} ${s.color} font-semibold` : 'border-border/30 text-muted-foreground hover:border-border'
+                            className={`${CHIP_BASE} ${
+                              active ? `${s.bg} ${s.color} shadow-[0_2px_0_var(--color-border)]` : CHIP_IDLE
                             }`}
                           >
                             {s.label}
@@ -231,10 +245,10 @@ export default function TeachersPage() {
 
                   {/* Status display (for students) */}
                   {!canEdit && (
-                    <div className="mt-2">
-                      <span className={`text-xs px-2.5 py-1 rounded-full border ${cfg.bg} ${cfg.color}`}>
+                    <div className="mt-3">
+                      <Badge className={`${cfg.bg} ${cfg.color}`}>
                         {cfg.label}
-                      </span>
+                      </Badge>
                     </div>
                   )}
                 </CardContent>
@@ -248,30 +262,25 @@ export default function TeachersPage() {
       {canEdit && (
         <div className="space-y-2">
           {!showAdd ? (
-            <button
-              onClick={() => setShowAdd(true)}
-              className="w-full py-3 rounded-2xl border border-dashed border-border/50 text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all animate-press"
-            >
-              <Plus className="w-4 h-4" /> Dodaj profesora
-            </button>
+            <Button variant="outline" onClick={() => setShowAdd(true)} className="w-full">
+              <Plus strokeWidth={2.6} /> Dodaj profesora
+            </Button>
           ) : (
-            <Card className="border-border/30 bg-card/50 backdrop-blur">
-              <CardContent className="p-4 space-y-3">
+            <Card className="gap-0 p-0">
+              <CardContent className="space-y-3 p-4">
                 <Input
                   placeholder="Ime i prezime"
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
-                  className="bg-background/50 rounded-xl"
                 />
                 <Input
                   placeholder="Predmet (opciono)"
                   value={newSubject}
                   onChange={e => setNewSubject(e.target.value)}
-                  className="bg-background/50 rounded-xl"
                 />
                 <div className="flex gap-2">
-                  <Button onClick={() => setShowAdd(false)} variant="outline" className="flex-1 rounded-xl">Otkaži</Button>
-                  <Button onClick={addTeacher} disabled={!newName.trim()} className="flex-1 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700">Dodaj</Button>
+                  <Button onClick={() => setShowAdd(false)} variant="outline" className="flex-1">Otkaži</Button>
+                  <Button onClick={addTeacher} disabled={!newName.trim()} className="flex-1">Dodaj</Button>
                 </div>
               </CardContent>
             </Card>

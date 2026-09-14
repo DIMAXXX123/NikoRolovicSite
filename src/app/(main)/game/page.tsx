@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/types'
 import { Trophy, Zap } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { GameOverOverlay, LeaderboardOverlay } from './game-overlays'
 import {
   GRID,
@@ -463,7 +464,7 @@ export default function BlockBlastPage() {
     return { cells: s, valid: true }
   }, [selectedIdx, hoverPos, shapes])
 
-  const ghostColor = selectedIdx !== null && shapes[selectedIdx] ? shapes[selectedIdx]!.color : '#a78bfa'
+  const ghostColor = selectedIdx !== null && shapes[selectedIdx] ? shapes[selectedIdx]!.color : '#1CB0F6'
 
   // ── Render ───────────────────────────────────────────────────────────
   return (
@@ -485,7 +486,7 @@ export default function BlockBlastPage() {
 
         @keyframes clearFlash {
           0% { opacity: 1; transform: scale(1); background-color: inherit; }
-          40% { opacity: 1; transform: scale(1.05); background-color: white !important; }
+          40% { opacity: 1; transform: scale(1.05); background-color: #FFC800 !important; }
           100% { opacity: 0; transform: scale(0.8); }
         }
         .cell-clearing { animation: clearFlash 0.3s ease-out forwards; }
@@ -509,12 +510,6 @@ export default function BlockBlastPage() {
           to { opacity: 1; transform: translateY(0); }
         }
         .fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-
-        @keyframes pulseGlow {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(168,85,247,0.4); }
-          50% { box-shadow: 0 0 12px 4px rgba(168,85,247,0.2); }
-        }
-        .selected-shape { animation: pulseGlow 1.5s ease-in-out infinite; }
 
         @keyframes ghostPulse {
           0%, 100% { opacity: 0.35; }
@@ -547,44 +542,43 @@ export default function BlockBlastPage() {
 
       {/* Score Header */}
       <div className="text-center mb-3 mt-1">
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex items-center justify-center gap-5">
           <div className="text-center">
-            <p className="text-[10px] uppercase tracking-wider text-zinc-500">Score</p>
-            <p className={`text-2xl font-bold text-white tabular-nums ${comboFlash ? 'combo-flash' : ''}`}>
+            <p className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Score</p>
+            <p className={`text-[36px] leading-none font-black text-heading tabular-nums ${comboFlash ? 'combo-flash' : ''}`}>
               {score}
             </p>
           </div>
-          <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full border ${comboFlash ? 'combo-flash' : ''}`}
-            style={{
-              background: combo >= 1 ? 'rgba(168,85,247,0.15)' : 'rgba(255,255,255,0.05)',
-              borderColor: combo >= 1 ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.1)',
-              boxShadow: combo >= 1 ? '0 0 12px rgba(168,85,247,0.2)' : 'none',
-            }}
+          <div
+            className={`flex h-10 items-center gap-1 px-3 rounded-xl border-2 ${
+              combo >= 1
+                ? 'bg-secondary-light border-secondary-light-border text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]'
+                : 'bg-background border-border text-muted-foreground shadow-[0_2px_0_var(--color-border)]'
+            } ${comboFlash ? 'combo-flash' : ''}`}
           >
-            <Zap className={`w-3.5 h-3.5 ${combo >= 1 ? 'text-purple-400' : 'text-zinc-500'}`} />
-            <span className={`text-sm font-black ${combo >= 1 ? 'text-purple-300' : 'text-zinc-500'}`}>
+            <Zap className="w-4 h-4" strokeWidth={2.6} />
+            <span className="text-[15px] font-black tabular-nums">
               x{combo >= 1 ? combo : 1}
             </span>
           </div>
           <div className="text-center">
-            <p className="text-[10px] uppercase tracking-wider text-zinc-500">Best</p>
-            <p className="text-lg font-semibold text-zinc-400 tabular-nums">{highScore}</p>
+            <p className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Best</p>
+            <p className="text-[20px] leading-none font-black text-muted-foreground tabular-nums mt-1">{highScore}</p>
           </div>
-          <button
+          <Button
+            variant="gold"
+            size="icon"
             onClick={() => { setShowLeaderboard(!showLeaderboard); if (!showLeaderboard) loadLeaderboard(score) }}
-            className="p-2 rounded-xl bg-amber-500/15 border border-amber-500/30 active:scale-90 transition-all hover:bg-amber-500/25"
             title="Tabela lidera"
           >
-            <Trophy className="w-4 h-4 text-amber-400" />
-          </button>
+            <Trophy strokeWidth={2.6} />
+          </Button>
         </div>
       </div>
 
       {/* Combo popup above score */}
       {comboText && (
-        <div key={comboText.id} className="combo-popup text-center text-lg font-black text-purple-300"
-          style={{ textShadow: '0 0 12px rgba(168,85,247,0.6)' }}
-        >
+        <div key={comboText.id} className="combo-popup text-center text-[20px] font-black text-primary-text">
           x{comboText.value} COMBO!
         </div>
       )}
@@ -601,59 +595,57 @@ export default function BlockBlastPage() {
 
       {/* Grid */}
       <div className="relative mx-auto w-full" style={{ maxWidth: '360px' }}>
-        <div
-          ref={gridRef}
-          className="grid rounded-xl p-[2px] border w-full mx-auto"
-          style={{
-            gridTemplateColumns: `repeat(${GRID}, 1fr)`,
-            gap: '1px',
-            aspectRatio: '1/1',
-            maxWidth: '352px',
-            maxHeight: '352px',
-            background: '#111827',
-            borderColor: 'rgba(255,255,255,0.06)',
-            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.4), 0 4px 20px rgba(0,0,0,0.3)',
-          }}
-          onMouseMove={handleGridMouseMove}
-          onMouseLeave={handleGridMouseLeave}
-          onClick={handleGridClick}
-        >
-          {grid.map((row, r) =>
-            row.map((cell, c) => {
-              const key = `${r}-${c}`
-              const isGhost = ghostInfo.cells.has(key)
-              const isClearing = clearingCells.has(key)
-              return (
-                <div
-                  key={key}
-                  className={`
-                    aspect-square rounded-[2px]
-                    ${cell.filled && cell.justPlaced ? 'cell-placed' : ''}
-                    ${isClearing ? 'cell-clearing' : ''}
-                    ${isGhost ? 'ghost-cell' : ''}
-                  `}
-                  style={{
-                    backgroundColor: cell.filled
-                      ? cell.color
-                      : isGhost
-                        ? `${ghostColor}44`
-                        : 'rgba(255,255,255,0.02)',
-                    ...(cell.filled ? {
-                      backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.08) 35%, transparent 55%)',
-                      boxShadow: `inset 0 1px 0 ${darkenColor(cell.color, -40)}, inset 0 -1px 0 ${darkenColor(cell.color, 60)}, inset 1px 0 0 ${darkenColor(cell.color, -25)}, inset -1px 0 0 ${darkenColor(cell.color, 45)}`,
-                      borderRadius: '2px',
-                    } : {
-                      border: '1px solid rgba(255,255,255,0.03)',
-                    }),
-                    ...(isGhost ? {
-                      border: `1px solid ${ghostColor}66`,
-                      borderRadius: '2px',
-                    } : {}),
-                  }}
-                />
-              )
-            })
-          )}
+        <div className="rounded-2xl border-2 border-border bg-card p-2 shadow-[0_2px_0_var(--color-border)]">
+          <div
+            ref={gridRef}
+            className="grid w-full mx-auto"
+            style={{
+              gridTemplateColumns: `repeat(${GRID}, 1fr)`,
+              gap: '2px',
+              aspectRatio: '1/1',
+              maxWidth: '340px',
+              maxHeight: '340px',
+            }}
+            onMouseMove={handleGridMouseMove}
+            onMouseLeave={handleGridMouseLeave}
+            onClick={handleGridClick}
+          >
+            {grid.map((row, r) =>
+              row.map((cell, c) => {
+                const key = `${r}-${c}`
+                const isGhost = ghostInfo.cells.has(key)
+                const isClearing = clearingCells.has(key)
+                return (
+                  <div
+                    key={key}
+                    className={`
+                      aspect-square rounded-[4px] box-border
+                      ${cell.filled && cell.justPlaced ? 'cell-placed' : ''}
+                      ${isClearing ? 'cell-clearing' : ''}
+                      ${isGhost ? 'ghost-cell' : ''}
+                    `}
+                    style={{
+                      backgroundColor: cell.filled
+                        ? cell.color
+                        : isGhost
+                          ? `${ghostColor}44`
+                          : '#F7F7F7',
+                      ...(cell.filled ? {
+                        backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.08) 35%, transparent 55%)',
+                        boxShadow: `inset 0 1px 0 ${darkenColor(cell.color, -40)}, inset 0 -1px 0 ${darkenColor(cell.color, 60)}, inset 1px 0 0 ${darkenColor(cell.color, -25)}, inset -1px 0 0 ${darkenColor(cell.color, 45)}`,
+                        border: `2px solid ${darkenColor(cell.color, 50)}`,
+                      } : {
+                        border: '2px solid #E5E5E5',
+                      }),
+                      ...(isGhost ? {
+                        border: `2px solid ${ghostColor}`,
+                      } : {}),
+                    }}
+                  />
+                )
+              })
+            )}
+          </div>
         </div>
       </div>
 
@@ -668,13 +660,13 @@ export default function BlockBlastPage() {
             <button
               key={idx}
               className={`
-                relative p-3 rounded-xl transition-all duration-200 min-w-[88px] min-h-[88px]
+                relative p-3 rounded-2xl border-2 transition-all duration-200 min-w-[88px] min-h-[88px]
                 flex items-center justify-center
                 ${isSelected
-                  ? 'selected-shape bg-zinc-700/70 scale-110 border-2 border-purple-500/50'
-                  : 'bg-zinc-800/50 hover:bg-zinc-700/50 hover:scale-105 border border-zinc-700/30 hover:border-zinc-500/40'}
+                  ? 'bg-secondary-light border-secondary-light-border shadow-[0_2px_0_var(--color-secondary-light-border)] scale-105'
+                  : 'bg-background border-border shadow-[0_2px_0_var(--color-border)] hover:bg-muted'}
                 ${newShapeAnim ? 'shape-appear' : ''}
-                active:scale-95
+                active:translate-y-[2px] active:shadow-none
               `}
               style={{ animationDelay: newShapeAnim ? `${idx * 80}ms` : undefined }}
               onClick={() => setSelectedIdx(isSelected ? null : idx)}
@@ -696,7 +688,7 @@ export default function BlockBlastPage() {
                   return (
                     <div
                       key={i}
-                      className="rounded-[2px]"
+                      className="rounded-[3px] box-border"
                       style={{
                         width: cellPx,
                         height: cellPx,
@@ -704,6 +696,7 @@ export default function BlockBlastPage() {
                         ...(isFilled ? {
                           backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.08) 35%, transparent 55%)',
                           boxShadow: `inset 0 1px 0 ${darkenColor(shape.color, -40)}, inset 0 -1px 0 ${darkenColor(shape.color, 60)}, inset 1px 0 0 ${darkenColor(shape.color, -25)}, inset -1px 0 0 ${darkenColor(shape.color, 45)}`,
+                          border: `1px solid ${darkenColor(shape.color, 50)}`,
                         } : {}),
                       }}
                     />
@@ -716,7 +709,7 @@ export default function BlockBlastPage() {
       </div>
 
       {selectedIdx !== null && (
-        <p className="text-center text-[11px] text-zinc-500 mt-2">
+        <p className="text-center text-[13px] font-bold text-muted-foreground mt-3">
           Tap on grid to place • Tap shape again to deselect
         </p>
       )}

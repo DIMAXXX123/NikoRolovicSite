@@ -20,9 +20,11 @@ export default async function LecturesPage() {
       <BetaDisclaimer />
 
       <div className="pt-1">
-        <h1 className="text-2xl font-bold gradient-text">Lekcije</h1>
+        <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">
+          Lekcije
+        </h1>
         {profile && (
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[13px] font-bold text-muted-foreground mt-1">
             {profile.class_number}. razred, {profile.section_number}. odjeljenje
           </p>
         )}

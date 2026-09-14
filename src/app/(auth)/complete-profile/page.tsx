@@ -150,7 +150,7 @@ export default function CompleteProfilePage() {
 
   if (pageLoading) {
     return (
-      <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
+      <Card className="animate-fade-in">
         <CardContent className="flex items-center justify-center py-16">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </CardContent>
@@ -171,27 +171,26 @@ export default function CompleteProfilePage() {
   }
 
   return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
+    <Card className="animate-fade-in">
       <CardHeader className="text-center space-y-2 pb-2">
-        <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-2" style={{ background: 'var(--theme-primary, #7c5cfc)' }}>
-          <span className="text-2xl font-bold text-white">NR</span>
+        <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)]">
+          <span className="text-2xl font-black text-primary-foreground">NR</span>
         </div>
-        <h1 className="text-2xl font-bold gradient-text">Dopuni profil</h1>
-        <p className="text-muted-foreground text-sm">Unesite podatke da biste završili registraciju</p>
+        <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Dopuni profil</h1>
+        <p className="text-[13px] font-bold text-muted-foreground">Unesite podatke da biste završili registraciju</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
               value={email}
               disabled
-              className="bg-muted/50 text-muted-foreground"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="firstName">Ime</Label>
             <Input
               id="firstName"
@@ -200,10 +199,9 @@ export default function CompleteProfilePage() {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="lastName">Prezime</Label>
             <Input
               id="lastName"
@@ -212,10 +210,9 @@ export default function CompleteProfilePage() {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="password">Lozinka</Label>
             <Input
               id="password"
@@ -224,10 +221,9 @@ export default function CompleteProfilePage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="confirmPassword">Potvrdi lozinku</Label>
             <Input
               id="confirmPassword"
@@ -236,30 +232,29 @@ export default function CompleteProfilePage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="classNumber">Razred</Label>
               <select
                 id="classNumber"
                 value={classNumber}
                 onChange={(e) => setClassNumber(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex h-[50px] w-full appearance-none rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground outline-none transition-colors focus-visible:border-secondary focus-visible:bg-background"
               >
                 {CLASS_LABELS.map((label, i) => (
                   <option key={i + 1} value={i + 1}>{label}</option>
                 ))}
               </select>
             </div>
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="sectionNumber">Odjeljenje</Label>
               <select
                 id="sectionNumber"
                 value={sectionNumber}
                 onChange={(e) => setSectionNumber(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex h-[50px] w-full appearance-none rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground outline-none transition-colors focus-visible:border-secondary focus-visible:bg-background"
               >
                 {[1, 2, 3, 4, 5, 6].map((n) => (
                   <option key={n} value={n}>{n}</option>
@@ -268,11 +263,11 @@ export default function CompleteProfilePage() {
             </div>
           </div>
           {error && (
-            <p className="text-destructive text-sm text-center">{error}</p>
+            <p className="text-destructive text-[13px] font-bold text-center">{error}</p>
           )}
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800"
+            className="w-full"
             disabled={loading}
           >
             {loading ? 'Čuvanje...' : 'Završi registraciju'}

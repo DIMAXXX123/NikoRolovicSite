@@ -87,17 +87,17 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="animate-fade-in border-border/50 bg-card/50 backdrop-blur-xl">
+    <Card className="animate-fade-in">
       <CardHeader className="text-center space-y-2 pb-2">
-        <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-2" style={{ background: 'var(--theme-primary, #7c5cfc)' }}>
-          <span className="text-2xl font-bold text-white">NR</span>
+        <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)]">
+          <span className="text-2xl font-black text-primary-foreground">NR</span>
         </div>
-        <h1 className="text-2xl font-bold gradient-text">Gimnazija Niko Rolović</h1>
-        <p className="text-muted-foreground text-sm">Prijavi se na studentski portal</p>
+        <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Gimnazija Niko Rolović</h1>
+        <p className="text-[13px] font-bold text-muted-foreground">Prijavi se na studentski portal</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
@@ -106,10 +106,9 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="password">Lozinka</Label>
             <Input
               id="password"
@@ -118,40 +117,39 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-sm cursor-pointer group">
-              <div className="relative w-9 h-5 rounded-full bg-primary/80 transition-colors">
+            <label className="flex min-h-11 items-center gap-2 text-[13px] font-bold cursor-pointer group">
+              <div className="relative w-9 h-5 rounded-full bg-primary transition-colors">
                 <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white translate-x-4 transition-transform" />
               </div>
               <span className="text-muted-foreground group-hover:text-foreground transition-colors">Zapamti me</span>
             </label>
-            <Link href="/reset-password" className="text-xs text-primary hover:text-primary/80 transition-colors">
+            <Link href="/reset-password" className="inline-flex min-h-11 items-center text-[13px] font-extrabold text-secondary hover:underline">
               Zaboravio lozinku?
             </Link>
           </div>
           {error && (
-            <p className="text-destructive text-sm text-center">{error}</p>
+            <p className="text-destructive text-[13px] font-bold text-center">{error}</p>
           )}
-          <Button type="submit" className="animate-press w-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800" disabled={loading}>
+          <Button type="submit" className="animate-press w-full" disabled={loading}>
             {loading ? 'Prijava...' : 'Prijavi se'}
           </Button>
         </form>
         <div className="mt-6 text-center space-y-3">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border/50" />
+              <div className="w-full border-t-2 border-border" />
             </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-card px-2 text-muted-foreground">ili</span>
+            <div className="relative flex justify-center">
+              <span className="bg-card px-2 text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">ili</span>
             </div>
           </div>
           <Button
             type="button"
             variant="outline"
-            className="animate-press w-full py-5 text-base font-semibold gap-3 border-border/50 hover:bg-muted/50"
+            className="animate-press w-full gap-3"
             onClick={handleGoogleLogin}
             disabled={googleLoading}
           >
@@ -164,18 +162,20 @@ export default function LoginPage() {
             {googleLoading ? 'Prijava...' : 'Prijavi se sa Google'}
           </Button>
           <Link href="/register" className="block">
-            <Button variant="outline" className="animate-press w-full border-primary/50 text-primary hover:bg-primary/10 hover:border-primary text-base py-5 font-semibold gap-2">
+            <Button variant="outline" className="animate-press w-full gap-2">
               <UserPlus className="w-5 h-5" />
               Nemaš nalog? Registruj se
             </Button>
           </Link>
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full gap-2"
             onClick={() => setShowTour(true)}
-            className="w-full py-3 rounded-xl text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 transition-all hover:bg-muted/50"
           >
             <Eye className="w-4 h-4" />
             Pogledaj sajt
-          </button>
+          </Button>
         </div>
       </CardContent>
     </Card>

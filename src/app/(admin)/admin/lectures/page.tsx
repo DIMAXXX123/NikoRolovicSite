@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Plus, Trash2, X, Bold, Italic, Heading, List, Link2, FunctionSquare,
   ImagePlus, Eye, Edit3, BookOpen, ChevronRight, ChevronDown, ArrowLeft,
@@ -407,7 +408,7 @@ export default function AdminLecturesPage() {
     loadLectures()
   }
 
-  const toolbarBtnClass = "p-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-colors active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
+  const toolbarBtnClass = "rounded-xl bg-background border-2 border-border shadow-[0_2px_0_var(--color-border)] text-foreground hover:bg-muted transition-[transform,box-shadow,background-color] duration-[80ms] active:translate-y-[2px] active:shadow-none min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
 
   // ========== AI EDITOR VIEW ==========
   if (showAI) {
@@ -415,25 +416,25 @@ export default function AdminLecturesPage() {
       return (
         <div className="space-y-4 animate-fade-in pb-8">
           {toast && (
-            <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-2xl text-sm font-medium shadow-lg backdrop-blur-sm animate-slide-down border ${
-              toast.type === 'success' ? 'bg-green-500/90 text-white border-green-400/30' : 'bg-red-500/90 text-white border-red-400/30'
+            <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-3 rounded-2xl text-[13px] font-extrabold bg-card border-2 animate-slide-down ${
+              toast.type === 'success' ? 'text-primary-text border-primary-light-border shadow-[0_2px_0_var(--color-primary-light-border)]' : 'text-[#EA2B2B] border-[#FFB3B5] shadow-[0_2px_0_#FFB3B5]'
             }`}>{toast.message}</div>
           )}
 
-          <button onClick={resetForm} className="text-sm text-purple-400 flex items-center gap-1 hover:gap-2 transition-all">
-            <ArrowLeft className="w-4 h-4" /> Nazad
+          <button onClick={resetForm} className="inline-flex items-center gap-1 min-h-[44px] text-[15px] font-extrabold text-secondary hover:text-secondary-dark transition-colors">
+            <ArrowLeft className="w-5 h-5" strokeWidth={2.6} /> Nazad
           </button>
 
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-400" />
-            <h1 className="text-xl font-bold text-white">AI Lekcija</h1>
+            <Sparkles className="w-6 h-6 text-accent" strokeWidth={2.4} />
+            <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">AI Lekcija</h1>
           </div>
 
           {/* Editable title */}
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="rounded-xl bg-white/[0.06] border-white/[0.1] text-white placeholder:text-white/30 focus:border-purple-500 h-12 text-lg font-bold"
+            className="text-[17px] font-extrabold"
             placeholder="Naslov lekcije"
           />
 
@@ -442,14 +443,14 @@ export default function AdminLecturesPage() {
             <select
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="flex h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-2 text-sm text-white focus:border-purple-500 focus:outline-none transition-colors"
+              className="flex h-[50px] w-full rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground focus:border-secondary focus:bg-background focus:outline-none transition-colors"
             >
               {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
             <select
               value={classNumber}
               onChange={(e) => setClassNumber(e.target.value)}
-              className="flex h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-2 text-sm text-white focus:border-purple-500 focus:outline-none transition-colors"
+              className="flex h-[50px] w-full rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground focus:border-secondary focus:bg-background focus:outline-none transition-colors"
             >
               {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}. razred</option>)}
             </select>
@@ -457,20 +458,20 @@ export default function AdminLecturesPage() {
 
           {/* Sections */}
           <div className="space-y-2.5">
-            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest">Sekcije</h3>
+            <h3 className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Sekcije</h3>
             {aiResult.sections.map((section, i) => (
-              <div key={i} className="rounded-2xl border border-white/[0.08] bg-white/[0.04] overflow-hidden">
+              <div key={i} className="rounded-2xl border-2 border-border bg-card shadow-[0_2px_0_var(--color-border)] overflow-hidden">
                 <button
                   onClick={() => setExpandedSections(prev => ({ ...prev, [i]: !prev[i] }))}
-                  className="w-full flex items-center gap-3 p-4 text-left hover:bg-white/[0.02] transition-colors"
+                  className="w-full min-h-[64px] flex items-center gap-3 p-4 text-left hover:bg-muted transition-colors"
                 >
-                  <div className="w-1 h-8 rounded-full bg-[#7c5cfc] flex-shrink-0" />
-                  <span className="flex-1 font-semibold text-sm text-white">{section.heading}</span>
-                  <ChevronDown className={`w-4 h-4 text-white/40 transition-transform duration-300 ${expandedSections[i] ? 'rotate-180' : ''}`} />
+                  <div className="w-1.5 h-8 rounded-full bg-primary flex-shrink-0" />
+                  <span className="flex-1 text-[17px] leading-[1.3] font-extrabold text-heading">{section.heading}</span>
+                  <ChevronDown strokeWidth={2.6} className={`w-5 h-5 text-disabled transition-transform duration-300 ${expandedSections[i] ? 'rotate-180' : ''}`} />
                 </button>
                 {expandedSections[i] && (
                   <div className="px-4 pb-4 animate-fade-in">
-                    <textarea
+                    <Textarea
                       value={section.content}
                       onChange={(e) => {
                         const updated = { ...aiResult }
@@ -478,7 +479,7 @@ export default function AdminLecturesPage() {
                         updated.sections[i] = { ...updated.sections[i], content: e.target.value }
                         setAiResult(updated)
                       }}
-                      className="w-full min-h-[120px] rounded-xl bg-white/[0.04] border border-white/[0.08] p-3 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 resize-y"
+                      className="resize-y"
                     />
                   </div>
                 )}
@@ -489,11 +490,11 @@ export default function AdminLecturesPage() {
           {/* Key Terms */}
           {aiResult.keyTerms.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest">Ključni pojmovi</h3>
+              <h3 className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Ključni pojmovi</h3>
               <div className="flex flex-wrap gap-2">
                 {aiResult.keyTerms.map((term, i) => (
                   <div key={i} className="group relative">
-                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#7c5cfc]/15 text-[#7c5cfc] text-xs font-medium border border-[#7c5cfc]/20">
+                    <span className="inline-flex items-center gap-1 h-10 pl-3.5 pr-1 rounded-xl bg-secondary-light text-secondary text-[12px] font-extrabold uppercase tracking-[0.04em] border-2 border-secondary-light-border shadow-[0_2px_0_var(--color-secondary-light-border)]">
                       {term.term}
                       <button
                         onClick={() => {
@@ -501,9 +502,9 @@ export default function AdminLecturesPage() {
                           updated.keyTerms = updated.keyTerms.filter((_, idx) => idx !== i)
                           setAiResult(updated)
                         }}
-                        className="ml-1 text-[#7c5cfc]/60 hover:text-red-400"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:text-destructive"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-4 h-4" strokeWidth={2.6} />
                       </button>
                     </span>
                   </div>
@@ -515,11 +516,11 @@ export default function AdminLecturesPage() {
           {/* Summary */}
           {aiResult.summary && (
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest">Rezime</h3>
-              <textarea
+              <h3 className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Rezime</h3>
+              <Textarea
                 value={aiResult.summary}
                 onChange={(e) => setAiResult({ ...aiResult, summary: e.target.value })}
-                className="w-full min-h-[80px] rounded-xl bg-white/[0.04] border border-white/[0.08] p-3 text-sm text-white/90 focus:outline-none focus:border-purple-500/50 resize-y"
+                className="min-h-[80px] resize-y"
               />
             </div>
           )}
@@ -527,11 +528,11 @@ export default function AdminLecturesPage() {
           {/* Quiz editor */}
           {aiResult.quiz.length > 0 && (
             <div className="space-y-2.5">
-              <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest">Kviz ({aiResult.quiz.length} pitanja)</h3>
+              <h3 className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Kviz ({aiResult.quiz.length} pitanja)</h3>
               {aiResult.quiz.map((q, qi) => (
-                <div key={qi} className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 space-y-2">
-                  <div className="flex items-start gap-2">
-                    <span className="w-6 h-6 rounded-full bg-[#7c5cfc]/20 text-[#7c5cfc] text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div key={qi} className="rounded-2xl border-2 border-border bg-card shadow-[0_2px_0_var(--color-border)] p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-full bg-primary-light border-2 border-primary-light-border text-primary-text text-[13px] font-black flex items-center justify-center flex-shrink-0">
                       {qi + 1}
                     </span>
                     <input
@@ -542,7 +543,7 @@ export default function AdminLecturesPage() {
                         updated.quiz[qi] = { ...updated.quiz[qi], question: e.target.value }
                         setAiResult(updated)
                       }}
-                      className="flex-1 bg-transparent border-none text-sm text-white font-medium focus:outline-none"
+                      className="flex-1 min-w-0 h-11 bg-transparent border-none text-[15px] text-heading font-extrabold placeholder:text-disabled focus:outline-none"
                     />
                     <button
                       onClick={() => {
@@ -550,14 +551,14 @@ export default function AdminLecturesPage() {
                         updated.quiz = updated.quiz.filter((_, idx) => idx !== qi)
                         setAiResult(updated)
                       }}
-                      className="text-red-400/60 hover:text-red-400 p-1"
+                      className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-5 h-5" strokeWidth={2.4} />
                     </button>
                   </div>
                   <div className="space-y-1.5 pl-8">
                     {q.options.map((opt, oi) => (
-                      <label key={oi} className="flex items-center gap-2 cursor-pointer group">
+                      <label key={oi} className="flex items-center gap-2 min-h-[44px] cursor-pointer group">
                         <input
                           type="radio"
                           name={`q-${qi}`}
@@ -568,7 +569,7 @@ export default function AdminLecturesPage() {
                             updated.quiz[qi] = { ...updated.quiz[qi], correct: oi }
                             setAiResult(updated)
                           }}
-                          className="accent-[#7c5cfc]"
+                          className="w-5 h-5 accent-primary"
                         />
                         <input
                           value={opt}
@@ -580,8 +581,8 @@ export default function AdminLecturesPage() {
                             updated.quiz[qi] = { ...updated.quiz[qi], options: opts }
                             setAiResult(updated)
                           }}
-                          className={`flex-1 bg-transparent border-none text-xs focus:outline-none ${
-                            q.correct === oi ? 'text-green-400 font-medium' : 'text-white/70'
+                          className={`flex-1 min-w-0 bg-transparent border-none text-[15px] font-bold focus:outline-none ${
+                            q.correct === oi ? 'text-primary-text font-extrabold' : 'text-foreground'
                           }`}
                         />
                       </label>
@@ -595,9 +596,9 @@ export default function AdminLecturesPage() {
           {/* Flashcard editor */}
           {aiResult.flashcards.length > 0 && (
             <div className="space-y-2.5">
-              <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest">Kartice ({aiResult.flashcards.length})</h3>
+              <h3 className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Kartice ({aiResult.flashcards.length})</h3>
               {aiResult.flashcards.map((fc, fi) => (
-                <div key={fi} className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-3 flex items-start gap-2">
+                <div key={fi} className="rounded-2xl border-2 border-border bg-card shadow-[0_2px_0_var(--color-border)] p-3 flex items-center gap-2">
                   <div className="flex-1 space-y-1">
                     <input
                       value={fc.front}
@@ -607,7 +608,7 @@ export default function AdminLecturesPage() {
                         updated.flashcards[fi] = { ...updated.flashcards[fi], front: e.target.value }
                         setAiResult(updated)
                       }}
-                      className="w-full bg-transparent border-none text-sm text-white font-medium focus:outline-none"
+                      className="w-full bg-transparent border-none text-[15px] text-heading font-extrabold placeholder:text-disabled focus:outline-none"
                       placeholder="Prednja strana"
                     />
                     <input
@@ -618,7 +619,7 @@ export default function AdminLecturesPage() {
                         updated.flashcards[fi] = { ...updated.flashcards[fi], back: e.target.value }
                         setAiResult(updated)
                       }}
-                      className="w-full bg-transparent border-none text-xs text-white/60 focus:outline-none"
+                      className="w-full bg-transparent border-none text-[13px] text-muted-foreground font-bold placeholder:text-disabled focus:outline-none"
                       placeholder="Zadnja strana"
                     />
                   </div>
@@ -628,9 +629,9 @@ export default function AdminLecturesPage() {
                       updated.flashcards = updated.flashcards.filter((_, idx) => idx !== fi)
                       setAiResult(updated)
                     }}
-                    className="text-red-400/60 hover:text-red-400 p-1"
+                    className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-5 h-5" strokeWidth={2.6} />
                   </button>
                 </div>
               ))}
@@ -638,9 +639,9 @@ export default function AdminLecturesPage() {
           )}
 
           {/* AI Improve */}
-          <div className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-purple-300">
-              <Wand2 className="w-4 h-4" />
+          <div className="rounded-2xl border-2 border-[#E1BDFF] bg-[#F3E3FF] shadow-[0_2px_0_#E1BDFF] p-4 space-y-3">
+            <div className="flex items-center gap-2 text-[15px] font-extrabold text-accent-dark">
+              <Wand2 className="w-5 h-5" strokeWidth={2.4} />
               Poboljšaj sa AI
             </div>
             <div className="flex gap-2">
@@ -648,21 +649,21 @@ export default function AdminLecturesPage() {
                 value={improvePrompt}
                 onChange={(e) => setImprovePrompt(e.target.value)}
                 placeholder="npr. Dodaj više primjera, objasni detaljnije..."
-                className="rounded-xl bg-white/[0.06] border-white/[0.1] text-white text-sm placeholder:text-white/30 focus:border-purple-500"
+                className="bg-background"
                 onKeyDown={(e) => { if (e.key === 'Enter') handleAIImprove() }}
               />
               <Button
                 onClick={handleAIImprove}
                 disabled={improving || !improvePrompt.trim()}
-                className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 flex-shrink-0"
+                className="px-4 flex-shrink-0 bg-accent text-white shadow-[0_4px_0_var(--color-accent-dark)]"
               >
-                {improving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                {improving ? <Loader2 className="animate-spin" strokeWidth={2.6} /> : <Wand2 strokeWidth={2.6} />}
               </Button>
             </div>
           </div>
 
           {aiError && (
-            <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+            <div className="text-[13px] font-extrabold text-[#EA2B2B] bg-[#FFDFE0] border-2 border-[#FFB3B5] rounded-2xl p-3">
               {aiError}
             </div>
           )}
@@ -671,7 +672,7 @@ export default function AdminLecturesPage() {
           <Button
             onClick={saveAILecture}
             disabled={loading || !title.trim()}
-            className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl h-12 text-base font-medium shadow-lg shadow-purple-500/20"
+            className="w-full"
           >
             {loading ? 'Objavljuje se...' : 'Objavi lekciju'}
           </Button>
@@ -682,37 +683,37 @@ export default function AdminLecturesPage() {
     // AI upload step
     return (
       <div className="space-y-5 animate-fade-in">
-        <button onClick={() => setShowAI(false)} className="text-sm text-purple-400 flex items-center gap-1 hover:gap-2 transition-all">
-          <ArrowLeft className="w-4 h-4" /> Nazad
+        <button onClick={() => setShowAI(false)} className="inline-flex items-center gap-1 min-h-[44px] text-[15px] font-extrabold text-secondary hover:text-secondary-dark transition-colors">
+          <ArrowLeft className="w-5 h-5" strokeWidth={2.6} /> Nazad
         </button>
 
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-purple-400" />
-          <h1 className="text-xl font-bold text-white">AI Generisanje lekcije</h1>
+          <Sparkles className="w-6 h-6 text-accent" strokeWidth={2.4} />
+          <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">AI Generisanje lekcije</h1>
         </div>
 
-        <p className="text-sm text-white/50">
+        <p className="text-[15px] font-bold text-foreground">
           Uploaduj fotografije sa table ili iz udžbenika, a AI će generisati kompletnu lekciju sa kvizom i karticama.
         </p>
 
         {/* Subject & class selection */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label className="text-white/60 text-xs">Predmet</Label>
+          <div>
+            <Label>Predmet</Label>
             <select
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="flex h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-2 text-sm text-white focus:border-purple-500 focus:outline-none transition-colors"
+              className="flex h-[50px] w-full rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground focus:border-secondary focus:bg-background focus:outline-none transition-colors"
             >
               {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-white/60 text-xs">Razred</Label>
+          <div>
+            <Label>Razred</Label>
             <select
               value={classNumber}
               onChange={(e) => setClassNumber(e.target.value)}
-              className="flex h-11 w-full rounded-xl border border-white/[0.1] bg-white/[0.06] px-3 py-2 text-sm text-white focus:border-purple-500 focus:outline-none transition-colors"
+              className="flex h-[50px] w-full rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground focus:border-secondary focus:bg-background focus:outline-none transition-colors"
             >
               {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}. razred</option>)}
             </select>
@@ -722,11 +723,13 @@ export default function AdminLecturesPage() {
         {/* Photo upload area */}
         <div
           onClick={() => aiFileInputRef.current?.click()}
-          className="rounded-2xl border-2 border-dashed border-white/[0.1] bg-white/[0.02] p-8 text-center cursor-pointer hover:border-purple-500/40 hover:bg-purple-500/5 transition-all"
+          className="rounded-2xl border-2 border-dashed border-border bg-muted p-8 text-center cursor-pointer hover:border-secondary transition-colors"
         >
-          <Upload className="w-10 h-10 mx-auto text-white/30 mb-3" />
-          <p className="text-sm font-medium text-white/60">Klikni da dodaš fotografije</p>
-          <p className="text-xs text-white/30 mt-1">JPG, PNG · Max 10 fotografija</p>
+          <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-background border-2 border-border flex items-center justify-center">
+            <Upload className="w-8 h-8 text-disabled" strokeWidth={2.4} />
+          </div>
+          <p className="text-[17px] font-extrabold text-foreground">Klikni da dodaš fotografije</p>
+          <p className="text-[13px] font-bold text-muted-foreground mt-1">JPG, PNG · Max 10 fotografija</p>
         </div>
 
         <input
@@ -746,13 +749,13 @@ export default function AdminLecturesPage() {
         {aiPhotos.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {aiPhotos.map((photo, i) => (
-              <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-white/[0.1]">
+              <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-border">
                 <img src={URL.createObjectURL(photo)} alt="" className="w-full h-full object-cover" />
                 <button
                   onClick={() => setAiPhotos(prev => prev.filter((_, idx) => idx !== i))}
-                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-red-500 transition-colors"
+                  className="absolute top-1 right-1 w-7 h-7 rounded-full bg-destructive flex items-center justify-center text-white hover:bg-destructive-dark transition-colors"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-4 h-4" strokeWidth={2.6} />
                 </button>
               </div>
             ))}
@@ -760,7 +763,7 @@ export default function AdminLecturesPage() {
         )}
 
         {aiError && (
-          <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+          <div className="text-[13px] font-extrabold text-[#EA2B2B] bg-[#FFDFE0] border-2 border-[#FFB3B5] rounded-2xl p-3">
             {aiError}
           </div>
         )}
@@ -768,16 +771,16 @@ export default function AdminLecturesPage() {
         <Button
           onClick={handleAIGenerate}
           disabled={aiLoading || aiPhotos.length === 0}
-          className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl h-12 text-base font-medium shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2"
+          className="w-full"
         >
           {aiLoading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="animate-spin" strokeWidth={2.6} />
               Generisanje... (može potrajati)
             </>
           ) : (
             <>
-              <Sparkles className="w-5 h-5" />
+              <Sparkles strokeWidth={2.6} />
               Generiši lekciju ({aiPhotos.length} {aiPhotos.length === 1 ? 'foto' : 'fotografija'})
             </>
           )}
@@ -790,56 +793,55 @@ export default function AdminLecturesPage() {
   if (showQuizStep) {
     return (
       <div className="space-y-4 animate-fade-in">
-        <div className="flex items-center gap-2 text-blue-400 text-sm">
-          <BookOpen className="w-4 h-4" />
+        <div className="flex items-center gap-2 text-primary-text text-[13px] font-extrabold">
+          <BookOpen className="w-4 h-4" strokeWidth={2.6} />
           <span>Lekcija sačuvana</span>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-white font-medium">Dodaj provjeru znanja</span>
+          <ChevronRight className="w-4 h-4 text-disabled" strokeWidth={2.6} />
+          <span className="text-foreground">Dodaj provjeru znanja</span>
         </div>
 
-        <h2 className="text-xl font-bold text-white">Dodaj kartice za učenje</h2>
-        <p className="text-sm text-slate-400">Kreiraj pitanja i odgovore za provjeru znanja.</p>
+        <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">Dodaj kartice za učenje</h2>
+        <p className="text-[13px] font-bold text-muted-foreground">Kreiraj pitanja i odgovore za provjeru znanja.</p>
 
         {flashcards.map((card, i) => (
-          <div key={i} className="rounded-xl bg-[#1e293b] border border-slate-700/50 p-3">
-            <div className="flex items-start justify-between gap-2">
+          <div key={i} className="rounded-2xl border-2 border-border bg-card shadow-[0_2px_0_var(--color-border)] p-3">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white">{card.question}</p>
-                <p className="text-xs text-slate-400 mt-1">{card.answer}</p>
+                <p className="text-[15px] font-extrabold text-heading">{card.question}</p>
+                <p className="text-[13px] font-bold text-muted-foreground mt-1">{card.answer}</p>
               </div>
-              <button onClick={() => removeFlashcard(i)} className="text-red-400 p-1 hover:text-red-300 flex-shrink-0">
-                <Trash2 className="w-4 h-4" />
+              <button onClick={() => removeFlashcard(i)} className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors">
+                <Trash2 className="w-5 h-5" strokeWidth={2.4} />
               </button>
             </div>
           </div>
         ))}
 
-        <div className="rounded-xl bg-[#1e293b] border border-blue-500/30 p-4 space-y-3">
-          <div className="space-y-2">
-            <Label className="text-slate-200">Pitanje</Label>
+        <div className="rounded-2xl border-2 border-border bg-card shadow-[0_2px_0_var(--color-border)] p-4 space-y-3">
+          <div>
+            <Label>Pitanje</Label>
             <Input
               value={newQuestion}
               onChange={(e) => setNewQuestion(e.target.value)}
               placeholder="npr. Šta je sila?"
-              className="rounded-xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-blue-500"
             />
           </div>
-          <div className="space-y-2">
-            <Label className="text-slate-200">Odgovor</Label>
+          <div>
+            <Label>Odgovor</Label>
             <Input
               value={newAnswer}
               onChange={(e) => setNewAnswer(e.target.value)}
               placeholder="npr. Sila je fizička veličina..."
-              className="rounded-xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-blue-500"
             />
           </div>
           <Button
             type="button"
+            variant="outline"
             onClick={addFlashcard}
             disabled={!newQuestion.trim() || !newAnswer.trim()}
-            className="w-full bg-slate-700 hover:bg-slate-600 text-white rounded-xl"
+            className="w-full"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus strokeWidth={2.6} />
             Dodaj karticu
           </Button>
         </div>
@@ -848,11 +850,11 @@ export default function AdminLecturesPage() {
           <Button
             onClick={saveQuiz}
             disabled={flashcards.length === 0 || loading}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl"
+            className="flex-1"
           >
             {loading ? 'Čuvanje...' : `Sačuvaj (${flashcards.length} kartica)`}
           </Button>
-          <Button onClick={skipQuiz} className="bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl">
+          <Button variant="outline" onClick={skipQuiz}>
             Preskoči
           </Button>
         </div>
@@ -863,41 +865,41 @@ export default function AdminLecturesPage() {
   // ========== FULLSCREEN EDITOR ==========
   if (showForm) {
     return (
-      <div className="fixed inset-0 z-50 bg-[#f8f9fa] flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
-          <button onClick={resetForm} className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Nazad</span>
+      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+        <div className="flex items-center justify-between px-4 py-2 bg-background border-b-2 border-border">
+          <button onClick={resetForm} className="inline-flex items-center gap-1.5 min-h-[44px] text-[15px] font-extrabold text-secondary hover:text-secondary-dark transition-colors">
+            <ArrowLeft className="w-5 h-5" strokeWidth={2.6} />
+            <span>Nazad</span>
           </button>
-          <h2 className="text-sm font-semibold text-gray-800">Nova lekcija</h2>
-          <button onClick={() => setPreview(!preview)} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium">
-            {preview ? <Edit3 className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          <h2 className="text-[17px] font-extrabold text-heading">Nova lekcija</h2>
+          <button onClick={() => setPreview(!preview)} className="inline-flex items-center gap-1 min-h-[44px] text-[15px] font-extrabold text-secondary hover:text-secondary-dark transition-colors">
+            {preview ? <Edit3 className="w-5 h-5" strokeWidth={2.6} /> : <Eye className="w-5 h-5" strokeWidth={2.6} />}
             {preview ? 'Uredi' : 'Pregled'}
           </button>
         </div>
 
-        <div className="px-4 py-3 bg-white border-b border-gray-100 space-y-3">
+        <div className="px-4 py-3 bg-background border-b-2 border-border space-y-3">
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="rounded-xl bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 h-11"
+            className="text-[17px] font-extrabold"
             placeholder="Naslov lekcije"
           />
           <div className="grid grid-cols-2 gap-3">
             <select value={subject} onChange={(e) => setSubject(e.target.value)}
-              className="flex h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors">
+              className="flex h-[50px] w-full rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground focus:border-secondary focus:bg-background focus:outline-none transition-colors">
               {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
             <select value={classNumber} onChange={(e) => setClassNumber(e.target.value)}
-              className="flex h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors">
+              className="flex h-[50px] w-full rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground focus:border-secondary focus:bg-background focus:outline-none transition-colors">
               {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}. razred</option>)}
             </select>
           </div>
         </div>
 
         {!preview && (
-          <div className="flex gap-1.5 px-4 py-2 bg-white border-b border-gray-100 overflow-x-auto">
+          <div className="flex gap-2 px-4 py-2 bg-background border-b-2 border-border overflow-x-auto">
             <button type="button" onClick={handleBold} className={toolbarBtnClass} title="Bold"><Bold className="w-4 h-4" /></button>
             <button type="button" onClick={handleItalic} className={toolbarBtnClass} title="Italic"><Italic className="w-4 h-4" /></button>
             <button type="button" onClick={handleHeading} className={toolbarBtnClass} title="Naslov"><Heading className="w-4 h-4" /></button>
@@ -915,7 +917,7 @@ export default function AdminLecturesPage() {
               contentEditable
               onInput={syncEditor}
               onBlur={syncEditor}
-              className="min-h-full px-4 py-4 text-base text-gray-900 focus:outline-none leading-relaxed prose prose-sm max-w-none [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-gray-900 [&_h2]:mt-4 [&_h2]:mb-2 [&_a]:text-blue-600 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_img]:rounded-xl [&_img]:my-3"
+              className="min-h-full px-4 py-4 text-[15px] font-bold text-foreground focus:outline-none leading-[1.5] prose prose-sm max-w-none [&_h2]:text-[20px] [&_h2]:font-extrabold [&_h2]:text-heading [&_h2]:mt-4 [&_h2]:mb-2 [&_a]:text-secondary [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_img]:rounded-xl [&_img]:my-3"
               data-placeholder="Piši sadržaj lekcije ovdje..."
               suppressContentEditableWarning
               style={{ minHeight: '300px' }}
@@ -923,10 +925,10 @@ export default function AdminLecturesPage() {
           ) : (
             <div className="px-4 py-4">
               {editorHtml ? (
-                <div className="prose prose-sm max-w-none text-gray-900 [&_h2]:text-xl [&_h2]:font-bold [&_a]:text-blue-600 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_img]:rounded-xl [&_img]:my-3"
+                <div className="prose prose-sm max-w-none text-[15px] font-bold text-foreground [&_h2]:text-[20px] [&_h2]:font-extrabold [&_h2]:text-heading [&_a]:text-secondary [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_img]:rounded-xl [&_img]:my-3"
                   dangerouslySetInnerHTML={{ __html: editorHtml }} />
               ) : (
-                <p className="text-gray-400 italic">Nema sadržaja za pregled</p>
+                <p className="text-[13px] font-bold text-muted-foreground">Nema sadržaja za pregled</p>
               )}
             </div>
           )}
@@ -934,11 +936,11 @@ export default function AdminLecturesPage() {
 
         <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={onImageSelected} />
 
-        <div className="px-4 py-3 bg-white border-t border-gray-200 safe-area-bottom">
+        <div className="px-4 py-3 bg-background border-t-2 border-border safe-area-bottom">
           <Button
             onClick={(e) => createLecture(e)}
             disabled={loading || !title.trim()}
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl h-12 text-base font-medium"
+            className="w-full"
           >
             {loading ? 'Objavljuje se...' : 'Objavi lekciju'}
           </Button>
@@ -951,48 +953,50 @@ export default function AdminLecturesPage() {
   return (
     <div className="space-y-4 animate-fade-in">
       {toast && (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-2xl text-sm font-medium shadow-lg backdrop-blur-sm animate-slide-down border ${
-          toast.type === 'success' ? 'bg-green-500/90 text-white border-green-400/30' : 'bg-red-500/90 text-white border-red-400/30'
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-3 rounded-2xl text-[13px] font-extrabold bg-card border-2 animate-slide-down ${
+          toast.type === 'success' ? 'text-primary-text border-primary-light-border shadow-[0_2px_0_var(--color-primary-light-border)]' : 'text-[#EA2B2B] border-[#FFB3B5] shadow-[0_2px_0_#FFB3B5]'
         }`}>{toast.message}</div>
       )}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Lekcije</h1>
+        <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">Lekcije</h1>
         <div className="flex items-center gap-2">
           <Button
             size="sm"
             onClick={() => setShowAI(true)}
-            className="bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all"
+            className="bg-accent text-white shadow-[0_4px_0_var(--color-accent-dark)]"
           >
-            <Sparkles className="w-4 h-4 mr-1" />AI
+            <Sparkles strokeWidth={2.6} />AI
           </Button>
           <Button
             size="sm"
+            variant="secondary"
             onClick={() => { setShowForm(true); setPreview(false) }}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl shadow-lg shadow-blue-500/20 transition-all"
           >
-            <Plus className="w-4 h-4 mr-1" />Nova
+            <Plus strokeWidth={2.6} />Nova
           </Button>
         </div>
       </div>
 
       {lectures.length === 0 ? (
-        <div className="text-center py-20 text-white/30">
-          <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Nema lekcija</p>
+        <div className="text-center py-20">
+          <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
+            <BookOpen className="w-8 h-8 text-disabled" strokeWidth={2.4} />
+          </div>
+          <p className="text-[17px] font-extrabold text-foreground">Nema lekcija</p>
         </div>
       ) : (
         lectures.map((lecture, index) => (
           <div
             key={lecture.id}
-            className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] p-4 flex items-start justify-between hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300 group"
+            className="animate-stagger-item rounded-2xl border-2 border-border bg-card shadow-[0_2px_0_var(--color-border)] p-4 min-h-[64px] flex items-center justify-between gap-3"
             style={{ animationDelay: `${index * 60}ms` }}
           >
-            <div>
-              <h3 className="font-semibold text-white group-hover:text-purple-200 transition-colors">{lecture.title}</h3>
-              <p className="text-xs text-white/40 mt-1">{lecture.subject} · {lecture.class_number}. razred</p>
+            <div className="min-w-0">
+              <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">{lecture.title}</h3>
+              <p className="text-[13px] font-bold text-muted-foreground mt-1">{lecture.subject} · {lecture.class_number}. razred</p>
             </div>
-            <button onClick={() => deleteLecture(lecture.id)} className="text-red-400/60 p-2 hover:text-red-400 transition-colors">
-              <Trash2 className="w-4 h-4" />
+            <button onClick={() => deleteLecture(lecture.id)} className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors">
+              <Trash2 className="w-5 h-5" strokeWidth={2.4} />
             </button>
           </div>
         ))

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [authorized, setAuthorized] = useState(false)
@@ -41,8 +42,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050508]">
-        <div className="w-8 h-8 border-2 border-[#7c5cfc] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-[3px] border-border border-t-primary rounded-full animate-spin" />
       </div>
     )
   }
@@ -50,23 +51,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!authorized) return null
 
   return (
-    <div className="min-h-screen bg-[#050508]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-md mx-auto px-4 pt-4 pb-8">
         {/* Admin Header */}
         <div className="flex items-center justify-between mb-5">
           <Link
             href={isSubPage ? '/admin' : '/profile'}
-            className="flex items-center gap-2 text-sm text-[#7c5cfc] hover:text-[#7c5cfc]/80 transition-colors group"
+            className="inline-flex items-center gap-2 min-h-[44px] text-[15px] font-extrabold text-secondary transition-colors hover:text-secondary-dark group"
           >
-            <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-[#1a1a2e] flex items-center justify-center group-hover:border-[#7c5cfc]/30 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
+            <div className="w-11 h-11 rounded-xl bg-background border-2 border-border shadow-[0_2px_0_var(--color-border)] flex items-center justify-center group-active:translate-y-[2px] group-active:shadow-none transition-[transform,box-shadow] duration-[80ms]">
+              <ArrowLeft className="w-5 h-5" strokeWidth={2.6} />
             </div>
-            <span className="font-medium">{isSubPage ? 'Admin panel' : 'Nazad'}</span>
+            <span>{isSubPage ? 'Admin panel' : 'Nazad'}</span>
           </Link>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0c0c14] border border-[#1a1a2e]">
-            <ShieldCheck className="w-4 h-4 text-[#7c5cfc]" />
-            <span className="text-xs font-semibold text-[#7c5cfc]/80 tracking-wide uppercase">Admin Panel</span>
-          </div>
+          <Badge variant="destructive" className="h-7 gap-1.5 px-3">
+            <ShieldCheck strokeWidth={2.6} />
+            Admin Panel
+          </Badge>
         </div>
         <div className="admin-content">
           {children}

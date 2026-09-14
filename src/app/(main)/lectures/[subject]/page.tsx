@@ -39,20 +39,20 @@ export default async function SubjectLecturesPage({
     <div className="space-y-5 animate-fade-in pb-4">
       <Link
         href="/lectures"
-        className="text-sm text-[#7c5cfc] flex items-center gap-1 hover:gap-2 transition-all font-medium w-fit"
+        className="inline-flex items-center gap-1 h-11 text-[13px] font-extrabold uppercase tracking-[0.04em] text-secondary w-fit hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring rounded-lg"
       >
-        <ChevronLeft className="w-4 h-4" /> Svi predmeti
+        <ChevronLeft className="w-5 h-5" strokeWidth={2.6} /> Svi predmeti
       </Link>
 
       <div className="flex items-center gap-4">
         {subjectInfo && (
-          <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-            <SubjectIcon name={subjectInfo.name} emoji={subjectInfo.emoji} size="lg" />
-          </div>
+          <SubjectIcon name={subjectInfo.name} emoji={subjectInfo.emoji} size="lg" />
         )}
         <div>
-          <h1 className="text-2xl font-bold">{subject}</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">
+            {subject}
+          </h1>
+          <p className="text-[13px] font-bold text-muted-foreground mt-0.5">
             {items.length}
             {hasMore ? '+' : ''} lekcija
           </p>
@@ -60,11 +60,11 @@ export default async function SubjectLecturesPage({
       </div>
 
       {items.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <div className="w-16 h-16 rounded-3xl bg-white/[0.03] flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="w-8 h-8 opacity-30" />
+        <div className="text-center py-20">
+          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-8 h-8 text-disabled" strokeWidth={2.4} />
           </div>
-          <p className="text-sm">Nema lekcija za ovaj predmet</p>
+          <p className="text-[17px] font-extrabold text-foreground">Nema lekcija za ovaj predmet</p>
         </div>
       ) : (
         <LectureList

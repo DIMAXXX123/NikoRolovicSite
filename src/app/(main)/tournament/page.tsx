@@ -1,8 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Trophy, Heart, ChevronRight, Star, Flame, Timer, ArrowLeft } from 'lucide-react'
+import { ChevronRight, Star, Flame, Timer, ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 // ── Types ──────────────────────────────────────────────────────────────
 type Match = {
@@ -42,7 +46,7 @@ const MATCHES: Match[] = [
   { id: 'q2', round: '1/4', teamA: 'III5', teamB: 'II4', winner: 'III5', date: '27.3', time: '12:45', played: true },
   { id: 'q3', round: '1/4', teamA: 'IV3', teamB: 'II3', winner: 'II3', date: '23.3', time: '12:45', played: true },
   { id: 'q4', round: '1/4', teamA: 'III2', teamB: 'III3', winner: 'III2', date: '26.3', time: '12:45', played: true },
-  // Semi Finals — 31.3  
+  // Semi Finals — 31.3
   { id: 's1', round: '1/2', teamA: 'IV6', teamB: 'II3', winner: 'II3', date: '31.3', time: '12:45', played: true },
   { id: 's2', round: '1/2', teamA: 'III5', teamB: 'III2', winner: 'III5', date: '31.3', time: '12:45', played: true },
   // Finale
@@ -51,16 +55,35 @@ const MATCHES: Match[] = [
 
 const QUALIFIED = ['IV6', 'III5', 'II3', 'III3', 'II4', 'IV3', 'I3', 'III2']
 
-const CLASS_COLORS: Record<string, string> = {
-  'I': 'from-emerald-500 to-emerald-700',
-  'II': 'from-blue-500 to-blue-700',
-  'III': 'from-purple-500 to-purple-700',
-  'IV': 'from-amber-500 to-amber-700',
+// Class-year colours from the §2 palette: solid colour for the tint, darker text for contrast on the tint.
+const CLASS_COLORS: Record<string, { fill: string; text: string }> = {
+  'I': { fill: '#58CC02', text: '#58A700' },
+  'II': { fill: '#1CB0F6', text: '#1899D6' },
+  'III': { fill: '#CE82FF', text: '#A560E8' },
+  'IV': { fill: '#FFC800', text: '#C79000' },
 }
 
 function getClassColor(team: string) {
   const roman = team.match(/^(I{1,3}V?|IV)/)?.[0] || ''
-  return CLASS_COLORS[roman] || 'from-zinc-500 to-zinc-700'
+  return CLASS_COLORS[roman] || { fill: '#AFAFAF', text: '#777777' }
+}
+
+/** Team monogram circle: 18% tint of the class colour over white, 2px tinted border. */
+function TeamMonogram({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
+  const c = getClassColor(name)
+  const dim = size === 'lg' ? 'size-11 text-[12px]' : size === 'sm' ? 'size-9 text-[10px]' : 'size-10 text-[11px]'
+  return (
+    <div
+      className={`flex shrink-0 items-center justify-center rounded-full border-2 font-black ${dim}`}
+      style={{
+        background: `color-mix(in srgb, ${c.fill} 18%, white)`,
+        borderColor: `color-mix(in srgb, ${c.fill} 45%, white)`,
+        color: c.text,
+      }}
+    >
+      {name}
+    </div>
+  )
 }
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -113,76 +136,74 @@ export default function TournamentPage() {
   return (
     <div className={`space-y-4 pb-8 transition-all duration-500 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
       {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500 p-5">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-6 -translate-x-6" />
-        <div className="relative">
-          <div className="flex items-center gap-3 mb-2">
-            <button onClick={() => router.back()} className="w-8 h-8 rounded-full bg-black/20 flex items-center justify-center active:scale-90 transition-transform">
-              <ArrowLeft className="w-4 h-4 text-white" />
-            </button>
-            <span className="text-3xl">🏀</span>
-            <div>
-              <h1 className="text-xl font-black text-white">Turnir u košarci</h1>
-              <p className="text-xs text-white/70">Gimnazija Niko Rolović — Mart 2026</p>
-            </div>
+      <div>
+        <div className="flex items-center gap-3 mb-3">
+          <Button size="icon" onClick={() => router.back()} aria-label="Nazad">
+            <ArrowLeft strokeWidth={2.6} />
+          </Button>
+          <div
+            className="flex size-14 shrink-0 items-center justify-center rounded-full border-2 text-3xl"
+            style={{
+              background: 'color-mix(in srgb, #FF9600 18%, white)',
+              borderColor: 'color-mix(in srgb, #FF9600 45%, white)',
+            }}
+          >
+            🏀
           </div>
-          <div className="flex gap-3 mt-3">
-            <div className="bg-black/20 rounded-xl px-3 py-1.5 flex items-center gap-1.5">
-              <Flame className="w-3.5 h-3.5 text-yellow-300" />
-              <span className="text-xs font-bold text-white">{playedMatches.length} odigrano</span>
-            </div>
-            <div className="bg-black/20 rounded-xl px-3 py-1.5 flex items-center gap-1.5">
-              <Timer className="w-3.5 h-3.5 text-white/80" />
-              <span className="text-xs font-bold text-white">{upcomingMatches.length} preostalo</span>
-            </div>
+          <div className="min-w-0">
+            <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">Turnir u košarci</h1>
+            <p className="text-[13px] font-bold text-muted-foreground">Gimnazija Niko Rolović — Mart 2026</p>
           </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="gold">
+            <Flame strokeWidth={2.6} />
+            {playedMatches.length} odigrano
+          </Badge>
+          <Badge variant="outline">
+            <Timer strokeWidth={2.6} />
+            {upcomingMatches.length} preostalo
+          </Badge>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all animate-press ${
-              activeTab === tab.id
-                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
-                : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700/60'
-            }`}
-          >
-            {tab.icon} {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <TabsList>
+          {tabs.map(tab => (
+            <TabsTrigger key={tab.id} value={tab.id} className="gap-1 px-0 text-[11px]">
+              <span aria-hidden="true">{tab.icon}</span> {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* ══════ BRACKET TAB ══════ */}
       {activeTab === 'bracket' && (
-        <div className="space-y-4 animate-fade-in">
+        <div className="space-y-5 animate-fade-in">
           {/* Upcoming */}
           {upcomingMatches.length > 0 && (
             <div>
-              <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Timer className="w-4 h-4 text-orange-400" /> Sljedeći mečevi
+              <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading mb-3 flex items-center gap-2">
+                <Timer className="w-5 h-5 text-orange" strokeWidth={2.6} /> Sljedeći mečevi
               </h2>
-              <div className="space-y-2 animate-stagger-scale">
+              <div className="space-y-2.5 animate-stagger-scale">
                 {upcomingMatches.map((m, i) => (
-                  <div
+                  <Card
                     key={m.id}
-                    className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 transition-all hover:border-orange-500/30 hover-float"
+                    className="gap-3"
                     style={{ animationDelay: `${i * 80}ms` }}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold text-orange-400 uppercase">{m.round} finala</span>
-                      <span className="text-[10px] text-zinc-500">{m.date} • {m.time}</span>
-                    </div>
                     <div className="flex items-center justify-between">
+                      <span className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-orange">{m.round} finala</span>
+                      <span className="text-[13px] font-bold text-muted-foreground">{m.date} • {m.time}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
                       <TeamBadge name={m.teamA} isFav={favorites.has(m.teamA)} onFav={() => toggleFavorite(m.teamA)} />
-                      <span className="text-xs font-bold text-zinc-600">VS</span>
+                      <span className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-disabled">VS</span>
                       <TeamBadge name={m.teamB} isFav={favorites.has(m.teamB)} onFav={() => toggleFavorite(m.teamB)} right />
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             </div>
@@ -190,18 +211,18 @@ export default function TournamentPage() {
 
           {/* Qualified teams */}
           <div>
-            <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Star className="w-4 h-4 text-yellow-400" /> U četvrtfinalu
+            <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading mb-3 flex items-center gap-2">
+              <Star className="w-5 h-5 text-gold fill-gold" strokeWidth={2.6} /> U četvrtfinalu
             </h2>
             <div className="flex flex-wrap gap-2">
               {QUALIFIED.map(team => (
                 <button
                   key={team}
                   onClick={() => toggleFavorite(team)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 animate-press ${
+                  className={`inline-flex h-11 items-center rounded-xl border-2 px-3.5 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color] duration-[80ms] active:translate-y-[2px] active:shadow-none ${
                     favorites.has(team)
-                      ? 'bg-orange-500/20 border border-orange-500/40 text-orange-300'
-                      : 'bg-zinc-800 border border-zinc-700 text-zinc-300'
+                      ? 'bg-[#FFF4C4] border-[#FFE28A] text-[#C79000] shadow-[0_2px_0_#FFE28A]'
+                      : 'bg-background border-border text-muted-foreground shadow-[0_2px_0_var(--color-border)]'
                   }`}
                 >
                   {favorites.has(team) ? '❤️ ' : ''}{team}
@@ -217,10 +238,10 @@ export default function TournamentPage() {
         <div className="animate-fade-in overflow-x-auto -mx-4 px-4 pb-4">
           {/* Column headers */}
           <div className="min-w-[620px] flex gap-4 mb-3 px-1">
-            <div className="w-[135px] shrink-0 text-center text-[10px] font-bold text-zinc-500 uppercase">1/8 Finala</div>
-            <div className="w-[135px] shrink-0 text-center text-[10px] font-bold text-zinc-500 uppercase">Četvrtfinale</div>
-            <div className="w-[135px] shrink-0 text-center text-[10px] font-bold text-zinc-500 uppercase">Polufinale</div>
-            <div className="w-[135px] shrink-0 text-center text-[10px] font-bold text-amber-400 uppercase">🏆 Finale</div>
+            <div className="w-[135px] shrink-0 text-center text-[12px] font-extrabold tracking-[0.04em] text-muted-foreground uppercase">1/8 Finala</div>
+            <div className="w-[135px] shrink-0 text-center text-[12px] font-extrabold tracking-[0.04em] text-muted-foreground uppercase">Četvrtfinale</div>
+            <div className="w-[135px] shrink-0 text-center text-[12px] font-extrabold tracking-[0.04em] text-muted-foreground uppercase">Polufinale</div>
+            <div className="w-[135px] shrink-0 text-center text-[12px] font-extrabold tracking-[0.04em] text-[#C79000] uppercase">🏆 Finale</div>
           </div>
           <div className="min-w-[620px] flex gap-4 items-stretch px-1">
             {/* Round 1 - 1/8 Finals (8 matches) */}
@@ -260,45 +281,41 @@ export default function TournamentPage() {
 
       {/* ══════ RESULTS TAB ══════ */}
       {activeTab === 'results' && (
-        <div className="space-y-2 animate-fade-in animate-stagger-scale">
+        <div className="space-y-2.5 animate-fade-in animate-stagger-scale">
           {playedMatches.map((m, i) => {
             const aWon = m.winner ? m.winner === m.teamA : (m.scoreA || 0) > (m.scoreB || 0)
             return (
-              <div
+              <Card
                 key={m.id}
-                className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 transition-all hover-float"
+                className="gap-2"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase">{m.round} finala</span>
-                  {m.technical && <span className="text-[9px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded font-bold">TEH.</span>}
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">{m.round} finala</span>
+                  {m.technical && <Badge variant="destructive">TEH.</Badge>}
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 flex-1">
-                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${getClassColor(m.teamA)} flex items-center justify-center`}>
-                      <span className="text-[10px] font-black text-white">{m.teamA}</span>
-                    </div>
-                    <span className={`text-sm font-bold ${aWon ? 'text-white' : 'text-zinc-500'}`}>{m.teamA}</span>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <TeamMonogram name={m.teamA} size="sm" />
+                    <span className={`text-[15px] font-extrabold truncate ${aWon ? 'text-heading' : 'text-muted-foreground'}`}>{m.teamA}</span>
                   </div>
                   <div className="flex items-center gap-2 mx-3">
                     {m.scoreA !== undefined ? (
                       <>
-                        <span className={`text-lg font-black tabular-nums ${aWon ? 'text-green-400' : 'text-zinc-500'}`}>{m.scoreA}</span>
-                        <span className="text-zinc-600 text-xs">:</span>
-                        <span className={`text-lg font-black tabular-nums ${!aWon ? 'text-green-400' : 'text-zinc-500'}`}>{m.scoreB}</span>
+                        <span className={`text-[20px] font-black tabular-nums ${aWon ? 'text-primary-text' : 'text-muted-foreground'}`}>{m.scoreA}</span>
+                        <span className="text-disabled text-[13px] font-extrabold">:</span>
+                        <span className={`text-[20px] font-black tabular-nums ${!aWon ? 'text-primary-text' : 'text-muted-foreground'}`}>{m.scoreB}</span>
                       </>
                     ) : (
-                      <span className={`text-sm font-bold ${aWon ? 'text-green-400' : 'text-green-400'}`}>✓ {m.winner}</span>
+                      <span className="text-[15px] font-extrabold text-primary-text">✓ {m.winner}</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 flex-1 justify-end">
-                    <span className={`text-sm font-bold ${!aWon ? 'text-white' : 'text-zinc-500'}`}>{m.teamB}</span>
-                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${getClassColor(m.teamB)} flex items-center justify-center`}>
-                      <span className="text-[10px] font-black text-white">{m.teamB}</span>
-                    </div>
+                  <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+                    <span className={`text-[15px] font-extrabold truncate ${!aWon ? 'text-heading' : 'text-muted-foreground'}`}>{m.teamB}</span>
+                    <TeamMonogram name={m.teamB} size="sm" />
                   </div>
                 </div>
-              </div>
+              </Card>
             )
           })}
         </div>
@@ -306,7 +323,7 @@ export default function TournamentPage() {
 
       {/* ══════ TEAMS TAB ══════ */}
       {activeTab === 'teams' && (
-        <div className="space-y-2 animate-fade-in animate-stagger-scale">
+        <div className="space-y-2.5 animate-fade-in animate-stagger-scale">
           {[...teamStats.values()]
             .sort((a, b) => b.wins - a.wins || (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst))
             .map((team, i) => {
@@ -316,28 +333,29 @@ export default function TournamentPage() {
                 <button
                   key={team.name}
                   onClick={() => toggleFavorite(team.name)}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all active:scale-[0.98] ${
-                    isFav ? 'bg-orange-500/10 border border-orange-500/30' : 'bg-zinc-900/80 border border-zinc-800'
+                  className={`w-full flex items-center gap-3 min-h-[64px] px-4 py-3 rounded-2xl border-2 text-left transition-[transform,box-shadow,background-color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none ${
+                    isFav
+                      ? 'bg-[#FFF9E0] border-[#FFE28A] shadow-[0_2px_0_#FFE28A]'
+                      : 'bg-background border-border shadow-[0_2px_0_var(--color-border)]'
                   }`}
                 >
-                  <span className="text-xs font-bold text-zinc-500 w-5">{i + 1}.</span>
-                  <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${getClassColor(team.name)} flex items-center justify-center shrink-0`}>
-                    <span className="text-[10px] font-black text-white">{team.name}</span>
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className={`text-sm font-bold ${isFav ? 'text-orange-300' : 'text-white'}`}>
+                  <span className="text-[13px] font-extrabold text-muted-foreground w-5 tabular-nums">{i + 1}.</span>
+                  <TeamMonogram name={team.name} size="lg" />
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className={`text-[17px] leading-[1.3] font-extrabold truncate ${isFav ? 'text-[#C79000]' : 'text-heading'}`}>
                       {isFav ? '❤️ ' : ''}{team.name}
                     </p>
-                    <p className="text-[10px] text-zinc-500">
+                    <p className="text-[13px] font-bold text-muted-foreground">
                       {team.wins}W {team.losses}L • {team.pointsFor} bodova
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-bold tabular-nums ${diff > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className="text-right shrink-0">
+                    <p className={`text-[17px] font-black tabular-nums ${diff > 0 ? 'text-primary-text' : 'text-destructive'}`}>
                       {diff > 0 ? '+' : ''}{diff}
                     </p>
-                    <p className="text-[10px] text-zinc-500">razlika</p>
+                    <p className="text-[13px] font-bold text-muted-foreground">razlika</p>
                   </div>
+                  <ChevronRight className="size-5 shrink-0 text-disabled" strokeWidth={2.6} />
                 </button>
               )
             })}
@@ -355,18 +373,18 @@ function BracketMatch({ teamA, teamB, scoreA, scoreB, date, tech, isBye, isFinal
   const aWon = winner ? winner === teamA : (scoreA !== undefined && scoreB !== undefined && scoreA! > scoreB!)
   const bWon = winner ? winner === teamB : (scoreA !== undefined && scoreB !== undefined && scoreB! > scoreA!)
   return (
-    <div className={`rounded-lg overflow-hidden border hover-float transition-all ${isFinal ? 'border-amber-500/40 bg-amber-500/5' : 'border-zinc-700/60 bg-zinc-900/60'}`}>
-      <div className={`flex items-center justify-between px-2 py-1.5 border-b border-zinc-700/40 ${aWon ? 'bg-green-500/10' : ''}`}>
-        <span className={`text-[11px] font-bold ${isBye && teamA === '—' ? 'text-zinc-600' : aWon ? 'text-green-400' : 'text-zinc-300'}`}>{teamA}</span>
-        {scoreA !== undefined && <span className={`text-[11px] font-bold tabular-nums ${aWon ? 'text-green-400' : 'text-zinc-500'}`}>{scoreA}</span>}
-        {winner && scoreA === undefined && aWon && <span className="text-[11px] text-green-400">✓</span>}
+    <div className={`rounded-xl overflow-hidden border-2 ${isFinal ? 'border-[#FFE28A] bg-[#FFF9E0] shadow-[0_2px_0_#FFE28A]' : 'border-border bg-background shadow-[0_2px_0_var(--color-border)]'}`}>
+      <div className={`flex items-center justify-between px-2.5 py-1.5 border-b-2 border-border ${aWon ? 'bg-primary-light' : ''}`}>
+        <span className={`text-[12px] font-extrabold ${isBye && teamA === '—' ? 'text-disabled' : aWon ? 'text-primary-text' : 'text-foreground'}`}>{teamA}</span>
+        {scoreA !== undefined && <span className={`text-[12px] font-extrabold tabular-nums ${aWon ? 'text-primary-text' : 'text-muted-foreground'}`}>{scoreA}</span>}
+        {winner && scoreA === undefined && aWon && <span className="text-[12px] font-extrabold text-primary-text">✓</span>}
       </div>
-      <div className={`flex items-center justify-between px-2 py-1.5 ${bWon ? 'bg-green-500/10' : ''}`}>
-        <span className={`text-[11px] font-bold ${bWon ? 'text-green-400' : teamB === '?' ? 'text-zinc-600' : 'text-zinc-300'}`}>{teamB}</span>
-        {scoreB !== undefined && <span className={`text-[11px] font-bold tabular-nums ${bWon ? 'text-green-400' : 'text-zinc-500'}`}>{scoreB}</span>}
-        {winner && scoreB === undefined && bWon && <span className="text-[11px] text-green-400">✓</span>}
-        {!played && date && <span className="text-[9px] text-zinc-600">{date}</span>}
-        {tech && <span className="text-[8px] text-red-400 font-bold">TEH</span>}
+      <div className={`flex items-center justify-between px-2.5 py-1.5 ${bWon ? 'bg-primary-light' : ''}`}>
+        <span className={`text-[12px] font-extrabold ${bWon ? 'text-primary-text' : teamB === '?' ? 'text-disabled' : 'text-foreground'}`}>{teamB}</span>
+        {scoreB !== undefined && <span className={`text-[12px] font-extrabold tabular-nums ${bWon ? 'text-primary-text' : 'text-muted-foreground'}`}>{scoreB}</span>}
+        {winner && scoreB === undefined && bWon && <span className="text-[12px] font-extrabold text-primary-text">✓</span>}
+        {!played && date && <span className="text-[11px] font-bold text-disabled">{date}</span>}
+        {tech && <span className="text-[10px] font-extrabold uppercase text-destructive">TEH</span>}
       </div>
     </div>
   )
@@ -375,17 +393,17 @@ function BracketMatch({ teamA, teamB, scoreA, scoreB, date, tech, isBye, isFinal
 // ── Team Badge Component ───────────────────────────────────────────────
 function TeamBadge({ name, isFav, onFav, right }: { name: string; isFav: boolean; onFav: () => void; right?: boolean }) {
   return (
-    <div className={`flex items-center gap-2 flex-1 ${right ? 'flex-row-reverse' : ''}`}>
-      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${getClassColor(name)} flex items-center justify-center shadow-lg`}>
-        <span className="text-xs font-black text-white">{name}</span>
-      </div>
-      <div className={right ? 'text-right' : ''}>
-        <p className="text-sm font-bold text-white">{name}</p>
+    <div className={`flex items-center gap-2 flex-1 min-w-0 ${right ? 'flex-row-reverse' : ''}`}>
+      <TeamMonogram name={name} size="lg" />
+      <div className={`flex items-center gap-1 min-w-0 ${right ? 'flex-row-reverse text-right' : ''}`}>
+        <p className="text-[17px] leading-[1.3] font-extrabold text-heading truncate">{name}</p>
         <button
           onClick={(e) => { e.stopPropagation(); onFav() }}
-          className="transition-all active:scale-90"
+          className="flex size-11 shrink-0 items-center justify-center rounded-xl transition-transform active:scale-90 hover:bg-muted"
+          aria-label={`Omiljeni tim ${name}`}
+          aria-pressed={isFav}
         >
-          <Heart className={`w-3.5 h-3.5 ${isFav ? 'text-red-500 fill-red-500' : 'text-zinc-600'}`} />
+          <Star className={`w-5 h-5 ${isFav ? 'text-gold fill-gold' : 'text-disabled'}`} strokeWidth={2.6} />
         </button>
       </div>
     </div>

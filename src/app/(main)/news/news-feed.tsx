@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { fetchNewsPage } from '@/lib/news-data'
 import { NewsHeroCard, NewsRegularCard } from './news-card'
+import { Button } from '@/components/ui/button'
 import type { NewsItem } from '@/lib/types'
 
 interface NewsFeedProps {
@@ -223,10 +224,10 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
   if (news.length === 0) {
     return (
       <div className="text-center py-24">
-        <div className="w-16 h-16 rounded-3xl bg-[#0c0c14] border border-[#1a1a2e] flex items-center justify-center mx-auto mb-4">
-          <Newspaper className="w-8 h-8 text-[#3d3d50]" />
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+          <Newspaper className="w-8 h-8 text-disabled" />
         </div>
-        <p className="text-[#6b6b80] text-sm">Jos nema novosti</p>
+        <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground">Jos nema novosti</p>
       </div>
     )
   }
@@ -264,13 +265,14 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
 
       {hasMore && (
         <div ref={sentinelRef} className="pt-2">
-          <button
+          <Button
+            variant="outline"
             onClick={loadMore}
             disabled={loadingMore}
-            className="w-full py-3.5 rounded-2xl border border-dashed border-white/[0.08] text-sm text-[#6b6b80] hover:border-[#7c5cfc]/30 hover:text-[#7c5cfc] transition-all active:scale-[0.98] disabled:opacity-50"
+            className="w-full"
           >
             {loadingMore ? 'Učitavanje…' : 'Učitaj još'}
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -285,7 +287,7 @@ function Newspaper({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="2.4"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
