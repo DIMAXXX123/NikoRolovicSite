@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronDown, LogOut, ClipboardCopy, ExternalLink, Loader2, BookOpen, AlertCircle } from 'lucide-react'
+import { ChevronDown, LogOut, ClipboardCopy, ExternalLink, Loader2, BookOpen, AlertCircle, Smartphone, Monitor, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -75,6 +75,8 @@ export default function EDnevnikPage() {
   const [data, setData] = useState<EDnevnikData | null>(null)
   const [tokenInput, setTokenInput] = useState('')
   const [showInstructions, setShowInstructions] = useState(false)
+  const [guide, setGuide] = useState<'phone' | 'desktop'>('phone')
+  const [copied, setCopied] = useState<'bookmarklet' | 'console' | null>(null)
   const [expandedSubject, setExpandedSubject] = useState<string | null>(null)
   const supabase = createClient()
 
@@ -109,7 +111,14 @@ export default function EDnevnikPage() {
 
       if (!res.ok) {
         const text = await res.text()
-        throw new Error(text || `Greška ${res.status}`)
+        // eDnevnik answers with JSON like {"msg":"Sesija je istekla"} — show the message, not the JSON.
+        let message = text
+        try {
+          const parsed = JSON.parse(text) as { msg?: string; error?: string }
+          message = parsed.msg || parsed.error || text
+        } catch { /* plain text */ }
+        if (/istekla|expired/i.test(message)) message = 'Sesija na eDnevniku je istekla — prijavi se ponovo na dnevnik.edu.me i ponovi korak.'
+        throw new Error(message || `Greška ${res.status}`)
       }
 
       const result = await res.json()
@@ -182,6 +191,30 @@ export default function EDnevnikPage() {
   function handleRefresh() {
     const token = localStorage.getItem(TOKEN_KEY)
     if (token) fetchEDnevnik(token)
+  }
+
+  // The phone bookmarklet returns here as /ednevnik#token=… — the token stays
+  // in the fragment, so it never reaches the server or its logs.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const m = window.location.hash.match(/[#&]token=([^&]+)/)
+    if (!m) return
+    const token = decodeURIComponent(m[1]).trim()
+    window.history.replaceState(null, '', window.location.pathname)
+    if (token) fetchEDnevnik(token)
+  }, [fetchEDnevnik])
+
+  function bookmarkletCode() {
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    return `javascript:(function(){var t=localStorage.getItem('MEIS_EDU_TOKEN');if(!t){alert('Prvo se prijavi na eDnevnik, pa ponovo otvori ovaj bookmark.');return;}location.href='${origin}/ednevnik#token='+encodeURIComponent(t);})()`
+  }
+
+  async function copyText(text: string, what: 'bookmarklet' | 'console') {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(what)
+      setTimeout(() => setCopied(null), 2000)
+    } catch { /* clipboard unavailable */ }
   }
 
   // Calculate overall average — use finalGrade when available, fall back to average
@@ -404,61 +437,97 @@ export default function EDnevnikPage() {
       </Button>
 
       {showInstructions && (
-        <Card className="animate-fade-in">
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">1</span>
-              <div>
-                <p className="text-[15px] font-extrabold text-heading">Otvori eDnevnik</p>
-                <a
-                  href="https://dnevnik.edu.me"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-0.5 inline-flex min-h-11 items-center gap-1 text-[13px] font-extrabold text-secondary hover:underline"
-                >
-                  dnevnik.edu.me <ExternalLink className="size-3.5" strokeWidth={2.6} />
-                </a>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">2</span>
-              <p className="text-[15px] font-extrabold text-heading">Prijavi se na svoj nalog</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">3</span>
-              <div>
-                <p className="text-[15px] font-extrabold text-heading">Otvori konzolu preglednika</p>
-                <p className="mt-0.5 text-[13px] font-bold text-muted-foreground">Pritisni F12, zatim klikni na tab &quot;Console&quot;</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">4</span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[15px] font-extrabold text-heading">Kopiraj token</p>
-                <p className="mt-0.5 mb-2 text-[13px] font-bold text-muted-foreground">Unesi ovu komandu u konzolu:</p>
-                <div className="relative">
-                  <code className="block rounded-xl border-2 border-border bg-muted p-3 pr-14 font-mono text-[13px] font-bold break-all text-secondary">
-                    copy(localStorage.getItem(&apos;MEIS_EDU_TOKEN&apos;))
-                  </code>
-                  <Button
-                    size="icon"
-                    onClick={() => {
-                      navigator.clipboard.writeText("copy(localStorage.getItem('MEIS_EDU_TOKEN'))")
-                    }}
-                    className="absolute top-1.5 right-1.5 shadow-none active:translate-y-0"
-                    title="Kopiraj komandu"
-                    aria-label="Kopiraj komandu"
-                  >
-                    <ClipboardCopy strokeWidth={2.4} />
+        <Card className="animate-fade-in space-y-4">
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => setGuide('phone')} className={`h-11 rounded-xl border-2 text-[12px] font-extrabold uppercase tracking-[0.04em] flex items-center justify-center gap-2 transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none ${guide === 'phone' ? 'border-secondary-light-border bg-secondary-light text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]' : 'border-border bg-card text-muted-foreground shadow-[0_2px_0_var(--color-border)]'}`}>
+              <Smartphone className="size-4" strokeWidth={2.6} /> Telefon
+            </button>
+            <button type="button" onClick={() => setGuide('desktop')} className={`h-11 rounded-xl border-2 text-[12px] font-extrabold uppercase tracking-[0.04em] flex items-center justify-center gap-2 transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none ${guide === 'desktop' ? 'border-secondary-light-border bg-secondary-light text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]' : 'border-border bg-card text-muted-foreground shadow-[0_2px_0_var(--color-border)]'}`}>
+              <Monitor className="size-4" strokeWidth={2.6} /> Računar
+            </button>
+          </div>
+
+          {guide === 'phone' ? (
+            <div className="space-y-3">
+              <p className="text-[13px] font-bold text-muted-foreground">Jednom napraviš bookmark. Poslije toga: prijavi se na eDnevnik → tapni bookmark → vraća te ovdje već povezanog.</p>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">1</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[15px] font-extrabold text-heading">Kopiraj kod bookmarka</p>
+                  <Button variant="outline" onClick={() => copyText(bookmarkletCode(), 'bookmarklet')} className="mt-2 w-full">
+                    {copied === 'bookmarklet' ? <Check strokeWidth={2.6} /> : <ClipboardCopy strokeWidth={2.4} />}
+                    {copied === 'bookmarklet' ? 'Kopirano' : 'Kopiraj kod'}
                   </Button>
                 </div>
               </div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">2</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[15px] font-extrabold text-heading">Otvori eDnevnik u Safariju / Chrome-u i prijavi se</p>
+                  <a href="https://www.dnevnik.edu.me" target="_blank" rel="noopener noreferrer" className="mt-0.5 inline-flex min-h-11 items-center gap-1 text-[13px] font-extrabold text-secondary hover:underline">
+                    dnevnik.edu.me <ExternalLink className="size-3.5" strokeWidth={2.6} />
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">3</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[15px] font-extrabold text-heading">Sačuvaj stranicu kao bookmark i zamijeni mu adresu kopiranim kodom</p>
+                  <p className="mt-0.5 text-[13px] font-bold text-muted-foreground">iPhone: Dijeli → Dodaj oznaku (ime npr. „NR eDnevnik“) → Oznake → Uredi → tapni oznaku → u polje adrese zalijepi kod → Gotovo.</p>
+                  <p className="mt-0.5 text-[13px] font-bold text-muted-foreground">Android (Chrome): ⋮ → ☆ → Uredi → zalijepi kod u polje URL.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">4</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[15px] font-extrabold text-heading">Dok si prijavljen na eDnevnik, otvori taj bookmark</p>
+                  <p className="mt-0.5 text-[13px] font-bold text-muted-foreground">iPhone: Oznake → „NR eDnevnik“. Android: ukucaj ime bookmarka u adresnu traku i izaberi ga. Vraća te na ovu stranicu i povezuje nalog automatski.</p>
+                </div>
+              </div>
             </div>
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">5</span>
-              <p className="text-[15px] font-extrabold text-heading">Zalijepi token ispod i klikni &quot;Poveži&quot;</p>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">1</span>
+                <div>
+                  <p className="text-[15px] font-extrabold text-heading">Otvori eDnevnik</p>
+                  <a href="https://www.dnevnik.edu.me" target="_blank" rel="noopener noreferrer" className="mt-0.5 inline-flex min-h-11 items-center gap-1 text-[13px] font-extrabold text-secondary hover:underline">
+                    dnevnik.edu.me <ExternalLink className="size-3.5" strokeWidth={2.6} />
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">2</span>
+                <p className="text-[15px] font-extrabold text-heading">Prijavi se na svoj nalog</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">3</span>
+                <div>
+                  <p className="text-[15px] font-extrabold text-heading">Otvori konzolu preglednika</p>
+                  <p className="mt-0.5 text-[13px] font-bold text-muted-foreground">Pritisni F12, zatim klikni na tab &quot;Console&quot;</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">4</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[15px] font-extrabold text-heading">Kopiraj token</p>
+                  <p className="mt-0.5 mb-2 text-[13px] font-bold text-muted-foreground">Unesi ovu komandu u konzolu (na dnevnik.edu.me, poslije prijave):</p>
+                  <div className="relative">
+                    <code className="block rounded-xl border-2 border-border bg-muted p-3 pr-14 font-mono text-[13px] font-bold break-all text-secondary">
+                      copy(localStorage.getItem(&apos;MEIS_EDU_TOKEN&apos;))
+                    </code>
+                    <Button size="icon" onClick={() => copyText("copy(localStorage.getItem('MEIS_EDU_TOKEN'))", 'console')} className="absolute top-1.5 right-1.5 shadow-none active:translate-y-0" title="Kopiraj komandu" aria-label="Kopiraj komandu">
+                      {copied === 'console' ? <Check strokeWidth={2.6} /> : <ClipboardCopy strokeWidth={2.4} />}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">5</span>
+                <p className="text-[15px] font-extrabold text-heading">Zalijepi token ispod i klikni &quot;Poveži&quot;</p>
+              </div>
             </div>
-          </div>
+          )}
         </Card>
       )}
 
