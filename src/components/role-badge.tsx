@@ -25,6 +25,10 @@ const roleConfig: Record<
     className: 'border-[#FFD1A3] bg-[#FFF0E0] text-orange',
   },
   student: { label: '', icon: null, variant: 'secondary', className: '' },
+  teacher: { label: 'Nastavnik', icon: Star, variant: 'default', className: '' },
+  razredni: { label: 'Razredni', icon: Star, variant: 'default', className: '' },
+  pedagog: { label: 'Pedagog', icon: Star, variant: 'secondary', className: '' },
+  direktor: { label: 'Direktor', icon: Crown, variant: 'gold', className: '' },
 }
 
 export function RoleBadge({ role, size = 'sm' }: RoleBadgeProps) {

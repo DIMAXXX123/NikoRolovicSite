@@ -9,6 +9,7 @@ import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper
 import { useThemeCycle } from '@/components/theme-switcher'
 import { RoleBadge } from '@/components/role-badge'
 import { GuestLoginButton } from '@/components/guest-login-button'
+import { RoleSwitcher } from '@/components/role-switcher'
 import { RoleAnimation } from '@/components/role-animation'
 import { AVATARS, AvatarById } from '@/components/avatars'
 import { GpaCalculator } from './calculator'
@@ -31,6 +32,10 @@ const roleLabel: Record<string, string> = {
   moderator: 'Moderator',
   admin: 'Administrator',
   creator: 'Kreator',
+  teacher: 'Nastavnik',
+  razredni: 'Razredni starješina',
+  pedagog: 'Pedagog',
+  direktor: 'Direktor',
 }
 
 // 18% tint of a palette colour over white (§2) — used for leading circles.
@@ -296,6 +301,8 @@ export default function ProfilePage() {
     const guestFontLabels: Record<string, string> = { small: 'Malo', normal: 'Normalno', large: 'Veliko' }
     return (
       <div className="space-y-4 animate-fade-in pb-6">
+        <RoleSwitcher />
+
         {/* Guest hero */}
         <Card className="p-5 flex flex-col items-center text-center gap-3">
           <div className="w-20 h-20 rounded-full bg-muted border-2 border-border flex items-center justify-center text-disabled">
@@ -545,6 +552,8 @@ export default function ProfilePage() {
           {showStats ? 'Sakrij' : 'Prikaži više'}
         </Button>
       </Card>
+
+      <RoleSwitcher />
 
       {/* Action buttons */}
       <div className="space-y-2.5" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '300ms', opacity: 0 }}>
