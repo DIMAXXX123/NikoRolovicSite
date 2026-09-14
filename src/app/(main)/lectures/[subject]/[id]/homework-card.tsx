@@ -293,6 +293,32 @@ function HomeworkImages({ images, compact, onOpen }: { images: string[]; compact
 }
 
 // ---------------------------------------------------------------------------
+// Method hint — hidden until the pupil asks. The task is meant to be tried
+// first; "Pomozi" reveals the hint and stays open for the rest of the visit.
+// ---------------------------------------------------------------------------
+
+function TaskHint({ how }: { how: string }) {
+  const [open, setOpen] = useState(false)
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-1 inline-flex h-9 items-center gap-1.5 rounded-xl border-2 border-[#FFE28A] bg-[#FFF9E0] px-3 text-[12px] font-extrabold uppercase tracking-[0.04em] text-[#C79000] shadow-[0_2px_0_#FFE28A] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      >
+        <Lightbulb className="w-4 h-4" strokeWidth={2.6} /> Pomozi
+      </button>
+    )
+  }
+  return (
+    <p className="flex items-start gap-1.5 text-[13px] font-bold text-muted-foreground leading-[1.4] animate-fade-in">
+      <Lightbulb className="w-4 h-4 shrink-0 mt-px text-[#C79000]" strokeWidth={2.6} />
+      <span>{formatMath(how)}</span>
+    </p>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // The card
 // ---------------------------------------------------------------------------
 
@@ -401,12 +427,7 @@ export function HomeworkCard({ lectureId, homework, compact = false }: HomeworkC
                 <p className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-[#C79000]">{formatMath(task.label)}</p>
               )}
               {task.what && <p className="text-[15px] font-bold text-foreground leading-[1.5]">{formatMath(task.what)}</p>}
-              {task.how && (
-                <p className="flex items-start gap-1.5 text-[13px] font-bold text-muted-foreground leading-[1.4]">
-                  <Lightbulb className="w-4 h-4 shrink-0 mt-px text-[#C79000]" strokeWidth={2.6} />
-                  <span>{formatMath(task.how)}</span>
-                </p>
-              )}
+              {task.how && <TaskHint how={task.how} />}
             </li>
           ))}
         </ol>
