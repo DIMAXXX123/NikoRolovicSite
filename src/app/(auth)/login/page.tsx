@@ -45,31 +45,38 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    // Sign in through the server route so the attempt is rate limited
+    // (a direct supabase.auth call from the browser cannot be throttled).
+    let res: Response
+    try {
+      res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+      })
+    } catch {
+      setError('Greška pri prijavi. Pokušaj ponovo.')
+      setLoading(false)
+      return
+    }
 
-    if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        // Check if email exists in profiles
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', email.trim().toLowerCase())
-          .single()
-        
-        if (!profile) {
-          setError('Nalog sa ovom email adresom ne postoji')
-        } else {
-          setError('Pogrešna lozinka')
-        }
-      } else if (error.message.includes('Email not confirmed')) {
+    if (!res.ok) {
+      const { error: message } = await res.json().catch(() => ({ error: '' }))
+
+      if (res.status === 429) {
+        setError('Previše pokušaja prijave. Pokušaj ponovo kasnije.')
+      } else if (typeof message === 'string' && message.includes('Email not confirmed')) {
         setError('Email nije potvrđen. Provjeri inbox.')
       } else {
-        setError('Greška pri prijavi. Pokušaj ponovo.')
+        setError('Pogrešan email ili lozinka')
       }
       setLoading(false)
-    } else {
-      setShowSuccess(true)
+      return
     }
+
+    // Session cookies were set by the route — let the browser client pick them up.
+    await supabase.auth.getSession()
+    setShowSuccess(true)
   }
 
   if (showTour) {

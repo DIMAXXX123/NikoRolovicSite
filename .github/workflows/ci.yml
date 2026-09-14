@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and lint
+    runs-on: ubuntu-latest
+    env:
+      # Текущее число ошибок линтера в src/. Сборка не падает из-за них,
+      # но новые появиться не должны: превышение порога — красный CI.
+      # Порог можно только уменьшать, по мере того как ошибки чинятся.
+      ESLINT_MAX_ERRORS: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: ESLint (порог ошибок)
+        run: |
+          npx eslint src -f json -o eslint-report.json || true
+          node -e '
+            const report = require("./eslint-report.json");
+            const errors = report.reduce((n, f) => n + f.errorCount, 0);
+            const warnings = report.reduce((n, f) => n + f.warningCount, 0);
+            const max = Number(process.env.ESLINT_MAX_ERRORS);
+            console.log(`eslint src: ${errors} ошибок, ${warnings} предупреждений (порог ${max})`);
+            for (const f of report) {
+              for (const m of f.messages) {
+                if (m.severity === 2) {
+                  console.log(`  ${f.filePath}:${m.line}:${m.column}  ${m.message}  (${m.ruleId})`);
+                }
+              }
+            }
+            if (errors > max) {
+              console.error(`\nОшибок линтера стало больше: ${errors} > ${max}. Почини новые ошибки.`);
+              process.exit(1);
+            }
+            if (errors < max) {
+              console.log(`\nОшибок стало меньше порога. Опусти ESLINT_MAX_ERRORS до ${errors} в .github/workflows/ci.yml.`);
+            }
+          '

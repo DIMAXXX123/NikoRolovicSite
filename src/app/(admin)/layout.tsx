@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { DEMO_AUTO_ADMIN } from '@/components/auto-login'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [authorized, setAuthorized] = useState(false)
@@ -18,7 +19,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   async function checkAuth() {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
+    if (!user) {
+      // Demo mode: <AutoLogin /> signs the visitor in and reloads — keep
+      // showing the spinner instead of bouncing to /login.
+      if (!DEMO_AUTO_ADMIN) router.push('/login')
+      return
+    }
 
     const { data: profile } = await supabase
       .from('profiles')

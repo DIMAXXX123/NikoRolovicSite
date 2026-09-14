@@ -1,31 +1,32 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { getCallerProfile, isValidUUID } from '@/lib/api-auth'
+import { z } from 'zod'
+import { ADMIN_ROLES, getCallerProfile, hasRole } from '@/lib/api-auth'
+import { createServiceClient } from '@/lib/supabase/service'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { parseBody, uuidSchema } from '@/lib/api-validation'
 
-// Rate limiting: Consider adding middleware-level rate limiting (e.g., 10 req/min per user)
+const DeletePhotoSchema = z.object({ photoId: uuidSchema })
 
 export async function POST(request: Request) {
   try {
     const caller = await getCallerProfile()
-    if (!caller || !['admin', 'creator'].includes(caller.role)) {
+    if (!hasRole(caller, ADMIN_ROLES)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-    if (!serviceKey) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    const rate = await checkRateLimit(`delete-photo:${clientIp(request)}`, 30, 60_000)
+    if (rate.limited) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': String(rate.retryAfter) } }
+      )
     }
 
-    const body = await request.json()
-    const { photoId } = body
+    const parsed = await parseBody(request, DeletePhotoSchema)
+    if (!parsed.ok) return parsed.response
 
-    if (!photoId || typeof photoId !== 'string' || !isValidUUID(photoId)) {
-      return NextResponse.json({ error: 'Invalid photoId' }, { status: 400 })
-    }
-
-    const supabase = createClient(supabaseUrl, serviceKey)
+    const { photoId } = parsed.data
+    const supabase = createServiceClient()
 
     // Get the photo to find storage path
     const { data: photo, error: fetchError } = await supabase

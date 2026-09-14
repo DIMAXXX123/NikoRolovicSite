@@ -38,10 +38,17 @@ export default function ResetPasswordPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase())
+    // Sent through the server route so the mails are rate limited.
+    const res = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+    }).catch(() => null)
 
-    if (error) {
-      setError('Greška pri slanju koda. Pokušaj ponovo.')
+    if (!res || !res.ok) {
+      setError(res?.status === 429
+        ? 'Previše zahtjeva. Pokušaj ponovo kasnije.'
+        : 'Greška pri slanju koda. Pokušaj ponovo.')
     } else {
       setStep('code')
       setResendCooldown(60)

@@ -20,7 +20,6 @@ const CLASS_LABELS = ['I', 'II', 'III', 'IV']
 
 export default function CompleteProfilePage() {
   const [email, setEmail] = useState('')
-  const [userId, setUserId] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [classNumber, setClassNumber] = useState('1')
@@ -42,7 +41,6 @@ export default function CompleteProfilePage() {
         return
       }
       setEmail(user.email || '')
-      setUserId(user.id)
 
       // Don't pre-fill name from Google — user must enter exactly as in school records
 
@@ -91,49 +89,24 @@ export default function CompleteProfilePage() {
       return
     }
 
-    // Normalize diacritics for comparison (Coso = Ćoso, Scekic = Šćekić)
-    const normalize = (s: string) =>
-      s.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+    // The roster (verified_students) is service-role only, so the match and
+    // the profile creation happen in the API route.
+    const res = await fetch('/api/complete-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: trimmedFirst,
+        lastName: trimmedLast,
+        classNumber: classNum,
+        sectionNumber: sectionNum,
+      }),
+    }).catch(() => null)
 
-    // Fetch all students in this class+section and match with normalization
-    const { data: students, error: verifyError } = await supabase
-      .from('verified_students')
-      .select('id, first_name, last_name, used')
-      .eq('class_number', classNum)
-      .eq('section_number', sectionNum)
-
-    const student = students?.find(
-      (s: { id: string; first_name: string; last_name: string; used: boolean }) =>
-        normalize(s.first_name) === normalize(trimmedFirst) &&
-        normalize(s.last_name) === normalize(trimmedLast)
-    )
-
-    if (verifyError || !student) {
-      setError('Niste na spisku učenika. Provjerite da li ste pravilno unijeli podatke.')
-      setLoading(false)
-      return
-    }
-
-    if (student.used) {
-      setError('Ovaj učenik je već registrovan. Ako mislite da je greška, obratite se administratoru.')
-      setLoading(false)
-      return
-    }
-
-    // Update profile — use the name from verified_students (correct diacritics)
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .upsert({
-        id: userId,
-        email: email,
-        first_name: student.first_name,
-        last_name: student.last_name,
-        class_number: classNum,
-        section_number: sectionNum,
-      })
-
-    if (updateError) {
-      setError('Greška pri čuvanju profila. Pokušajte ponovo.')
+    if (!res || !res.ok) {
+      const { error: message } = (await res?.json().catch(() => null)) ?? {}
+      setError(typeof message === 'string' && message
+        ? message
+        : 'Greška pri čuvanju profila. Pokušajte ponovo.')
       setLoading(false)
       return
     }
@@ -145,12 +118,6 @@ export default function CompleteProfilePage() {
       setLoading(false)
       return
     }
-
-    // Mark student as used
-    await supabase
-      .from('verified_students')
-      .update({ used: true })
-      .eq('id', student.id)
 
     setShowSuccess(true)
   }

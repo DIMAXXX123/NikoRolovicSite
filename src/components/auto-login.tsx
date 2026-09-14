@@ -2,13 +2,14 @@
 
 import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { DEMO_AUTO_ADMIN } from '@/lib/demo'
 
 /**
  * DEMO MODE: every visitor is signed in automatically as the shared
  * administrator account "Dmitrij Ivashchenko" — no registration, full admin
- * rights. Set DEMO_AUTO_ADMIN to false to return to normal login.
+ * rights. Set DEMO_AUTO_ADMIN (src/lib/demo.ts) to false to return to normal login.
  */
-export const DEMO_AUTO_ADMIN = true
+export { DEMO_AUTO_ADMIN }
 const DEMO_EMAIL = 'demo-admin@nikorolovic.app'
 const DEMO_PASSWORD = 'Demo-Eo4mqBPYkd8aW8z6TbLOr2Fw'
 

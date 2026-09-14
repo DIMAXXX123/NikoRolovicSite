@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { BottomNav } from '@/components/bottom-nav'
 import { ProfileGuard } from '@/components/profile-guard'
 import { ThemeSwitcher } from '@/components/theme-switcher'
+import { ErrorBoundary } from '@/components/error-boundary'
 import { getNavConfig, ALL_NAV_ITEMS } from '@/lib/nav-config'
 
 const HEADER_ICON_BUTTON =
@@ -32,6 +33,9 @@ export default function MainLayout({
 
   return (
     <div className="min-h-screen">
+      <a href="#main-content" className="skip-to-content">
+        Pređi na sadržaj
+      </a>
       {/* Header — 64px, white, 2px bottom border */}
       <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-background border-b-2 border-border">
         <div className="max-w-lg mx-auto px-4 h-16 flex items-center justify-between gap-2">
@@ -79,12 +83,17 @@ export default function MainLayout({
         </div>
       </header>
       <ProfileGuard />
-      <main className="max-w-md mx-auto px-4 pt-20 pb-[100px]">
-        <div key={animKey} className="animate-fade-in">
-          {children}
-        </div>
+      <main id="main-content" className="max-w-md mx-auto px-4 pt-20 pb-[100px]">
+        {/* A crash inside a page keeps the header and the bottom nav alive. */}
+        <ErrorBoundary key={animKey} label="Ova stranica se nije učitala">
+          <div className="animate-fade-in">
+            {children}
+          </div>
+        </ErrorBoundary>
       </main>
-      <BottomNav />
+      <ErrorBoundary fallback={() => null}>
+        <BottomNav />
+      </ErrorBoundary>
     </div>
   )
 }

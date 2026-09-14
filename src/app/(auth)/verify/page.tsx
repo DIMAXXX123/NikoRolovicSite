@@ -39,35 +39,25 @@ export default function VerifyPage() {
       return
     }
 
-    // Email verified! Now create profile and mark student as used
+    // Email verified! Create the profile and claim the roster entry on the
+    // server — verified_students is service-role only.
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const meta = user.user_metadata || {}
-      
-      // Create profile
-      await supabase.from('profiles').insert({
-        id: user.id,
-        first_name: meta.first_name || 'Unknown',
-        last_name: meta.last_name || 'Unknown',
-        email: user.email || email,
-        class_number: meta.class_number || parseInt(localStorage.getItem('pending_class') || '1'),
-        section_number: meta.section_number || parseInt(localStorage.getItem('pending_section') || '1'),
-        role: 'student',
-      })
-
-      // Mark verified student as used
-      const verifiedId = localStorage.getItem('pending_verified_id')
-      if (verifiedId) {
-        await supabase
-          .from('verified_students')
-          .update({ used: true })
-          .eq('id', verifiedId)
-      }
+      await fetch('/api/complete-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: meta.first_name || '',
+          lastName: meta.last_name || '',
+          classNumber: meta.class_number || parseInt(localStorage.getItem('pending_class') || '1'),
+          sectionNumber: meta.section_number || parseInt(localStorage.getItem('pending_section') || '1'),
+        }),
+      }).catch(() => null)
     }
 
     setSuccess(true)
     localStorage.removeItem('verify_email')
-    localStorage.removeItem('pending_verified_id')
     localStorage.removeItem('pending_class')
     localStorage.removeItem('pending_section')
   }
