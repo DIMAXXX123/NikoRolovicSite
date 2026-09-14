@@ -1,4 +1,6 @@
-import { Card } from '@/components/ui/card';
+// §4.2 card look on the original semantic <section> elements.
+const SECTION_CLASS =
+  'flex flex-col gap-3 rounded-2xl border-2 border-border bg-card p-4 shadow-[0_2px_0_var(--color-border)]';
 
 // §4.8 chip, 44px tall so the footer links are real tap targets.
 const SEE_ALSO_CHIP =
@@ -16,7 +18,7 @@ export default function PrivacyPage() {
         <h1 className="text-[26px] leading-[1.2] font-extrabold tracking-[-0.01em] text-heading">Privacy Policy</h1>
         <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground mb-3">Last updated: March 2026</p>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">1. Who We Are</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             The &quot;Gimnazija Niko Rolović&quot; app (&quot;the App&quot;) is a student portal for
@@ -29,9 +31,9 @@ export default function PrivacyPage() {
               ivaschdima@gmail.com
             </a>
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">2. Data We Collect</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             We collect the following personal data:
@@ -47,9 +49,9 @@ export default function PrivacyPage() {
             We do <strong className="font-extrabold text-heading">not</strong> collect: location data, contact
             lists, financial information, or health data.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">3. How We Use Your Data</h2>
           <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li>Authentication and secure portal access.</li>
@@ -63,9 +65,9 @@ export default function PrivacyPage() {
             We do <strong className="font-extrabold text-heading">not</strong> use your data for advertising,
             profiling, or behavioral tracking.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">4. Legal Basis for Processing</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             We process your data based on: (a) your consent when creating an account, (b) the
@@ -73,9 +75,9 @@ export default function PrivacyPage() {
             applicable laws. For users under 18, we rely on parental/guardian consent provided at
             account registration.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">5. Data Storage &amp; Security</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             Your data is stored on Supabase servers located in the EU (AWS EU region). We implement
@@ -88,9 +90,9 @@ export default function PrivacyPage() {
             <li>Admin-only access to moderation tools.</li>
             <li>Regular security reviews and updates.</li>
           </ul>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">6. Data Sharing</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             We do <strong className="font-extrabold text-heading">not</strong> sell, rent, or share your personal
@@ -101,18 +103,18 @@ export default function PrivacyPage() {
             <li><strong className="font-extrabold text-heading">Google:</strong> If you use Google OAuth for authentication (only basic profile info).</li>
             <li><strong className="font-extrabold text-heading">Other users:</strong> Photos you upload may be visible to other portal users after admin approval.</li>
           </ul>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">7. Data Retention</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             Personal data is retained for the duration of your active account. Upon account deletion
             or graduation, your data is permanently deleted within 30 days. Anonymized usage
             statistics may be retained for analytical purposes.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">8. Photo Moderation</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             All photos uploaded to the gallery are reviewed by school administrators before being
@@ -122,9 +124,9 @@ export default function PrivacyPage() {
             </a>
             . Users can report content and block other users.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">9. Your Rights</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             Under applicable data protection laws (including GDPR), you have the right to:
@@ -148,18 +150,18 @@ export default function PrivacyPage() {
             </a>
             . We will respond within 30 days.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">10. Account Deletion</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             You can delete your account and all associated data at any time from
             Profile → Settings → Delete Account. Deletion is permanent and irreversible. All
             personal data, uploaded photos, and game scores will be permanently removed.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">11. Children&apos;s Privacy</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             This App is intended for high school students (ages 15–19). We do not knowingly collect
@@ -175,9 +177,9 @@ export default function PrivacyPage() {
             </a>
             .
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">12. Third-Party Services</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             The App uses the following third-party services:
@@ -191,9 +193,9 @@ export default function PrivacyPage() {
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             Each third-party service has its own privacy policy governing data handling.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">13. Changes to This Policy</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             We may update this Privacy Policy from time to time. Changes will be posted on this page
@@ -201,9 +203,9 @@ export default function PrivacyPage() {
             through in-app notifications. Continued use of the App after changes constitutes
             acceptance of the revised policy.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">14. Contact</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             For any privacy-related questions or data requests, please contact us at{' '}
@@ -214,10 +216,10 @@ export default function PrivacyPage() {
               ivaschdima@gmail.com
             </a>
           </p>
-        </Card>
+        </section>
 
         <div className="mt-6 pt-6 border-t-2 border-border space-y-2.5">
-          <p className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground px-1">See also</p>
+          <p className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground px-1">See also:</p>
           <div className="flex flex-wrap gap-2">
             <a href="/terms" className={SEE_ALSO_CHIP}>Terms of Use</a>
             <a href="/content-policy" className={SEE_ALSO_CHIP}>Content Moderation Policy</a>

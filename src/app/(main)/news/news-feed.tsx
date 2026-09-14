@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useLoginPrompt } from '@/components/login-prompt'
 import { fetchNewsPage } from '@/lib/news-data'
 import { NewsHeroCard, NewsRegularCard } from './news-card'
 import { Button } from '@/components/ui/button'
@@ -23,6 +24,7 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
   const likingIdsRef = useRef<Set<string>>(new Set())
   const likeDebounceRef = useRef<Record<string, number>>({})
+  const { prompt: promptLogin, element: loginPrompt } = useLoginPrompt()
   const lastTapRef = useRef<Record<string, number>>({})
   const heartsContainerRef = useRef<HTMLDivElement | null>(null)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
@@ -87,7 +89,7 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
 
   const toggleLike = useCallback(
     async (newsId: string, currentlyLiked: boolean) => {
-      if (!userId) return
+      if (!userId) { promptLogin(); return }
       if (likingIdsRef.current.has(newsId)) return
 
       // Debounce: prevent rapid-fire likes (300ms cooldown)
@@ -133,7 +135,7 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
         likingIdsRef.current.delete(newsId)
       }
     },
-    [supabase, userId]
+    [supabase, userId, promptLogin]
   )
 
   const spawnHeart = useCallback((clientX: number, clientY: number) => {
@@ -244,6 +246,7 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
 
   return (
     <div className="space-y-4 animate-stagger">
+      {loginPrompt}
       <NewsHeroCard
         item={heroItem}
         expanded={expandedIds.has(heroItem.id)}

@@ -318,7 +318,7 @@ export function EventsView({
                   key={key}
                   type="button"
                   onClick={() => setNewEvent({ ...newEvent, event_type: key as EventType })}
-                  className={`inline-flex h-10 items-center gap-2 rounded-xl border-2 px-3.5 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                  className={`inline-flex h-11 items-center gap-2 rounded-xl border-2 px-3.5 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                     newEvent.event_type === key
                       ? 'bg-secondary-light border-secondary-light-border text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]'
                       : 'bg-background border-border text-muted-foreground shadow-[0_2px_0_var(--color-border)]'
@@ -387,7 +387,7 @@ export function EventsView({
           {eventToast.message}
         </div>
       )}
-      <Tabs value={view} onValueChange={(value) => setView(value as 'calendar' | 'list')}>
+      <Tabs id="events-view" value={view} onValueChange={(value) => setView(value as 'calendar' | 'list')}>
         <TabsList>
           <TabsTrigger value="calendar">
             <CalendarDays strokeWidth={2.4} /> Kalendar

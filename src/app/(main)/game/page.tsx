@@ -50,6 +50,9 @@ export default function BlockBlastPage() {
   // Refs
   const gridRef = useRef<HTMLDivElement>(null)
   const isDragging = useRef(false)
+  // A press on a tray shape selects it (mousedown/touchstart); the click that
+  // follows must not toggle it back off.
+  const justSelectedRef = useRef(false)
   const dragShapeIdx = useRef<number | null>(null)
   const hoverPosRef = useRef<{ row: number; col: number } | null>(null)
   const scoreRef = useRef(score)
@@ -333,6 +336,7 @@ export default function BlockBlastPage() {
     e.stopPropagation()
     isDragging.current = true
     dragShapeIdx.current = idx
+    justSelectedRef.current = true
     setSelectedIdx(idx)
   }, [gameOver, shapes])
 
@@ -386,6 +390,7 @@ export default function BlockBlastPage() {
     e.preventDefault()
     isDragging.current = true
     dragShapeIdx.current = idx
+    justSelectedRef.current = true
     setSelectedIdx(idx)
   }, [gameOver, shapes])
 
@@ -669,7 +674,10 @@ export default function BlockBlastPage() {
                 active:translate-y-[2px] active:shadow-none
               `}
               style={{ animationDelay: newShapeAnim ? `${idx * 80}ms` : undefined }}
-              onClick={() => setSelectedIdx(isSelected ? null : idx)}
+              onClick={() => {
+                if (justSelectedRef.current) { justSelectedRef.current = false; return }
+                setSelectedIdx(isSelected ? null : idx)
+              }}
               onTouchStart={(e) => handleTouchStart(e, idx)}
               onMouseDown={(e) => handleMouseDragStart(e, idx)}
             >

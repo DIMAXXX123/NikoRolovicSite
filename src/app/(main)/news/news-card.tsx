@@ -4,7 +4,6 @@ import Image from 'next/image'
 import { Heart } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { RoleBadge } from '@/components/role-badge'
 import { isOptimizableImage } from '@/lib/remote-image'
 import type { NewsItem } from '@/lib/types'
@@ -159,8 +158,9 @@ function ExpandToggle({
   )
 }
 
+// §4.2 card look on a semantic <article> (kept from the original markup).
 const ARTICLE_CLASS =
-  'relative cursor-pointer select-none gap-3 active:translate-y-[2px] active:shadow-none transition-[transform,box-shadow] duration-[80ms]'
+  'relative flex flex-col gap-3 overflow-hidden rounded-2xl border-2 border-border bg-card p-4 text-[15px] font-bold text-card-foreground shadow-[0_2px_0_var(--color-border)] cursor-pointer select-none active:translate-y-[2px] active:shadow-none transition-[transform,box-shadow] duration-[80ms]'
 
 const BODY_CLASS = 'text-[15px] leading-[1.5] font-bold text-foreground'
 
@@ -176,7 +176,7 @@ export function NewsHeroCard({
   onTouchEnd,
 }: CardProps) {
   return (
-    <Card
+    <article
       className={ARTICLE_CLASS}
       onClick={(e) => onTap(item.id, e)}
       onTouchEnd={(e) => onTouchEnd(item.id, e)}
@@ -216,9 +216,9 @@ export function NewsHeroCard({
         <div className="flex items-center gap-2.5 min-w-0">
           <AuthorChip item={item} size="lg" />
         </div>
-        <LikeButton item={item} onToggleLike={onToggleLike} variant="overlay" />
+        <LikeButton item={item} onToggleLike={onToggleLike} variant={showImage ? 'overlay' : 'plain'} />
       </div>
-    </Card>
+    </article>
   )
 }
 
@@ -234,7 +234,7 @@ export function NewsRegularCard({
   onTouchEnd,
 }: CardProps) {
   return (
-    <Card
+    <article
       className={ARTICLE_CLASS}
       onClick={(e) => onTap(item.id, e)}
       onTouchEnd={(e) => onTouchEnd(item.id, e)}
@@ -271,6 +271,6 @@ export function NewsRegularCard({
         </div>
         <LikeButton item={item} onToggleLike={onToggleLike} variant="plain" />
       </div>
-    </Card>
+    </article>
   )
 }

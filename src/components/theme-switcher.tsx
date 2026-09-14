@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useState } from 'react'
 import { Palette } from 'lucide-react'
 
 // Three LIGHT accent themes — only the primary family changes,
@@ -44,55 +44,38 @@ const themes = [
   },
 ]
 
-const STORAGE_KEY = 'nr-theme'
-
-// Unknown / legacy keys (midnight, arctic, forest) fall back to zeleno.
-function themeIndex(themeKey: string | null) {
-  const idx = themeKey ? themes.findIndex(t => t.key === themeKey) : -1
-  return idx >= 0 ? idx : 0
-}
-
 function applyTheme(themeKey: string) {
-  const theme = themes[themeIndex(themeKey)]
+  // Unknown / legacy keys (midnight, arctic, forest) fall back to zeleno (§6).
+  const theme = themes.find(t => t.key === themeKey) || themes[0]
   const root = document.documentElement
   Object.entries(theme.vars).forEach(([key, value]) => {
     root.style.setProperty(key, value)
   })
 }
 
-// The saved theme lives in localStorage — an external store. Reading it through
-// useSyncExternalStore keeps the server render on the default theme and lets
-// the client pick up the saved one without a setState-in-effect.
-const listeners = new Set<() => void>()
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  window.addEventListener('storage', listener)
-  return () => {
-    listeners.delete(listener)
-    window.removeEventListener('storage', listener)
-  }
-}
-function getSnapshot() {
-  return themes[themeIndex(localStorage.getItem(STORAGE_KEY))].key
-}
-function getServerSnapshot() {
-  return themes[0].key
-}
-
 export function ThemeSwitcher() {
-  const themeKey = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
-  const currentIndex = themeIndex(themeKey)
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [showPopup, setShowPopup] = useState(false)
 
   useEffect(() => {
-    applyTheme(themeKey)
-  }, [themeKey])
+    const saved = localStorage.getItem('nr-theme')
+    if (saved) {
+      const idx = themes.findIndex(t => t.key === saved)
+      if (idx >= 0) {
+        setCurrentIndex(idx)
+        applyTheme(saved)
+      }
+    } else {
+      applyTheme(themes[0].key)
+    }
+  }, [])
 
   function cycleTheme() {
     const next = (currentIndex + 1) % themes.length
+    setCurrentIndex(next)
     const theme = themes[next]
-    localStorage.setItem(STORAGE_KEY, theme.key)
-    listeners.forEach(l => l())
+    applyTheme(theme.key)
+    localStorage.setItem('nr-theme', theme.key)
     setShowPopup(true)
     setTimeout(() => setShowPopup(false), 1500)
   }

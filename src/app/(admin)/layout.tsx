@@ -36,8 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   useEffect(() => {
-    async function init() { await checkAuth() }
-    init()
+    checkAuth()
   }, [])
 
   if (loading) {

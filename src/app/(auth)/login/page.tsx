@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { consumeLoginNext } from '@/components/login-prompt'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -79,7 +80,7 @@ export default function LoginPage() {
       <SuccessAnimation
         message="Uspešna prijava!"
         onComplete={() => {
-          router.push('/gallery')
+          router.push(consumeLoginNext() ?? '/gallery')
           router.refresh()
         }}
       />

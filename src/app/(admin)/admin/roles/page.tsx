@@ -284,48 +284,47 @@ export default function AdminRolesPage() {
             <ShieldAlert className="w-8 h-8 text-disabled" strokeWidth={2.4} />
           </div>
           <p className="text-[17px] font-extrabold text-foreground">Nema korisnika</p>
-          <p className="text-[13px] font-bold text-muted-foreground mt-1">Promijeni filter ili pojam za pretragu.</p>
         </div>
       ) : (
         <div className="space-y-2.5">
-        {filteredUsers.map((user, index) => {
-          const roleDisplay = getRoleDisplay(user.role)
-          return (
-            <div
-              key={user.id}
-              className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] px-4 py-3 min-h-[64px] flex items-center justify-between gap-3"
-              style={{ animationDelay: `${index * 40}ms` }}
-            >
-              <div className="min-w-0 flex-1">
-                <p className="text-[15px] leading-[1.3] font-extrabold text-heading truncate">
-                  {user.first_name} {user.last_name}
-                </p>
-                <p className="text-[13px] font-bold text-muted-foreground truncate">{user.email}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[12px] font-extrabold text-muted-foreground">{user.class_number}-{user.section_number}</span>
-                  <span
-                    className={`inline-flex items-center h-6 px-2.5 rounded-full border-2 text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] ${roleDisplay.color || ''}`}
-                    style={roleDisplay.customColor ? { backgroundColor: roleDisplay.customColor + '20', borderColor: roleDisplay.customColor + '55', color: roleDisplay.customColor } : undefined}
+          {filteredUsers.map((user, index) => {
+            const roleDisplay = getRoleDisplay(user.role)
+            return (
+              <div
+                key={user.id}
+                className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] px-4 py-3 min-h-[64px] flex items-center justify-between gap-3"
+                style={{ animationDelay: `${index * 40}ms` }}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-[15px] leading-[1.3] font-extrabold text-heading truncate">
+                    {user.first_name} {user.last_name}
+                  </p>
+                  <p className="text-[13px] font-bold text-muted-foreground truncate">{user.email}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[12px] font-extrabold text-muted-foreground">{user.class_number}-{user.section_number}</span>
+                    <span
+                      className={`inline-flex items-center h-6 px-2.5 rounded-full border-2 text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] ${roleDisplay.color || ''}`}
+                      style={roleDisplay.customColor ? { backgroundColor: roleDisplay.customColor + '20', borderColor: roleDisplay.customColor + '55', color: roleDisplay.customColor } : undefined}
+                    >
+                      {roleDisplay.icon && `${roleDisplay.icon} `}{roleDisplay.label}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex-shrink-0 w-28">
+                  <select
+                    value={user.role}
+                    onChange={(e) => changeRole(user.id, e.target.value)}
+                    disabled={updatingId === user.id}
+                    className={selectClass}
                   >
-                    {roleDisplay.icon && `${roleDisplay.icon} `}{roleDisplay.label}
-                  </span>
+                    {allRoleOptions.map(r => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-              <div className="flex-shrink-0 w-28">
-                <select
-                  value={user.role}
-                  onChange={(e) => changeRole(user.id, e.target.value)}
-                  disabled={updatingId === user.id}
-                  className={selectClass}
-                >
-                  {allRoleOptions.map(r => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )
-        })}
+            )
+          })}
         </div>
       )}
     </div>

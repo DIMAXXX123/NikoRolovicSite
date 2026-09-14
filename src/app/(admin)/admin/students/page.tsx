@@ -39,10 +39,7 @@ export default function AdminStudentsPage() {
     if (data) setStudents(data)
   }
 
-  useEffect(() => {
-    async function init() { await loadStudents() }
-    init()
-  }, [])
+  useEffect(() => { loadStudents() }, [])
 
   async function addStudent(e: React.FormEvent) {
     e.preventDefault()
@@ -164,7 +161,6 @@ export default function AdminStudentsPage() {
             <Users className="w-8 h-8 text-disabled" strokeWidth={2.4} />
           </div>
           <p className="text-[17px] font-extrabold text-foreground">{searchQuery ? 'Nema rezultata' : 'Nema učenika u bazi'}</p>
-          <p className="text-[13px] font-bold text-muted-foreground mt-1">{searchQuery ? 'Probaj drugi pojam za pretragu.' : 'Dodaj prvog učenika dugmetom „Dodaj“.'}</p>
         </div>
       ) : (
         <div className="space-y-2.5">

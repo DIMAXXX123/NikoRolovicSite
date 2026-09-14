@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { useLoginPrompt } from '@/components/login-prompt'
 import { Camera, X, Send, Heart, Flag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -38,6 +39,7 @@ export default function GalleryPage() {
   const [newPhotosCount, setNewPhotosCount] = useState(0)
   const lastTapRef = useRef<Record<string, number>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { prompt: promptLogin, element: loginPrompt } = useLoginPrompt()
   const supabase = createClient()
 
   useEffect(() => {
@@ -169,7 +171,7 @@ export default function GalleryPage() {
   }
 
   async function toggleLike(photoId: string) {
-    if (!currentUserId) return
+    if (!currentUserId) { promptLogin(); return }
     const wasLiked = !!likedPhotos[photoId]
     const prevCounts = { ...likeCounts }
     const prevLiked = { ...likedPhotos }
@@ -474,6 +476,7 @@ export default function GalleryPage() {
 
   return (
     <>
+      {loginPrompt}
       {/* Toast */}
       {toast && (
         <div className="fixed top-18 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-2xl border-2 border-border bg-card text-foreground text-[13px] font-extrabold shadow-[0_2px_0_var(--color-border)] animate-slide-down whitespace-nowrap">

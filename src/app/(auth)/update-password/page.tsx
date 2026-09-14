@@ -58,8 +58,8 @@ export default function UpdatePasswordPage() {
     <Card className="animate-fade-in">
       <CardHeader className="text-center space-y-2 pb-2">
         <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)]">
-            <span className="text-2xl font-black text-primary-foreground">NR</span>
-          </div>
+          <span className="text-2xl font-black text-primary-foreground">NR</span>
+        </div>
         <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Nova lozinka</h1>
         <p className="text-[13px] font-bold text-muted-foreground">Unesite novu lozinku za vaš nalog</p>
       </CardHeader>

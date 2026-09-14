@@ -25,7 +25,7 @@ interface ScheduleViewProps {
 
 // §4.8 chip — selected = blue tint, otherwise white with a grey 3D edge.
 const CHIP_BASE =
-  'inline-flex h-10 items-center justify-center rounded-xl border-2 px-2 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
+  'inline-flex h-11 items-center justify-center rounded-xl border-2 px-2 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
 const CHIP_IDLE = 'bg-background border-border text-muted-foreground shadow-[0_2px_0_var(--color-border)] hover:text-foreground'
 const CHIP_ACTIVE =
   'bg-secondary-light border-secondary-light-border text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]'
@@ -213,12 +213,12 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
           <table className="w-full text-[12px] font-bold">
             <thead>
               <tr className="border-b-2 border-border">
-                <th className="px-1.5 py-2.5 text-left text-muted-foreground font-extrabold w-8">#</th>
+                <th className="h-11 px-1.5 text-left text-muted-foreground font-extrabold w-8">#</th>
                 {DAY_SHORT.map((d, di) => (
                   <th
                     key={d}
                     onClick={() => setActiveDay(di)}
-                    className={`px-1 py-2.5 text-center font-extrabold uppercase tracking-[0.04em] cursor-pointer transition-colors ${
+                    className={`h-11 px-1 text-center font-extrabold uppercase tracking-[0.04em] cursor-pointer transition-colors ${
                       activeDay === di ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -310,10 +310,10 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
                         placeholder="Naziv predmeta..."
                         className="flex-1 h-11"
                       />
-                      <Button size="icon" variant="default" onClick={confirmEdit} aria-label="Sačuvaj">
+                      <Button size="icon" variant="default" onClick={(e) => { e.stopPropagation(); confirmEdit() }} aria-label="Sačuvaj">
                         <Check strokeWidth={2.6} />
                       </Button>
-                      <Button size="icon" onClick={cancelEdit} aria-label="Otkaži">
+                      <Button size="icon" onClick={(e) => { e.stopPropagation(); cancelEdit() }} aria-label="Otkaži">
                         <X className="text-muted-foreground" strokeWidth={2.6} />
                       </Button>
                     </div>
@@ -328,7 +328,7 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
                       </p>
                       <p className="mt-0.5 flex items-center gap-1 text-[13px] leading-[1.4] font-bold text-muted-foreground tabular-nums">
                         <Clock className="size-3.5" strokeWidth={2.4} />
-                        {PERIOD_TIMES[period - 1]}
+                        {PERIOD_TIMES[period - 1].split(' - ')[0]}
                       </p>
                     </>
                   )}

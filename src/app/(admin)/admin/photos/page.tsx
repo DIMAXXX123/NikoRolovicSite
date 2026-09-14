@@ -46,10 +46,9 @@ export default function AdminPhotosPage() {
   }
 
   useEffect(() => {
-    async function init() {
-      await Promise.all([loadPending(), loadApproved(), loadUserRole()])
-    }
-    init()
+    loadPending()
+    loadApproved()
+    loadUserRole()
   }, [])
 
   async function moderate(photoId: string, status: 'approved' | 'rejected') {
@@ -93,7 +92,7 @@ export default function AdminPhotosPage() {
       <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">Moderacija fotografija</h1>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as Tab)}>
+      <Tabs id="admin-photos-tabs" value={activeTab} onValueChange={(value) => setActiveTab(value as Tab)}>
         <TabsList>
           <TabsTrigger value="pending">Na čekanju ({pendingPhotos.length})</TabsTrigger>
           <TabsTrigger value="approved">Objavljene ({approvedPhotos.length})</TabsTrigger>
@@ -108,7 +107,6 @@ export default function AdminPhotosPage() {
                 <Camera className="w-8 h-8 text-disabled" strokeWidth={2.4} />
               </div>
               <p className="text-[17px] font-extrabold text-foreground">Nema fotografija na čekanju</p>
-              <p className="text-[13px] font-bold text-muted-foreground mt-1">Nove fotografije učenika pojaviće se ovdje.</p>
             </div>
           ) : (
             pendingPhotos.map((photo, index) => (
@@ -171,7 +169,6 @@ export default function AdminPhotosPage() {
                 <Camera className="w-8 h-8 text-disabled" strokeWidth={2.4} />
               </div>
               <p className="text-[17px] font-extrabold text-foreground">Nema objavljenih fotografija</p>
-              <p className="text-[13px] font-bold text-muted-foreground mt-1">Odobrene fotografije pojaviće se ovdje.</p>
             </div>
           ) : (
             approvedPhotos.map((photo, index) => (

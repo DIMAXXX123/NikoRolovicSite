@@ -97,7 +97,7 @@ export function SubjectGrid() {
             <button
               key={name}
               onClick={() => persist(extraSubjects.filter((s) => s !== name))}
-              className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl border-2 border-border bg-background text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow,color,border-color] duration-[80ms] hover:text-destructive hover:border-[#FFB3B5] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="inline-flex items-center gap-1.5 h-11 px-3.5 rounded-xl border-2 border-border bg-background text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow,color,border-color] duration-[80ms] hover:text-destructive hover:border-[#FFB3B5] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               {name}
               <X className="w-3.5 h-3.5" strokeWidth={2.6} />

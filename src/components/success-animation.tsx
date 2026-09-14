@@ -10,15 +10,6 @@ interface SuccessAnimationProps {
 
 export function SuccessAnimation({ message, onComplete, delay = 2000 }: SuccessAnimationProps) {
   const [phase, setPhase] = useState<'enter' | 'show' | 'exit'>('enter')
-  const [particles] = useState(() =>
-    Array.from({ length: 20 }, (_, i) => ({
-      angle: i * 18,
-      distance: 80 + Math.random() * 120,
-      delay: Math.random() * 0.3,
-      size: 4 + Math.random() * 8,
-      color: ['#58CC02', '#1CB0F6', '#FFC800', '#CE82FF', '#FF9600'][i % 5],
-    }))
-  )
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase('show'), 100)
@@ -31,16 +22,16 @@ export function SuccessAnimation({ message, onComplete, delay = 2000 }: SuccessA
     <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-background transition-opacity duration-300 ${phase === 'enter' ? 'opacity-0' : 'opacity-100'}`}>
       {/* Particle burst */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {particles.map((p, i) => (
+        {Array.from({ length: 20 }).map((_, i) => (
           <div
             key={i}
             className="success-particle absolute left-1/2 top-1/2"
             style={{
-              '--angle': `${p.angle}deg`,
-              '--distance': `${p.distance}px`,
-              '--delay': `${p.delay}s`,
-              '--size': `${p.size}px`,
-              backgroundColor: p.color,
+              '--angle': `${(i * 18)}deg`,
+              '--distance': `${80 + Math.random() * 120}px`,
+              '--delay': `${Math.random() * 0.3}s`,
+              '--size': `${4 + Math.random() * 8}px`,
+              backgroundColor: ['#58CC02', '#1CB0F6', '#FFC800', '#CE82FF', '#FF9600'][i % 5],
             } as React.CSSProperties}
           />
         ))}

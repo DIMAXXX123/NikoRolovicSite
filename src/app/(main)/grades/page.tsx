@@ -205,14 +205,14 @@ export default function GradesPage() {
     ? subjects.filter(s => trimesterData[s]?.zakljucna && trimesterData[s].zakljucna! > 0).length
     : 0
 
-  function GradePicker({ onSelect, selected = null }: { onSelect: (v: number) => void; selected?: number | null }) {
+  function GradePicker({ onSelect }: { onSelect: (v: number) => void }) {
     return (
       <div className="flex flex-wrap gap-2 animate-fade-in">
         {[5, 4, 3, 2, 1].map((v) => (
           <button
             key={v}
             onClick={() => onSelect(v)}
-            className={`${PICK_BASE} ${selected === v ? PICK_SELECTED : PICK_OUTLINE}`}
+            className={`${PICK_BASE} ${PICK_OUTLINE}`}
           >
             {v}
           </button>
@@ -223,11 +223,11 @@ export default function GradesPage() {
 
   function GradeChip({ value, onRemove }: { value: number; onRemove: () => void }) {
     return (
-      <span className={`inline-flex h-11 items-center gap-1 rounded-full pl-4 pr-1 text-[15px] font-extrabold ${GRADE_COLORS[value]}`}>
+      <span className={`inline-flex h-11 items-center gap-0.5 rounded-full pl-4 pr-0 text-[15px] font-extrabold ${GRADE_COLORS[value]}`}>
         {value}
         <button
           onClick={onRemove}
-          className="flex size-9 items-center justify-center rounded-full opacity-80 transition-opacity hover:opacity-100"
+          className="flex size-11 items-center justify-center rounded-full opacity-80 transition-opacity hover:opacity-100"
           aria-label="Ukloni ocjenu"
         >
           <X className="size-4" strokeWidth={2.6} />

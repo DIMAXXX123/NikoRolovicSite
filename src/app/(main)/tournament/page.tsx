@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronRight, Star, Flame, Timer, ArrowLeft } from 'lucide-react'
+import { Star, Flame, Timer, ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -168,7 +168,7 @@ export default function TournamentPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+      <Tabs id="tournament-tabs" value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <TabsList>
           {tabs.map(tab => (
             <TabsTrigger key={tab.id} value={tab.id} className="gap-1 px-0 text-[11px]">
@@ -355,7 +355,6 @@ export default function TournamentPage() {
                     </p>
                     <p className="text-[13px] font-bold text-muted-foreground">razlika</p>
                   </div>
-                  <ChevronRight className="size-5 shrink-0 text-disabled" strokeWidth={2.6} />
                 </button>
               )
             })}

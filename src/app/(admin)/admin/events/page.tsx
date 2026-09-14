@@ -51,10 +51,7 @@ export default function AdminEventsPage() {
     if (data) setEvents(data)
   }
 
-  useEffect(() => {
-    async function init() { await loadEvents() }
-    init()
-  }, [])
+  useEffect(() => { loadEvents() }, [])
 
   async function createEvent(e: React.FormEvent) {
     e.preventDefault()
@@ -190,7 +187,6 @@ export default function AdminEventsPage() {
             <Calendar className="w-8 h-8 text-disabled" strokeWidth={2.4} />
           </div>
           <p className="text-[17px] font-extrabold text-foreground">Nema događaja</p>
-          <p className="text-[13px] font-bold text-muted-foreground mt-1">Kreiraj prvi događaj dugmetom „Novi“.</p>
         </div>
       ) : (
         <div className="space-y-2.5">

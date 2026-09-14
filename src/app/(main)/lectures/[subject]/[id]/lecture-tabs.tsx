@@ -52,7 +52,7 @@ export function LectureTabs({
 
   return (
     <>
-      <Tabs value={activeSection} onValueChange={(value) => setActiveSection(value as Section)}>
+      <Tabs id="lecture-tabs" value={activeSection} onValueChange={(value) => setActiveSection(value as Section)}>
         <TabsList>
           <TabsTrigger value="content">📖 Lekcija</TabsTrigger>
           {hasVideo && <TabsTrigger value="video">🎬 Video</TabsTrigger>}

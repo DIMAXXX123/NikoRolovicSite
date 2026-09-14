@@ -987,7 +987,6 @@ export default function AdminLecturesPage() {
             <BookOpen className="w-8 h-8 text-disabled" strokeWidth={2.4} />
           </div>
           <p className="text-[17px] font-extrabold text-foreground">Nema lekcija</p>
-          <p className="text-[13px] font-bold text-muted-foreground mt-1">Dodaj prvu lekciju dugmetom „Nova“ ili „AI“.</p>
         </div>
       ) : (
         <div className="space-y-2.5">

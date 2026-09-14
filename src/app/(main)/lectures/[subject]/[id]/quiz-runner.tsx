@@ -127,6 +127,7 @@ export function QuizRunner({ lectureTitle, questions, flashcards, onExit }: Quiz
 
   const modeSwitcher = showModeSwitcher ? (
     <Tabs
+      id="quiz-mode"
       value={mode}
       onValueChange={(value) => {
         if (value === 'quiz') {

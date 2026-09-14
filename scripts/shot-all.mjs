@@ -9,6 +9,9 @@ import puppeteer from 'puppeteer'
 const args = process.argv.slice(2)
 const noBuild = args.includes('--no-build')
 const port = Number(args[args.indexOf('--port') + 1]) || 3457
+const width = Number(args[args.indexOf('--width') + 1]) || 390
+const extra = args.includes('--routes') ? args[args.indexOf('--routes') + 1].split(',') : []
+const suffix = width === 390 ? '' : `.w${width}`
 const BASE = `http://localhost:${port}`
 const OUT = join(process.cwd(), 'docs', 'screens')
 
@@ -20,6 +23,7 @@ const ROUTES = [
   '/admin/students', '/admin/roles',
 ]
 
+for (const r of extra) if (!ROUTES.includes(r)) ROUTES.push(r)
 const slug = (r) => (r === '/' ? 'root' : r.replace(/^\//, '').replace(/\//g, '__'))
 
 async function waitFor(url, ms = 60000) {
@@ -39,7 +43,7 @@ async function main() {
     await waitFor(BASE + '/lectures')
     const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] })
     const page = await browser.newPage()
-    await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2 })
+    await page.setViewport({ width, height: 844, deviceScaleFactor: 2 })
     const report = []
     for (const route of ROUTES) {
       const errors = []
@@ -66,15 +70,15 @@ async function main() {
             .slice(0, 12)
             .map((el) => (el.textContent || el.getAttribute('aria-label') || el.tagName).trim().slice(0, 30) + ` (${Math.round(el.getBoundingClientRect().height)}px)`),
         }))
-        await page.screenshot({ path: join(OUT, slug(route) + '.fold.png') })
-        await page.screenshot({ path: join(OUT, slug(route) + '.png'), fullPage: true })
+        await page.screenshot({ path: join(OUT, slug(route) + suffix + '.fold.png') })
+        await page.screenshot({ path: join(OUT, slug(route) + suffix + '.png'), fullPage: true })
         report.push({ route, ok: true, overflowX: metrics.scrollWidth > metrics.clientWidth, height: metrics.height, smallTargets: metrics.smallTargets, errors })
       } catch (e) {
         report.push({ route, ok: false, error: String(e).slice(0, 200), errors })
       }
     }
     await browser.close()
-    await writeFile(join(OUT, 'report.json'), JSON.stringify(report, null, 2))
+    await writeFile(join(OUT, 'report' + suffix + '.json'), JSON.stringify(report, null, 2))
     for (const r of report) console.log((r.ok ? 'ok ' : 'ERR') + ' ' + r.route + (r.overflowX ? '  OVERFLOW-X' : '') + (r.smallTargets && r.smallTargets.length ? `  small:${r.smallTargets.length}` : '') + (r.errors.length ? `  errors:${r.errors.length}` : '') + (r.error ? '  ' + r.error : ''))
   } finally {
     try { process.kill(-server.pid) } catch {}

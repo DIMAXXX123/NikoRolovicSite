@@ -1,25 +1,37 @@
 "use client"
 
+import { createContext, useContext } from "react"
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+// When `Tabs` gets an explicit `id`, every trigger derives a deterministic
+// `id` from it (`<id>-<value>`) instead of React.useId(). useId-based ids
+// hydrate with a different tree position in `next dev` every now and then
+// (a Next 16 dev-mode quirk, see docs/screens/console-*.json), which shows up
+// as a "server rendered HTML didn't match" warning on the tab buttons.
+const TabsIdContext = createContext<string | undefined>(undefined)
+
 function Tabs({
   className,
   orientation = "horizontal",
+  id,
   ...props
 }: TabsPrimitive.Root.Props) {
   return (
-    <TabsPrimitive.Root
-      data-slot="tabs"
-      data-orientation={orientation}
-      className={cn(
-        "group/tabs flex gap-3 data-horizontal:flex-col",
-        className
-      )}
-      {...props}
-    />
+    <TabsIdContext.Provider value={id}>
+      <TabsPrimitive.Root
+        data-slot="tabs"
+        data-orientation={orientation}
+        id={id}
+        className={cn(
+          "group/tabs flex gap-3 data-horizontal:flex-col",
+          className
+        )}
+        {...props}
+      />
+    </TabsIdContext.Provider>
   )
 }
 
@@ -55,10 +67,15 @@ function TabsList({
   )
 }
 
-function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
+function TabsTrigger({ className, id, value, ...props }: TabsPrimitive.Tab.Props) {
+  const tabsId = useContext(TabsIdContext)
+  const stableId =
+    id ?? (tabsId !== undefined && value !== undefined ? `${tabsId}-${String(value)}` : undefined)
   return (
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
+      id={stableId}
+      value={value}
       className={cn(
         "relative inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl border-2 border-transparent px-2 text-[13px] leading-none font-extrabold uppercase tracking-[0.04em] whitespace-nowrap text-muted-foreground transition-[color,background-color,border-color,box-shadow] duration-120 select-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:text-disabled aria-disabled:pointer-events-none aria-disabled:text-disabled [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         "data-active:border-border data-active:bg-background data-active:text-secondary data-active:shadow-[0_2px_0_var(--color-border)]",

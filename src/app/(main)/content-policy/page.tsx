@@ -1,4 +1,6 @@
-import { Card } from '@/components/ui/card';
+// §4.2 card look on the original semantic <section> elements.
+const SECTION_CLASS =
+  'flex flex-col gap-3 rounded-2xl border-2 border-border bg-card p-4 shadow-[0_2px_0_var(--color-border)]';
 
 // §4.8 chip, 44px tall so the footer links are real tap targets.
 const SEE_ALSO_CHIP =
@@ -16,7 +18,7 @@ export default function ContentPolicyPage() {
         <h1 className="text-[26px] leading-[1.2] font-extrabold tracking-[-0.01em] text-heading">Content Moderation Policy</h1>
         <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground mb-3">Last updated: March 2026</p>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">1. Overview</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             The Gimnazija Niko Rolović student portal (&quot;the App&quot;) allows users to share
@@ -24,9 +26,9 @@ export default function ContentPolicyPage() {
             and enforce standards for user-generated content to maintain a safe and respectful
             environment for all students.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">2. Prohibited Content</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             The following types of content are strictly prohibited:
@@ -42,9 +44,9 @@ export default function ContentPolicyPage() {
             <li><strong className="font-extrabold text-heading">Intellectual property violations:</strong> Content that infringes on copyrights, trademarks, or other intellectual property rights.</li>
             <li><strong className="font-extrabold text-heading">Self-harm:</strong> Content that promotes, glorifies, or encourages self-harm or suicide.</li>
           </ul>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">3. Moderation Process</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             We use a multi-layered approach to content moderation:
@@ -55,9 +57,9 @@ export default function ContentPolicyPage() {
             <li><strong className="font-extrabold text-heading">Administrator review:</strong> Reported content is reviewed by school administrators via a dedicated moderation system. Decisions are made within 24 hours of a report.</li>
             <li><strong className="font-extrabold text-heading">User blocking:</strong> Users can block other users to stop seeing their content in the gallery and other sections of the App.</li>
           </ul>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">4. Reporting Content</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             If you encounter content that violates this policy:
@@ -78,9 +80,9 @@ export default function ContentPolicyPage() {
             </a>{' '}
             with a description of the issue.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">5. Enforcement Actions</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             Depending on the severity and frequency of violations, we may take the following actions:
@@ -92,9 +94,9 @@ export default function ContentPolicyPage() {
             <li><strong className="font-extrabold text-heading">Account suspension:</strong> For serious or repeated violations, the user&apos;s account may be suspended.</li>
             <li><strong className="font-extrabold text-heading">Permanent ban:</strong> In extreme cases, the user&apos;s account may be permanently terminated.</li>
           </ul>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">6. Appeals</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             If you believe your content was removed in error or your account was wrongly suspended,
@@ -108,9 +110,9 @@ export default function ContentPolicyPage() {
             . Appeals are reviewed within 48 hours. Include your account email and a description of
             the situation.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">7. AI-Generated Content</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             The App includes AI-powered features for generating educational content (lectures and
@@ -118,9 +120,9 @@ export default function ContentPolicyPage() {
             being made available. Users should not rely solely on AI-generated content for academic
             purposes — always verify with official school materials.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">8. Safety of Minors</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             As an educational platform primarily used by minors (ages 15–19), we take extra
@@ -129,18 +131,18 @@ export default function ContentPolicyPage() {
             and, where required by law, with law enforcement agencies regarding any content that
             may pose a risk to minors.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">9. Changes to This Policy</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             We may update this Content Moderation Policy at any time. Changes will be posted on this
             page with an updated &quot;Last updated&quot; date. Continued use of the App after
             changes constitutes acceptance of the revised policy.
           </p>
-        </Card>
+        </section>
 
-        <Card className="gap-3">
+        <section className={SECTION_CLASS}>
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">10. Contact</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             For questions about this policy or to report urgent content issues, contact us at{' '}
@@ -151,10 +153,10 @@ export default function ContentPolicyPage() {
               ivaschdima@gmail.com
             </a>
           </p>
-        </Card>
+        </section>
 
         <div className="mt-6 pt-6 border-t-2 border-border space-y-2.5">
-          <p className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground px-1">See also</p>
+          <p className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground px-1">See also:</p>
           <div className="flex flex-wrap gap-2">
             <a href="/privacy" className={SEE_ALSO_CHIP}>Privacy Policy</a>
             <a href="/terms" className={SEE_ALSO_CHIP}>Terms of Use</a>

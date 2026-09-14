@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users, UserRound } from 'lucide-react'
+import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users, UserRound, Gamepad2, Trophy, ClipboardList } from 'lucide-react'
 import { RoleBadge } from '@/components/role-badge'
 import { RoleAnimation } from '@/components/role-animation'
 import { AVATARS, AvatarById } from '@/components/avatars'
@@ -47,6 +47,9 @@ const QUICK_ACCESS_PAGES = [
   { id: 'schedule', href: '/schedule', label: 'Raspored', icon: Clock, color: '#1CB0F6' },
   { id: 'teachers', href: '/teachers', label: 'Status profesora', icon: Users, color: '#1CB0F6' },
   { id: 'grades', href: '/grades', label: 'Moje ocjene', icon: GraduationCap, color: '#CE82FF' },
+  { id: 'game', href: '/game', label: 'Block Blast', icon: Gamepad2, color: '#FF9600' },
+  { id: 'tournament', href: '/tournament', label: 'Turnir u košarci', icon: Trophy, color: '#FFC800' },
+  { id: 'ednevnik', href: '/ednevnik', label: 'eDnevnik', icon: ClipboardList, color: '#CE82FF' },
 ]
 
 function QuickAccessCards() {
@@ -276,28 +279,98 @@ export default function ProfilePage() {
     )
   }
 
-  if (!profile) {
-    // §4.11 empty state — no session, nothing to show.
-    return (
-      <div className="animate-fade-in flex flex-col items-center text-center py-24">
-        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-          <UserRound className="w-8 h-8 text-disabled" strokeWidth={2.4} />
-        </div>
-        <p className="text-[17px] leading-[1.3] font-extrabold text-foreground">Nisi prijavljen</p>
-        <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground mt-1">Prijavi se da vidiš svoj profil.</p>
-        <Button variant="outline" nativeButton={false} render={<Link href="/login" />} className="mt-5">
-          Prijavi se
-        </Button>
-      </div>
-    )
-  }
-
   if (showCalculator) {
     return <GpaCalculator onBack={() => setShowCalculator(false)} />
   }
 
   if (showNavEditor) {
     return <NavEditor onClose={() => setShowNavEditor(false)} />
+  }
+
+  if (!profile) {
+    const guestFontLabels: Record<string, string> = { small: 'Malo', normal: 'Normalno', large: 'Veliko' }
+    return (
+      <div className="space-y-4 animate-fade-in pb-6">
+        {/* Guest hero */}
+        <Card className="p-5 flex flex-col items-center text-center gap-3">
+          <div className="w-20 h-20 rounded-full bg-muted border-2 border-border flex items-center justify-center text-disabled">
+            <UserRound className="w-9 h-9" strokeWidth={2.2} />
+          </div>
+          <div>
+            <h1 className="text-[20px] leading-[1.25] font-extrabold text-heading">Gost</h1>
+            <p className="mt-1 text-[13px] leading-[1.4] font-bold text-muted-foreground">Prijavi se da vidiš svoj profil, ocjene i podešavanja.</p>
+          </div>
+          <div className="w-full flex flex-col gap-3 pt-1">
+            <Button className="w-full" onClick={() => router.push('/login')}>Prijavi se</Button>
+            <Button variant="outline" className="w-full" onClick={() => router.push('/register')}>Registruj se</Button>
+          </div>
+        </Card>
+
+        {/* Works without a session */}
+        <div className="space-y-2.5">
+          <button onClick={() => setShowCalculator(true)} className={ROW_CLASS}>
+            <div className={ROW_ICON_CLASS} style={tint('#1CB0F6')}>
+              <Calculator className="w-5 h-5" strokeWidth={2.4} />
+            </div>
+            <span className={ROW_TITLE_CLASS}>Kalkulator proseka</span>
+            <ChevronRight className="w-5 h-5 text-disabled flex-shrink-0" strokeWidth={2.6} />
+          </button>
+        </div>
+
+        <QuickAccessCards />
+
+        <div className="space-y-2.5">
+          <p className="text-[12px] leading-none text-muted-foreground font-extrabold uppercase tracking-[0.04em] px-1">Podešavanja</p>
+          <div className={ROW_CLASS}>
+            <div className={ROW_ICON_CLASS} style={tint('#FF9600')}>
+              <Type className="w-5 h-5" strokeWidth={2.4} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={ROW_TITLE_CLASS}>Veličina fonta</p>
+              <p className={ROW_SUB_CLASS}>Prilagodi tekst</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={cycleFontSize}
+              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
+            >
+              {guestFontLabels[fontSize]}
+            </Button>
+          </div>
+          <div className={ROW_CLASS}>
+            <div className={ROW_ICON_CLASS} style={tint('#CE82FF')}>
+              <Navigation className="w-5 h-5" strokeWidth={2.4} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={ROW_TITLE_CLASS}>Navigacija</p>
+              <p className={ROW_SUB_CLASS}>Uredi donji meni</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setShowNavEditor(true)}
+              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
+            >
+              Uredi
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-3 py-2">
+          <Link href="/about" className="flex items-center gap-2 px-5 h-11 rounded-xl bg-card border-2 border-border text-secondary text-[12px] font-extrabold uppercase tracking-[0.04em] shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none">
+            <Info className="w-4 h-4" strokeWidth={2.6} />
+            O aplikaciji
+          </Link>
+          <Link href="/privacy" className="flex items-center gap-2 px-5 h-11 rounded-xl bg-card border-2 border-border text-secondary text-[12px] font-extrabold uppercase tracking-[0.04em] shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none">
+            <Shield className="w-4 h-4" strokeWidth={2.6} />
+            Privatnost
+          </Link>
+        </div>
+
+        <p className="text-center text-[13px] font-bold text-muted-foreground pb-4">
+          Napravio: Dmitrij Ivascenko II-1
+        </p>
+      </div>
+    )
   }
 
   const roleHex = roleColor[profile.role] || roleColor.student
