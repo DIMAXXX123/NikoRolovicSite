@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ChevronLeft, BookOpen } from 'lucide-react'
+import { ChevronLeft, BookOpen, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { SubjectIcon } from '../subject-icon'
 import { DEFAULT_SUBJECTS, OPTIONAL_SUBJECTS } from '../subjects'
@@ -58,6 +58,13 @@ export default async function SubjectLecturesPage({
           </p>
         </div>
       </div>
+
+      <Link
+        href={`/lectures/nova?subject=${encodeURIComponent(subject)}`}
+        className="flex items-center justify-center gap-2 h-[50px] px-5 rounded-2xl border-2 border-border bg-card text-secondary text-[15px] font-extrabold uppercase tracking-[0.04em] shadow-[0_4px_0_var(--color-border)] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[4px] active:shadow-none"
+      >
+        <Sparkles className="w-5 h-5" strokeWidth={2.6} /> Nova lekcija sa AI
+      </Link>
 
       {items.length === 0 ? (
         <div className="text-center py-20">

@@ -37,7 +37,7 @@ export default function BlockBlastPage() {
   const [gameOver, setGameOver] = useState(false)
   const [shaking, setShaking] = useState(false)
   const [leaderboard, setLeaderboard] = useState<LeaderEntry[]>([])
-  const [showLeaderboard, setShowLeaderboard] = useState(true)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [leaderLoading, setLeaderLoading] = useState(false)
   const [myUserId, setMyUserId] = useState<string | null>(null)
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null)

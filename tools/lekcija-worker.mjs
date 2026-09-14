@@ -1,0 +1,250 @@
+#!/usr/bin/env node
+/**
+ * NR Lekcija Worker — one file, no dependencies (Node 18+).
+ *
+ * Pokreni na bilo kom računaru:
+ *   node lekcija-worker.mjs
+ *
+ * Šta radi: svakih par sekundi provjerava red `lecture_jobs` u Supabase bazi,
+ * uzima zadatak (fotografije + predmet/razred/tema), generiše kompletnu lekciju
+ * (sekcije, ključni pojmovi, sažetak, kviz, kartice) i upisuje je u tabelu
+ * `lectures`. Sajt odmah prikazuje lekciju svima.
+ *
+ * Kako generiše — dva režima, bira se automatski:
+ *   1) ANTHROPIC_API_KEY postavljen  → direktno Claude API (preporučeno; lekcija košta par centi).
+ *   2) inače                         → `claude -p` (Claude Code CLI prijavljen tvojom pretplatom).
+ *      Potrebno: instaliran Claude Code i `claude` u PATH-u (ili CLAUDE_BIN).
+ *
+ * Podešavanje (env ili ovdje ispod):
+ *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY  (obavezno — Supabase → Settings → API → service_role)
+ *   ANTHROPIC_API_KEY                        (opciono, režim 1)
+ *   CLAUDE_BIN, CLAUDE_MODEL                 (opciono, režim 2; podrazumijevano `claude`, `sonnet`)
+ *   POLL_MS                                  (opciono, podrazumijevano 5000)
+ */
+import { spawn } from 'node:child_process'
+import { mkdtemp, writeFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
+// ───── Config ────────────────────────────────────────────────────────────────
+const CONFIG = {
+  SUPABASE_URL: process.env.SUPABASE_URL || 'https://ydcbxqrnmnbceyzqgbui.supabase.co',
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
+  ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
+  CLAUDE_BIN: process.env.CLAUDE_BIN || 'claude',
+  CLAUDE_MODEL: process.env.CLAUDE_MODEL || 'sonnet',
+  POLL_MS: Number(process.env.POLL_MS || 5000),
+  // Author used when a guest (no user id) queued the job.
+  FALLBACK_AUTHOR_ID: '241c9077-b700-4400-8f96-20e3a650eef4',
+}
+
+if (!CONFIG.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('✖ Nedostaje SUPABASE_SERVICE_ROLE_KEY. Postavi env varijablu ili upiši ključ u CONFIG.')
+  process.exit(1)
+}
+
+const REST = `${CONFIG.SUPABASE_URL}/rest/v1`
+const STORAGE = `${CONFIG.SUPABASE_URL}/storage/v1`
+const HEADERS = {
+  apikey: CONFIG.SUPABASE_SERVICE_ROLE_KEY,
+  Authorization: `Bearer ${CONFIG.SUPABASE_SERVICE_ROLE_KEY}`,
+  'Content-Type': 'application/json',
+}
+
+const log = (...a) => console.log(new Date().toLocaleTimeString('sr-Latn'), ...a)
+
+// ───── Supabase helpers (plain REST, no SDK) ─────────────────────────────────
+async function rest(method, path, body, extraHeaders = {}) {
+  const res = await fetch(`${REST}/${path}`, {
+    method,
+    headers: { ...HEADERS, ...extraHeaders },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+  const text = await res.text()
+  if (!res.ok) throw new Error(`${method} ${path} → ${res.status}: ${text.slice(0, 300)}`)
+  return text ? JSON.parse(text) : null
+}
+
+async function claimJob() {
+  const rows = await rest('GET', 'lecture_jobs?status=eq.pending&order=created_at.asc&limit=1')
+  const job = rows && rows[0]
+  if (!job) return null
+  // Optimistic claim: only wins if the row is still pending.
+  const claimed = await rest(
+    'PATCH',
+    `lecture_jobs?id=eq.${job.id}&status=eq.pending`,
+    { status: 'processing', progress: 'Čitam fotografije…', updated_at: new Date().toISOString() },
+    { Prefer: 'return=representation' }
+  )
+  return claimed && claimed[0] ? claimed[0] : null
+}
+
+const setProgress = (id, progress) =>
+  rest('PATCH', `lecture_jobs?id=eq.${id}`, { progress, updated_at: new Date().toISOString() }).catch(() => {})
+
+async function downloadPhoto(path) {
+  const res = await fetch(`${STORAGE}/object/${path}`, { headers: HEADERS })
+  if (!res.ok) throw new Error(`Slika ${path}: ${res.status}`)
+  const type = res.headers.get('content-type') || 'image/jpeg'
+  return { bytes: Buffer.from(await res.arrayBuffer()), type: type.split(';')[0] }
+}
+
+// ───── Prompt ────────────────────────────────────────────────────────────────
+const LENGTH_HINT = {
+  kratka: '2–3 sekcije, svaka 60–120 riječi',
+  srednja: '3–5 sekcija, svaka 100–180 riječi',
+  detaljna: '5–7 sekcija, svaka 150–250 riječi, sa primjerima',
+}
+
+function buildPrompt(job, photoCount) {
+  return `Ti si nastavnik u Gimnaziji "Niko Rolović" (Bar, Crna Gora). Na osnovu ${photoCount} fotografija (stranice udžbenika ili tabla) napiši KOMPLETNU lekciju za učenike ${job.class_number}. razreda gimnazije iz predmeta "${job.subject}".
+${job.topic ? `Tema: ${job.topic}\n` : ''}${job.notes ? `Napomene nastavnika: ${job.notes}\n` : ''}
+Dužina: ${LENGTH_HINT[job.length] || LENGTH_HINT.srednja}.
+
+PRAVILA
+- Jezik: crnogorski/srpski, ijekavica, latinica. Jasno, za srednjoškolce, bez fraza „u ovoj lekciji“.
+- Koristi SAMO ono što je na fotografijama plus opšte poznato gradivo te teme; ne izmišljaj brojke, imena i datume kojih nema.
+- Formule i hemijske oznake pišu se Unicode znakovima (x², H₂O, →, ≤); NIKAD HTML, NIKAD znak "<" u tekstu.
+- Tekst sekcija: obični pasusi razdvojeni praznim redom; nabrajanja kao redovi koji počinju sa "- ". Bez markdown zvjezdica.
+- Kviz: ${job.want_quiz ? '6–8 pitanja' : '0 pitanja (prazan niz)'}, svako sa TAČNO 4 opcije i indeksom tačne (0–3), plus kratko objašnjenje.
+- Kartice: ${job.want_flashcards ? '6–10 kartica (pojam → objašnjenje)' : '0 kartica (prazan niz)'}.
+- Ključni pojmovi: 4–8.
+
+ODGOVORI ISKLJUČIVO JEDNIM JSON OBJEKTOM (bez teksta prije i poslije, bez markdown ograda):
+{
+  "title": "naslov lekcije",
+  "sections": [{"heading": "naslov sekcije", "content": "tekst sekcije"}],
+  "keyTerms": [{"term": "pojam", "definition": "objašnjenje"}],
+  "summary": "sažetak u 2–3 rečenice",
+  "quiz": [{"question": "pitanje", "options": ["A","B","C","D"], "correct": 0, "explanation": "zašto"}],
+  "flashcards": [{"front": "pojam", "back": "objašnjenje"}]
+}`
+}
+
+// ───── Generation: Claude API (mode 1) ───────────────────────────────────────
+async function generateViaApi(prompt, photos) {
+  const content = [
+    ...photos.map((p) => ({ type: 'image', source: { type: 'base64', media_type: p.type, data: p.bytes.toString('base64') } })),
+    { type: 'text', text: prompt },
+  ]
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': CONFIG.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    body: JSON.stringify({ model: CONFIG.ANTHROPIC_MODEL, max_tokens: 8192, messages: [{ role: 'user', content }] }),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(`Claude API ${res.status}: ${JSON.stringify(data).slice(0, 300)}`)
+  return (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n')
+}
+
+// ───── Generation: Claude Code CLI (mode 2) ──────────────────────────────────
+async function generateViaCli(prompt, photos) {
+  const dir = await mkdtemp(join(tmpdir(), 'nr-lekcija-'))
+  try {
+    const names = []
+    for (let i = 0; i < photos.length; i++) {
+      const ext = photos[i].type.includes('png') ? 'png' : photos[i].type.includes('webp') ? 'webp' : 'jpg'
+      const name = `slika-${i + 1}.${ext}`
+      await writeFile(join(dir, name), photos[i].bytes)
+      names.push(name)
+    }
+    const full = `Prvo pročitaj (Read) ove slike iz tekućeg foldera, redom: ${names.join(', ')}.\n\n${prompt}`
+    await writeFile(join(dir, 'prompt.txt'), full)
+    const args = ['-p', full, '--output-format', 'json', '--model', CONFIG.CLAUDE_MODEL, '--allowedTools', 'Read']
+    const out = await new Promise((resolve, reject) => {
+      const child = spawn(CONFIG.CLAUDE_BIN, args, { cwd: dir, shell: process.platform === 'win32' })
+      let stdout = '', stderr = ''
+      child.stdout.on('data', (d) => (stdout += d))
+      child.stderr.on('data', (d) => (stderr += d))
+      child.on('error', reject)
+      child.on('close', (code) => (code === 0 ? resolve(stdout) : reject(new Error(`claude izašao sa kodom ${code}: ${stderr.slice(0, 300)}`))))
+    })
+    try {
+      const parsed = JSON.parse(out)
+      if (parsed && typeof parsed.result === 'string') return parsed.result
+    } catch { /* not the json envelope — use raw */ }
+    return out
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+}
+
+// ───── Parse + build stored content (same as admin buildLectureContent) ─────
+function extractJson(text) {
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start < 0 || end < 0) throw new Error('Model nije vratio JSON')
+  return JSON.parse(text.slice(start, end + 1))
+}
+
+const safeText = (s) => String(s ?? '').replace(/<[^>]*>/g, '').replace(/</g, '‹').replace(/:SUMMARY|:KEY_TERMS|:QUIZ_DATA|:LECTURE_DATE/g, (m) => m.replace(':', ': ')).trim()
+
+function buildLectureContent(r) {
+  const today = new Date().toISOString().split('T')[0]
+  let content = `LECTURE_DATE:${today}:LECTURE_DATE\n\n`
+  for (const s of r.sections || []) content += `## ${safeText(s.heading)}\n\n${safeText(s.content)}\n\n`
+  const keyTerms = (r.keyTerms || []).map((k) => ({ term: safeText(k.term), definition: safeText(k.definition) })).filter((k) => k.term)
+  if (keyTerms.length) content += `KEY_TERMS:${JSON.stringify(keyTerms)}:KEY_TERMS\n\n`
+  if (r.summary) content += `SUMMARY:${safeText(r.summary)}:SUMMARY\n\n`
+  const questions = (r.quiz || [])
+    .filter((q) => q && q.question && Array.isArray(q.options) && q.options.length >= 2)
+    .map((q) => ({
+      question: safeText(q.question),
+      options: q.options.slice(0, 4).map(safeText),
+      correct: Math.min(Math.max(Number(q.correct) || 0, 0), Math.min(q.options.length, 4) - 1),
+      ...(q.explanation ? { explanation: safeText(q.explanation) } : {}),
+    }))
+  const flashcards = (r.flashcards || []).filter((f) => f && f.front && f.back).map((f) => ({ question: safeText(f.front), answer: safeText(f.back) }))
+  content += `QUIZ_DATA:${JSON.stringify({ questions, flashcards })}:QUIZ_DATA`
+  return content
+}
+
+// ───── One job ───────────────────────────────────────────────────────────────
+async function processJob(job) {
+  log(`▶ Zadatak ${job.id.slice(0, 8)} · ${job.subject} · ${job.class_number}. razred · ${job.photo_paths.length} slika`)
+  const photos = []
+  for (const p of job.photo_paths) photos.push(await downloadPhoto(p))
+  if (!photos.length) throw new Error('Zadatak nema fotografija')
+
+  await setProgress(job.id, CONFIG.ANTHROPIC_API_KEY ? 'Pišem lekciju (Claude API)…' : 'Pišem lekciju (Claude Code)…')
+  const prompt = buildPrompt(job, photos.length)
+  const raw = CONFIG.ANTHROPIC_API_KEY ? await generateViaApi(prompt, photos) : await generateViaCli(prompt, photos)
+  const result = extractJson(raw)
+  if (!result.title || !Array.isArray(result.sections) || !result.sections.length) throw new Error('Nepotpun odgovor modela (nema naslova/sekcija)')
+
+  await setProgress(job.id, 'Upisujem lekciju…')
+  const lecture = await rest(
+    'POST',
+    'lectures',
+    { title: safeText(result.title), subject: job.subject, class_number: job.class_number, content: buildLectureContent(result), author_id: job.user_id || CONFIG.FALLBACK_AUTHOR_ID },
+    { Prefer: 'return=representation' }
+  )
+  const lectureId = lecture[0].id
+  await rest('PATCH', `lecture_jobs?id=eq.${job.id}`, { status: 'done', progress: 'Gotovo', lecture_id: lectureId, updated_at: new Date().toISOString() })
+  log(`✔ Lekcija "${result.title}" → /lectures/${encodeURIComponent(job.subject)}/${lectureId}`)
+}
+
+// ───── Loop ──────────────────────────────────────────────────────────────────
+let stopping = false
+process.on('SIGINT', () => { stopping = true; log('Zaustavljam…') })
+
+log(`NR Lekcija Worker · režim: ${CONFIG.ANTHROPIC_API_KEY ? 'Claude API (' + CONFIG.ANTHROPIC_MODEL + ')' : 'Claude Code CLI (' + CONFIG.CLAUDE_BIN + ' --model ' + CONFIG.CLAUDE_MODEL + ')'} · čekam zadatke…`)
+while (!stopping) {
+  try {
+    const job = await claimJob()
+    if (job) {
+      try {
+        await processJob(job)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        log(`✖ Greška: ${message}`)
+        await rest('PATCH', `lecture_jobs?id=eq.${job.id}`, { status: 'error', error: message.slice(0, 500), progress: null, updated_at: new Date().toISOString() }).catch(() => {})
+      }
+      continue
+    }
+  } catch (err) {
+    log(`✖ ${err instanceof Error ? err.message : err}`)
+  }
+  await new Promise((r) => setTimeout(r, CONFIG.POLL_MS))
+}
