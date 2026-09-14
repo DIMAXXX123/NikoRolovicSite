@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { consumeLoginNext } from '@/components/login-prompt'
+import { GuestLoginButton } from '@/components/guest-login-button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -168,6 +169,7 @@ export default function LoginPage() {
               Nemaš nalog? Registruj se
             </Button>
           </Link>
+          <GuestLoginButton variant="secondary" next={consumeLoginNext() ?? '/gallery'} />
           <Button
             type="button"
             variant="ghost"

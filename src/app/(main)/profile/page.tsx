@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users, UserRound, Gamepad2, Trophy, ClipboardList } from 'lucide-react'
 import { RoleBadge } from '@/components/role-badge'
+import { GuestLoginButton } from '@/components/guest-login-button'
 import { RoleAnimation } from '@/components/role-animation'
 import { AVATARS, AvatarById } from '@/components/avatars'
 import { GpaCalculator } from './calculator'
@@ -302,6 +303,7 @@ export default function ProfilePage() {
           </div>
           <div className="w-full flex flex-col gap-3 pt-1">
             <Button className="w-full" onClick={() => router.push('/login')}>Prijavi se</Button>
+            <GuestLoginButton variant="secondary" next="/profile" />
             <Button variant="outline" className="w-full" onClick={() => router.push('/register')}>Registruj se</Button>
           </div>
         </Card>
@@ -476,10 +478,12 @@ export default function ProfilePage() {
 
       {/* Info card */}
       <Card className="gap-3.5" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '240ms', opacity: 0 }}>
-        <div className="flex justify-between text-[15px] font-bold">
-          <span className="text-muted-foreground">Email</span>
-          <span className="truncate ml-4 text-foreground">{profile.email}</span>
-        </div>
+        {!profile.email.endsWith('@gost.local') && (
+          <div className="flex justify-between text-[15px] font-bold">
+            <span className="text-muted-foreground">Email</span>
+            <span className="truncate ml-4 text-foreground">{profile.email}</span>
+          </div>
+        )}
         <div className="flex justify-between text-[15px] font-bold">
           <span className="text-muted-foreground">Razred</span>
           <span className="text-foreground">{profile.class_number}. razred, {profile.section_number}. odjeljenje</span>
