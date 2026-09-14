@@ -17,6 +17,24 @@ import { formatMath, type Homework } from '../../lecture-utils'
 export const HOMEWORK_DONE_KEY = 'homework_done'
 const NO_DONE: Record<string, string> = {}
 
+/** Flip the per-device "done" flag for one homework (shared by the card and the /domaci list). */
+export function toggleHomeworkDone(lectureId: string): boolean {
+  let current: Record<string, string> = {}
+  try {
+    const raw = localStorage.getItem(HOMEWORK_DONE_KEY)
+    const parsed: unknown = raw ? JSON.parse(raw) : {}
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) current = parsed as Record<string, string>
+  } catch {
+    current = {}
+  }
+  const next = { ...current }
+  if (next[lectureId]) delete next[lectureId]
+  else next[lectureId] = new Date().toISOString()
+  track('homework_done', { entity_id: lectureId, value: next[lectureId] ? 1 : 0 })
+  try { writeLocalJson(HOMEWORK_DONE_KEY, next) } catch { /* private mode */ }
+  return !!next[lectureId]
+}
+
 function useHomeworkDone(lectureId: string): [boolean, () => void] {
   const done = useLocalJson<Record<string, string>>(HOMEWORK_DONE_KEY, NO_DONE)
   const isDone = typeof done === 'object' && done !== null && !!done[lectureId]

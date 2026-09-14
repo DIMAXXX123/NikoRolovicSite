@@ -4,7 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronRight, Check, ClipboardList, Lightbulb } from 'lucide-react'
 import { useLocalJson } from '@/lib/local-json'
-import { HOMEWORK_DONE_KEY } from '../lectures/[subject]/[id]/homework-card'
+import { HOMEWORK_DONE_KEY, toggleHomeworkDone } from '../lectures/[subject]/[id]/homework-card'
+import { haptic } from '@/lib/haptics'
 import { SubjectIcon } from '../lectures/subject-icon'
 import { DEFAULT_SUBJECTS, OPTIONAL_SUBJECTS } from '../lectures/subjects'
 import type { HomeworkItem } from '../lectures/homework-block'
@@ -69,37 +70,49 @@ export function HomeworkList({ items, today }: { items: HomeworkItem[]; today: s
             const first = it.homework.tasks[0]
             const image = it.homework.images[0]
             return (
-              <Link
+              <div
                 key={it.lectureId}
-                href={`/domaci/${it.lectureId}`}
-                className={`flex items-center gap-3 min-h-16 p-3 rounded-2xl border-2 bg-card transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none ${
+                className={`flex items-center gap-2 min-h-16 p-2 pl-3 rounded-2xl border-2 bg-card ${
                   finished ? 'border-primary-light-border shadow-[0_2px_0_var(--color-primary-light-border)]' : overdue ? 'border-[#FFB3B5] shadow-[0_2px_0_#FFB3B5]' : 'border-[#FFE28A] shadow-[0_2px_0_#FFE28A]'
                 }`}
               >
-                {image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={image} alt="" className="w-14 h-14 rounded-xl object-cover border-2 border-border flex-shrink-0" />
-                ) : info ? (
-                  <SubjectIcon name={info.name} emoji={info.emoji} size="sm" />
-                ) : null}
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground">{it.subject}</span>
-                    {finished ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] px-2 py-1 rounded-full border-2 border-primary-light-border bg-primary-light text-primary-text"><Check className="w-3 h-3" strokeWidth={3} /> Urađeno</span>
-                    ) : due ? (
-                      <span className={`text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] px-2 py-1 rounded-full border-2 ${overdue ? 'border-[#FFB3B5] bg-[#FFDFE0] text-[#EA2B2B]' : 'border-[#FFE28A] bg-[#FFF4C4] text-[#C79000]'}`}>
-                        {overdue ? `Kasni ${-left} d` : left === 0 ? 'Danas' : left === 1 ? 'Sutra' : `Rok: ${due}`}
-                      </span>
-                    ) : null}
+                <button
+                  type="button"
+                  onClick={() => { haptic(finished ? 6 : 14); toggleHomeworkDone(it.lectureId) }}
+                  aria-pressed={finished}
+                  aria-label={finished ? 'Poništi urađeno' : 'Označi kao urađeno'}
+                  className={`w-11 h-11 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-[transform,background-color,border-color] duration-[120ms] active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                    finished ? 'bg-primary border-primary text-primary-foreground shadow-[0_3px_0_var(--color-primary-dark)]' : 'bg-card border-border-strong text-transparent shadow-[0_3px_0_var(--color-border)]'
+                  }`}
+                >
+                  <Check className="w-6 h-6" strokeWidth={3.2} />
+                </button>
+                <Link href={`/domaci/${it.lectureId}`} className="flex items-center gap-3 min-w-0 flex-1 min-h-11 rounded-xl">
+                  {image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={image} alt="" className="w-12 h-12 rounded-xl object-cover border-2 border-border flex-shrink-0" />
+                  ) : info ? (
+                    <SubjectIcon name={info.name} emoji={info.emoji} size="sm" />
+                  ) : null}
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground">{it.subject}</span>
+                      {finished ? (
+                        <span className="text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] px-2 py-1 rounded-full border-2 border-primary-light-border bg-primary-light text-primary-text">Urađeno</span>
+                      ) : due ? (
+                        <span className={`text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] px-2 py-1 rounded-full border-2 ${overdue ? 'border-[#FFB3B5] bg-[#FFDFE0] text-[#EA2B2B]' : 'border-[#FFE28A] bg-[#FFF4C4] text-[#C79000]'}`}>
+                          {overdue ? `Kasni ${-left} d` : left === 0 ? 'Danas' : left === 1 ? 'Sutra' : `Rok: ${due}`}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className={`block mt-1 text-[15px] leading-[1.3] font-extrabold truncate ${finished ? 'text-muted-foreground line-through decoration-2' : 'text-heading'}`}>{it.title}</span>
+                    <span className="block mt-0.5 text-[13px] leading-[1.4] font-bold text-muted-foreground line-clamp-1">
+                      {first ? `${first.label}: ${first.what}` : it.homework.text}
+                    </span>
                   </span>
-                  <span className="block mt-1 text-[15px] leading-[1.3] font-extrabold text-heading truncate">{it.title}</span>
-                  <span className="block mt-0.5 text-[13px] leading-[1.4] font-bold text-muted-foreground line-clamp-2">
-                    {first ? `${first.label}: ${first.what}` : it.homework.text}
-                  </span>
-                </span>
-                <ChevronRight className="w-5 h-5 text-disabled flex-shrink-0" strokeWidth={2.6} />
-              </Link>
+                  <ChevronRight className="w-5 h-5 text-disabled flex-shrink-0" strokeWidth={2.6} />
+                </Link>
+              </div>
             )
           })}
         </div>
@@ -108,7 +121,7 @@ export function HomeworkList({ items, today }: { items: HomeworkItem[]; today: s
       {visible.length > 0 && (
         <p className="flex items-center gap-2 text-[13px] font-bold text-muted-foreground px-1">
           <Lightbulb className="w-4 h-4 text-[#C79000] flex-shrink-0" strokeWidth={2.6} />
-          Otvori zadatak za uputstvo, sliku iz udžbenika i lekciju uz njega.
+          Tapni kružić kad uradiš zadatak. Otvori red za uputstvo, sliku iz udžbenika i lekciju.
         </p>
       )}
     </div>
