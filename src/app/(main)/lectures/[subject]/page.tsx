@@ -10,10 +10,13 @@ export const dynamic = 'force-dynamic'
 
 export default async function SubjectLecturesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ subject: string }>
+  searchParams: Promise<{ razred?: string }>
 }) {
   const { subject: rawSubject } = await params
+  const { razred } = await searchParams
   const subject = decodeURIComponent(rawSubject)
 
   const supabase = await createClient()
@@ -28,10 +31,14 @@ export default async function SubjectLecturesPage({
       .single()
     classNumber = profile?.class_number ?? null
   }
+  // Visitors without a profile browse by class (chips below); default 2. razred.
+  const hasProfileClass = classNumber !== null
+  if (classNumber === null) {
+    const picked = Number(razred)
+    classNumber = picked >= 1 && picked <= 4 ? picked : 2
+  }
 
-  const { items, hasMore } = classNumber
-    ? await fetchLecturesPage(supabase, classNumber, subject, 0)
-    : { items: [], hasMore: false }
+  const { items, hasMore } = await fetchLecturesPage(supabase, classNumber, subject, 0)
 
   const subjectInfo = [...DEFAULT_SUBJECTS, ...OPTIONAL_SUBJECTS].find((s) => s.name === subject)
 
@@ -59,6 +66,25 @@ export default async function SubjectLecturesPage({
         </div>
       </div>
 
+      {!hasProfileClass && (
+        <div className="grid grid-cols-4 gap-2">
+          {[1, 2, 3, 4].map((n) => (
+            <Link
+              key={n}
+              href={`/lectures/${encodeURIComponent(subject)}?razred=${n}`}
+              aria-current={classNumber === n ? 'page' : undefined}
+              className={`h-11 rounded-xl border-2 text-[12px] font-extrabold uppercase tracking-[0.04em] flex items-center justify-center transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none ${
+                classNumber === n
+                  ? 'border-secondary-light-border bg-secondary-light text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]'
+                  : 'border-border bg-card text-muted-foreground shadow-[0_2px_0_var(--color-border)]'
+              }`}
+            >
+              {n}. razred
+            </Link>
+          ))}
+        </div>
+      )}
+
       <Link
         href={`/lectures/nova?subject=${encodeURIComponent(subject)}`}
         className="flex items-center justify-center gap-2 h-[50px] px-5 rounded-2xl border-2 border-border bg-card text-secondary text-[15px] font-extrabold uppercase tracking-[0.04em] shadow-[0_4px_0_var(--color-border)] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[4px] active:shadow-none"
@@ -76,7 +102,7 @@ export default async function SubjectLecturesPage({
       ) : (
         <LectureList
           subject={subject}
-          classNumber={classNumber!}
+          classNumber={classNumber}
           initialItems={items}
           initialHasMore={hasMore}
           pageSize={LECTURES_PAGE_SIZE}
