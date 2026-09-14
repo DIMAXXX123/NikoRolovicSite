@@ -22,9 +22,24 @@
  *   POLL_MS                                  (opciono, podrazumijevano 5000)
  */
 import { spawn } from 'node:child_process'
-import { mkdtemp, writeFile, rm } from 'node:fs/promises'
+import { mkdtemp, writeFile, rm, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// Zero-config: read .env.local / .env next to the project (or next to this file)
+// so `node tools/lekcija-worker.mjs` works without setting variables by hand.
+for (const dir of [process.cwd(), join(dirname(fileURLToPath(import.meta.url)), '..'), dirname(fileURLToPath(import.meta.url))]) {
+  for (const name of ['.env.local', '.env']) {
+    try {
+      const text = await readFile(join(dir, name), 'utf8')
+      for (const line of text.split(/\r?\n/)) {
+        const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/)
+        if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '')
+      }
+    } catch { /* no such file */ }
+  }
+}
 
 // ───── Config ────────────────────────────────────────────────────────────────
 const CONFIG = {
@@ -32,7 +47,7 @@ const CONFIG = {
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
   ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
-  CLAUDE_BIN: process.env.CLAUDE_BIN || 'claude',
+  CLAUDE_BIN: process.env.CLAUDE_BIN || (process.platform === 'win32' ? 'claude.exe' : 'claude'),
   CLAUDE_MODEL: process.env.CLAUDE_MODEL || 'sonnet',
   POLL_MS: Number(process.env.POLL_MS || 5000),
   // Author used when a guest (no user id) queued the job.
@@ -153,18 +168,22 @@ async function generateViaCli(prompt, photos) {
     await writeFile(join(dir, 'prompt.txt'), full)
     const args = ['-p', full, '--output-format', 'json', '--model', CONFIG.CLAUDE_MODEL, '--allowedTools', 'Read']
     const out = await new Promise((resolve, reject) => {
-      const child = spawn(CONFIG.CLAUDE_BIN, args, { cwd: dir, shell: process.platform === 'win32' })
+      const child = spawn(CONFIG.CLAUDE_BIN, args, { cwd: dir, stdio: ['ignore', 'pipe', 'pipe'] })
       let stdout = '', stderr = ''
       child.stdout.on('data', (d) => (stdout += d))
       child.stderr.on('data', (d) => (stderr += d))
       child.on('error', reject)
-      child.on('close', (code) => (code === 0 ? resolve(stdout) : reject(new Error(`claude izašao sa kodom ${code}: ${stderr.slice(0, 300)}`))))
+      child.on('close', (code) => resolve({ code, stdout, stderr }))
     })
-    try {
-      const parsed = JSON.parse(out)
-      if (parsed && typeof parsed.result === 'string') return parsed.result
-    } catch { /* not the json envelope — use raw */ }
-    return out
+    let parsed = null
+    try { parsed = JSON.parse(out.stdout) } catch { /* not the json envelope */ }
+    if (parsed && parsed.is_error) {
+      const msg = String(parsed.result || '').slice(0, 300)
+      throw new Error(/authenticate|OAuth|login/i.test(msg) ? `Claude Code nije prijavljen na ovom računaru — pokreni \`claude\` i uradi /login. (${msg})` : `Claude Code: ${msg}`)
+    }
+    if (out.code !== 0 && !parsed) throw new Error(`claude izašao sa kodom ${out.code}: ${(out.stderr || out.stdout).slice(0, 300)}`)
+    if (parsed && typeof parsed.result === 'string') return parsed.result
+    return out.stdout
   } finally {
     await rm(dir, { recursive: true, force: true })
   }
