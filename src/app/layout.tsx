@@ -5,6 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ToastProvider } from "@/components/toast";
 import "./globals.css";
 import { AutoLogin } from "@/components/auto-login";
+import { AppAnalytics } from "@/components/app-analytics";
 
 const nunito = Nunito({
   weight: ["700", "800", "900"],
@@ -56,6 +57,7 @@ export default function RootLayout({
         className={`${nunito.variable} ${nunito.className} min-h-screen bg-background overflow-x-hidden`}
       >
         <AutoLogin />
+        <AppAnalytics />
         <ToastProvider>{children}</ToastProvider>
         <Analytics />
         <SpeedInsights />

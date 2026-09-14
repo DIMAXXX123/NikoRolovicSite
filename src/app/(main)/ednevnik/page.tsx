@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { track } from '@/lib/analytics'
 import { createClient } from '@/lib/supabase/client'
 import { ChevronDown, LogOut, ClipboardCopy, ExternalLink, Loader2, BookOpen, AlertCircle, Smartphone, Monitor, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -92,6 +93,7 @@ export default function EDnevnikPage() {
   }, [])
 
   const fetchEDnevnik = useCallback(async (token: string) => {
+    track(localStorage.getItem(TOKEN_KEY) ? 'ednevnik_sync' : 'ednevnik_connect')
     setLoading(true)
     setError(null)
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { track } from '@/lib/analytics'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
@@ -43,6 +44,7 @@ export default function GalleryPage() {
   const supabase = createClient()
 
   useEffect(() => {
+    track('gallery_view')
     async function init() {
       await loadCurrentUser()
       await loadPhotos()
@@ -186,6 +188,7 @@ export default function GalleryPage() {
   }
 
   async function toggleLike(photoId: string) {
+    if (!likedPhotos[photoId]) track('photo_like', { entity_id: photoId })
     if (!currentUserId) { promptLogin(); return }
     const wasLiked = !!likedPhotos[photoId]
     const prevCounts = { ...likeCounts }
@@ -276,6 +279,7 @@ export default function GalleryPage() {
   }
 
   async function handleUpload() {
+    track('photo_upload', { value: selectedFile?.size ?? null })
     if (!selectedFile) return
     setUploading(true)
     const { data: { user } } = await supabase.auth.getUser()

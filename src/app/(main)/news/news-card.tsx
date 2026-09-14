@@ -158,7 +158,7 @@ export function NewsHeroCard({
 }: CardProps) {
   const { surfaceProps } = useCardTap(item, onToggleExpand, onToggleLike)
   return (
-    <article className={ARTICLE_CLASS} {...surfaceProps}>
+    <article className={ARTICLE_CLASS} data-news-id={item.id} {...surfaceProps}>
       {showImage && (
         <div className="relative h-64 rounded-xl overflow-hidden border-2 border-border">
           <CoverImage item={item} priority={priority} onImageError={onImageError} />
@@ -216,7 +216,7 @@ export function NewsRegularCard({
 }: CardProps) {
   const { surfaceProps } = useCardTap(item, onToggleExpand, onToggleLike)
   return (
-    <article className={ARTICLE_CLASS} {...surfaceProps}>
+    <article className={ARTICLE_CLASS} data-news-id={item.id} {...surfaceProps}>
       {showImage && (
         <div className="relative h-48 rounded-xl overflow-hidden border-2 border-border">
           <CoverImage item={item} priority={priority} onImageError={onImageError} />

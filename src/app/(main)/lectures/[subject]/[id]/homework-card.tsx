@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useLocalJson, writeLocalJson } from '@/lib/local-json'
+import { track } from '@/lib/analytics'
 import { formatMath, type Homework } from '../../lecture-utils'
 
 // ---------------------------------------------------------------------------
@@ -33,6 +34,7 @@ function useHomeworkDone(lectureId: string): [boolean, () => void] {
     const next = { ...current }
     if (next[lectureId]) delete next[lectureId]
     else next[lectureId] = new Date().toISOString()
+    track('homework_done', { entity_id: lectureId, value: next[lectureId] ? 1 : 0 })
     try {
       writeLocalJson(HOMEWORK_DONE_KEY, next)
     } catch {

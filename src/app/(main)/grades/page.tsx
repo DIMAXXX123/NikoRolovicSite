@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { track } from '@/lib/analytics'
 import { ChevronDown, Plus, X, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -141,6 +142,7 @@ export default function GradesPage() {
   const [expandedSubject, setExpandedSubject] = useState<string | null>(null)
 
   useEffect(() => {
+    track('grades_open')
     setGrades(loadGrades())
     setSubjects(loadSubjects())
   }, [])

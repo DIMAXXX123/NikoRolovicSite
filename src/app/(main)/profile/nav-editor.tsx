@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { track } from '@/lib/analytics'
 import { ChevronUp, ChevronDown, Plus, X, GripVertical } from 'lucide-react'
 import {
   ALL_NAV_ITEMS,
@@ -31,6 +32,7 @@ export function NavEditor({ onClose }: { onClose: () => void }) {
   const availableItems = ALL_NAV_ITEMS.filter(item => !activeIds.includes(item.id))
 
   function save(ids: string[]) {
+    track('nav_customized', { value: ids.length, meta: { ids } })
     setActiveIds(ids)
     saveNavConfig(ids)
     window.dispatchEvent(new CustomEvent('nav-config-changed'))

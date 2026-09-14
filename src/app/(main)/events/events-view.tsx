@@ -19,6 +19,7 @@ import {
   todayISO,
 } from './event-config'
 import type { Event, EventType, Profile } from '@/lib/types'
+import { trackOnce } from '@/lib/analytics'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('sr-Latn', {
@@ -437,7 +438,10 @@ export function EventsView({
                 <button
                   key={day}
                   type="button"
-                  onClick={() => setSelectedDay(day)}
+                  onClick={() => {
+                    dayEvents.forEach((ev) => trackOnce(ev.id, 'event_view', { entity_id: ev.id, meta: { type: ev.event_type ?? null } }))
+                    setSelectedDay(day)
+                  }}
                   className="group/day relative flex h-12 w-full flex-col items-center justify-start transition-transform active:scale-90"
                 >
                   <span

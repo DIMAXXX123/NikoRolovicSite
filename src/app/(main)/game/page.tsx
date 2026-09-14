@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { track } from '@/lib/analytics'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/types'
 import { Trophy, Zap } from 'lucide-react'
@@ -88,6 +89,7 @@ export default function BlockBlastPage() {
   }, [])
 
   const startNewGame = useCallback(() => {
+    track('game_start')
     const g = emptyGrid()
     setGrid(g)
     gridStateRef.current = g
@@ -164,6 +166,7 @@ export default function BlockBlastPage() {
 
   // ── Game Over ────────────────────────────────────────────────────────
   const triggerGameOver = useCallback((finalScore: number) => {
+    track('game_over', { value: finalScore })
     setGameOver(true)
     setShaking(true)
     setTimeout(() => setShaking(false), 500)

@@ -14,6 +14,7 @@ import { AVATARS, AvatarById } from '@/components/avatars'
 import { GpaCalculator } from './calculator'
 import { NavEditor } from './nav-editor'
 import { getNavConfig } from '@/lib/nav-config'
+import { track } from '@/lib/analytics'
 import type { Profile } from '@/lib/types'
 import Link from 'next/link'
 
@@ -255,6 +256,7 @@ export default function ProfilePage() {
     const labels: Record<string, string> = { small: 'Malo', normal: 'Normalno', large: 'Veliko' }
     const current = sizes.indexOf(fontSize as typeof sizes[number])
     const next = sizes[(current + 1) % sizes.length]
+    track('font_size_changed', { meta: { size: next } })
     setFontSize(next)
     localStorage.setItem('app_font_size', next)
     applyFontSize(next)

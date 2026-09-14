@@ -8,6 +8,7 @@ import { NewsHeroCard, NewsRegularCard } from './news-card'
 import { FloatingHearts } from '@/components/tap-like'
 import { Button } from '@/components/ui/button'
 import type { NewsItem } from '@/lib/types'
+import { track, trackOnce } from '@/lib/analytics'
 
 interface NewsFeedProps {
   initialItems: NewsItem[]
@@ -27,7 +28,28 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
   const likeDebounceRef = useRef<Record<string, number>>({})
   const { prompt: promptLogin, element: loginPrompt } = useLoginPrompt()
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const feedRef = useRef<HTMLDivElement | null>(null)
   const supabase = createClient()
+
+  // news_view: a card counts as seen once ≥50% of it has been on screen,
+  // at most once per tab session.
+  useEffect(() => {
+    const root = feedRef.current
+    if (!root || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          const id = (entry.target as HTMLElement).dataset.newsId
+          if (id) trackOnce(id, 'news_view', { entity_id: id })
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.5 }
+    )
+    root.querySelectorAll<HTMLElement>('[data-news-id]').forEach((node) => observer.observe(node))
+    return () => observer.disconnect()
+  }, [news])
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => {
@@ -75,6 +97,7 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
 
   const toggleLike = useCallback(
     async (newsId: string, currentlyLiked: boolean) => {
+      if (!currentlyLiked) track('news_like', { entity_id: newsId })
       if (!userId) { promptLogin(); return }
       if (likingIdsRef.current.has(newsId)) return
 
@@ -144,7 +167,7 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
   }
 
   return (
-    <div className="space-y-4 animate-stagger">
+    <div ref={feedRef} className="space-y-4 animate-stagger">
       {loginPrompt}
       <FloatingHearts />
       <NewsHeroCard

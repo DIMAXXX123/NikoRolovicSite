@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { track } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -48,6 +49,7 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
   // The class/section come pre-resolved from the server; only "today" has to be
   // decided in the browser, since the server clock is not the reader's clock.
   useEffect(() => {
+    track('schedule_view', { meta: { day: new Date().getDay() } })
     const now = new Date()
     const today = now.getDay()
     setActiveDay(today >= 1 && today <= 5 ? today - 1 : 0)

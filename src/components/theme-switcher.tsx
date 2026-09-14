@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Palette } from 'lucide-react'
+import { track } from '@/lib/analytics'
 
 // Three LIGHT accent themes — only the primary family changes,
 // everything else stays white (docs/DUOLINGO_REDESIGN.md §6).
@@ -70,6 +71,7 @@ export function useThemeCycle() {
   }, [])
   const cycle = () => {
     const next = (currentIndex + 1) % themes.length
+    track('theme_changed', { meta: { theme: themes[next].key } })
     setCurrentIndex(next)
     applyTheme(themes[next].key)
     localStorage.setItem('nr-theme', themes[next].key)
@@ -96,6 +98,7 @@ export function ThemeSwitcher() {
 
   function cycleTheme() {
     const next = (currentIndex + 1) % themes.length
+    track('theme_changed', { meta: { theme: themes[next].key } })
     setCurrentIndex(next)
     const theme = themes[next]
     applyTheme(theme.key)

@@ -21,6 +21,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { formatMath, type FlashCard, type KeyTerm, type QuizQuestion } from '../../lecture-utils'
 import { useLocalJson, writeLocalJson } from '@/lib/local-json'
+import { track, trackOnce } from '@/lib/analytics'
+import { syncLectureRead } from '@/lib/progress-sync'
 import { LectureLikeButton } from './lecture-like-button'
 
 // The quiz is a separate chunk — a reader who never opens it never downloads it.
@@ -236,7 +238,23 @@ export function LectureReader({
   const done = saved.done
   const resumePart = !resumeDismissed && saved.part > 0 && saved.part < partCount ? saved.part : null
 
-  const markDone = useCallback(() => saveProgress(lectureId, { done: true }), [lectureId])
+  const markDone = useCallback(() => {
+    if (!readProgress(lectureId).done) {
+      track('lecture_read', { entity_id: lectureId, subject })
+      syncLectureRead(lectureId, true)
+    }
+    saveProgress(lectureId, { done: true })
+  }, [lectureId, subject])
+
+  // One lecture_open per lecture per tab session; lecture_time on the way out.
+  useEffect(() => {
+    trackOnce(lectureId, 'lecture_open', { entity_id: lectureId, subject })
+    const openedAt = Date.now()
+    return () => {
+      const seconds = Math.round((Date.now() - openedAt) / 1000)
+      if (seconds >= 3) track('lecture_time', { entity_id: lectureId, subject, value: seconds })
+    }
+  }, [lectureId, subject])
 
   // Reading progress: scroll-based fill + which numbered part sits at the read line.
   useEffect(() => {
@@ -310,6 +328,9 @@ export function LectureReader({
     return (
       <QuizRunner
         lectureTitle={title}
+        lectureId={lectureId}
+        subject={subject}
+        classNumber={classNumber}
         questions={questions}
         flashcards={flashcards}
         initialMode={practice}

@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Brain, Check, CheckCircle2, ChevronLeft, Layers, RotateCcw, X, XCircle } from 'lucide-react'
 import type { FlashCard, QuizQuestion } from '../../lecture-utils'
+import { track } from '@/lib/analytics'
+import { syncQuizResult } from '@/lib/progress-sync'
 
 const QUESTION_SECONDS = 15
 const SWIPE_THRESHOLD = 80
@@ -162,6 +164,10 @@ function Dots({ count, current, results }: { count: number; current: number; res
 
 interface QuizRunnerProps {
   lectureTitle: string
+  /** Telemetry context — optional so older call sites keep working. */
+  lectureId?: string
+  subject?: string
+  classNumber?: number
   questions: QuizQuestion[]
   flashcards: FlashCard[]
   onExit: () => void
@@ -170,7 +176,7 @@ interface QuizRunnerProps {
   onFinished?: (scorePercent: number) => void
 }
 
-export function QuizRunner({ lectureTitle, questions, flashcards, onExit, initialMode, onFinished }: QuizRunnerProps) {
+export function QuizRunner({ lectureTitle, lectureId, subject, classNumber, questions, flashcards, onExit, initialMode, onFinished }: QuizRunnerProps) {
   const hasQuiz = questions.length > 0
   const hasFlashcards = flashcards.length > 0
   const showModeSwitcher = hasQuiz && hasFlashcards
@@ -180,6 +186,22 @@ export function QuizRunner({ lectureTitle, questions, flashcards, onExit, initia
     if (initialMode === 'quiz' && hasQuiz) return 'quiz'
     return hasQuiz ? 'quiz' : 'flashcards'
   })
+
+  // Telemetry: one *_start per round (mount here, restarts in resetQuiz /
+  // restartCards); the round's start time feeds quiz_finish duration_s.
+  const trackCtx = { entity_id: lectureId ?? null, subject: subject ?? null }
+  const roundStartRef = useRef(Date.now())
+  const roundOpenRef = useRef(false) // a quiz round is in progress (started, not finished)
+  useEffect(() => {
+    if (mode === 'quiz' && hasQuiz) {
+      track('quiz_start', trackCtx)
+      roundStartRef.current = Date.now()
+      roundOpenRef.current = true
+    } else if (mode === 'flashcards' && hasFlashcards) {
+      track('flashcards_start', trackCtx)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ----- quiz state
   const [current, setCurrent] = useState(0)
@@ -220,6 +242,12 @@ export function QuizRunner({ lectureTitle, questions, flashcards, onExit, initia
   }, [mode, current, hasQuiz, answered, finished])
 
   function resetQuiz() {
+    if (hasQuiz) {
+      if (roundOpenRef.current) track('quiz_abandon', trackCtx)
+      track('quiz_start', trackCtx)
+      roundStartRef.current = Date.now()
+      roundOpenRef.current = true
+    }
     setCurrent(0)
     setSelected(null)
     setAnswered(false)
@@ -238,6 +266,13 @@ export function QuizRunner({ lectureTitle, questions, flashcards, onExit, initia
 
   function handleNext() {
     if (current + 1 >= questions.length) {
+      const pct = Math.round((score / questions.length) * 100)
+      const durationS = Math.max(0, Math.round((Date.now() - roundStartRef.current) / 1000))
+      roundOpenRef.current = false
+      track('quiz_finish', { ...trackCtx, value: pct, meta: { correct: score, total: questions.length, duration_s: durationS } })
+      if (lectureId && subject && typeof classNumber === 'number') {
+        syncQuizResult({ lectureId, subject, classNumber, score: pct, correct: score, total: questions.length, durationS, answers: results })
+      }
       setFinished(true)
       onFinished?.(Math.round((score / questions.length) * 100))
     } else {
@@ -249,11 +284,16 @@ export function QuizRunner({ lectureTitle, questions, flashcards, onExit, initia
   }
 
   function exit() {
+    if (mode === 'quiz' && roundOpenRef.current) {
+      roundOpenRef.current = false
+      track('quiz_abandon', { ...trackCtx, meta: { answered: results.filter((r) => r !== null).length, total: questions.length } })
+    }
     if (timerRef.current) clearInterval(timerRef.current)
     onExit()
   }
 
   function restartCards(subset?: number[]) {
+    if (hasFlashcards) track('flashcards_start', { ...trackCtx, meta: { cards: (subset ?? flashcards).length } })
     setDeck(subset ?? flashcards.map((_, i) => i))
     setCardPos(0)
     setFlipped(false)
@@ -269,6 +309,9 @@ export function QuizRunner({ lectureTitle, questions, flashcards, onExit, initia
     if (idx === undefined) return
     setLeaving(knows ? 'right' : 'left')
     setDrag(null)
+    if (cardPos + 1 >= deck.length) {
+      track('flashcards_finish', { ...trackCtx, value: deck.length, meta: { known: known.size + (knows ? 1 : 0), unknown: unknown.size + (knows ? 0 : 1) } })
+    }
     window.setTimeout(() => {
       ;(knows ? setKnown : setUnknown)((prev) => new Set(prev).add(idx))
       setFlipped(false)
@@ -307,6 +350,10 @@ export function QuizRunner({ lectureTitle, questions, flashcards, onExit, initia
           setMode('quiz')
           resetQuiz()
         } else {
+          if (roundOpenRef.current) {
+            roundOpenRef.current = false
+            track('quiz_abandon', trackCtx)
+          }
           setMode('flashcards')
           restartCards()
         }

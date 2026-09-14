@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { track } from '@/lib/analytics'
 import { Star, Flame, Timer, ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -94,6 +95,7 @@ export default function TournamentPage() {
   const [animateIn, setAnimateIn] = useState(false)
 
   useEffect(() => {
+    track('tournament_view')
     // Load favorites from localStorage
     const saved = localStorage.getItem('tournament_favorites')
     if (saved) setFavorites(new Set(JSON.parse(saved)))
