@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ClipboardList, ChevronRight, Plus, Lightbulb } from 'lucide-react'
+import { ClipboardList, ChevronRight, Plus } from 'lucide-react'
 import type { Homework } from './lecture-utils'
 import { DEFAULT_SUBJECTS, OPTIONAL_SUBJECTS } from './subjects'
 import { SubjectIcon } from './subject-icon'
@@ -26,21 +26,22 @@ export function HomeworkBlock({ items }: { items: HomeworkItem[] }) {
       aria-label="Domaći"
       className="rounded-2xl border-2 border-[#FFE28A] bg-[#FFF9E0] shadow-[0_2px_0_#FFE28A] p-4 space-y-3"
     >
-      <div className="flex items-center gap-3">
+      <Link href="/domaci" className="flex items-center gap-3 min-h-11 rounded-xl">
         <span className="w-11 h-11 rounded-full bg-[#FFF4C4] border-2 border-[#FFE28A] text-[#C79000] flex items-center justify-center flex-shrink-0">
           <ClipboardList className="w-5 h-5" strokeWidth={2.6} />
         </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-[20px] leading-[1.25] font-extrabold text-heading">Domaći</p>
-          <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground">
-            {items.length === 0 ? 'Nema domaćih zadataka' : `${items.length} ${items.length === 1 ? 'zadatak' : 'zadatka'} za tvoj razred`}
-          </p>
-        </div>
-      </div>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[20px] leading-[1.25] font-extrabold text-heading">Domaći</span>
+          <span className="block text-[13px] leading-[1.4] font-bold text-muted-foreground">
+            {items.length === 0 ? 'Nema domaćih zadataka' : `${items.length} ${items.length === 1 ? 'aktivan zadatak' : 'aktivna zadatka'} za tvoj razred`}
+          </span>
+        </span>
+        <ChevronRight className="w-5 h-5 text-[#C79000] flex-shrink-0" strokeWidth={2.6} />
+      </Link>
 
       {items.length > 0 && (
         <div className="space-y-2.5">
-          {items.map((item) => {
+          {items.slice(0, 3).map((item) => {
             const info = subjects.find((s) => s.name === item.subject)
             const due = formatDue(item.homework.due)
             const firstTask = item.homework.tasks[0]
@@ -48,7 +49,7 @@ export function HomeworkBlock({ items }: { items: HomeworkItem[] }) {
             return (
               <Link
                 key={item.lectureId}
-                href={`/lectures/${encodeURIComponent(item.subject)}/${item.lectureId}`}
+                href={`/domaci/${item.lectureId}`}
                 className="flex items-center gap-3 min-h-16 p-3 rounded-2xl border-2 border-[#FFE28A] bg-card shadow-[0_2px_0_#FFE28A] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none"
               >
                 {image ? (
@@ -86,10 +87,12 @@ export function HomeworkBlock({ items }: { items: HomeworkItem[] }) {
           <Plus className="w-5 h-5" strokeWidth={2.8} /> Dodaj domaći
         </Link>
       ) : (
-        <p className="flex items-center gap-2 text-[13px] font-bold text-muted-foreground px-1">
-          <Lightbulb className="w-4 h-4 text-[#C79000] flex-shrink-0" strokeWidth={2.6} />
-          Otvori lekciju za sliku iz udžbenika i uputstvo za svaki zadatak.
-        </p>
+        <Link
+          href="/domaci"
+          className="flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-[#FFE28A] bg-card text-[#C79000] text-[12px] font-extrabold uppercase tracking-[0.04em] shadow-[0_2px_0_#FFE28A] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none"
+        >
+          Svi domaći <ChevronRight className="w-4 h-4" strokeWidth={2.8} />
+        </Link>
       )}
     </section>
   )
