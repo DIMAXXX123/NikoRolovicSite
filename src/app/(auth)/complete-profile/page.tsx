@@ -8,6 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { SuccessAnimation } from '@/components/success-animation'
+import { ChevronDown } from 'lucide-react'
+
+const selectClass =
+  'flex h-[50px] w-full appearance-none rounded-2xl border-2 border-border bg-muted pl-4 pr-11 text-[15px] font-bold text-foreground outline-none transition-colors focus-visible:border-secondary focus-visible:bg-background'
+
+const selectChevron =
+  'pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-disabled'
 
 const CLASS_LABELS = ['I', 'II', 'III', 'IV']
 
@@ -117,9 +124,9 @@ export default function CompleteProfilePage() {
 
   if (pageLoading) {
     return (
-      <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
+      <Card className="animate-fade-in">
         <CardContent className="flex items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-primary" />
         </CardContent>
       </Card>
     )
@@ -138,27 +145,26 @@ export default function CompleteProfilePage() {
   }
 
   return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
+    <Card className="animate-fade-in">
       <CardHeader className="text-center space-y-2 pb-2">
-        <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-2" style={{ background: 'var(--theme-primary, #7c5cfc)' }}>
-          <span className="text-2xl font-bold text-white">NR</span>
+        <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)]">
+          <span className="text-2xl font-black text-primary-foreground">NR</span>
         </div>
-        <h1 className="text-2xl font-bold gradient-text">Dopuni profil</h1>
-        <p className="text-muted-foreground text-sm">Unesite podatke da biste završili registraciju</p>
+        <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Dopuni profil</h1>
+        <p className="text-[13px] font-bold text-muted-foreground">Unesite podatke da biste završili registraciju</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
               value={email}
               disabled
-              className="bg-muted/50 text-muted-foreground"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="firstName">Ime</Label>
             <Input
               id="firstName"
@@ -167,10 +173,9 @@ export default function CompleteProfilePage() {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="lastName">Prezime</Label>
             <Input
               id="lastName"
@@ -179,10 +184,9 @@ export default function CompleteProfilePage() {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="password">Lozinka</Label>
             <Input
               id="password"
@@ -191,10 +195,9 @@ export default function CompleteProfilePage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="confirmPassword">Potvrdi lozinku</Label>
             <Input
               id="confirmPassword"
@@ -203,43 +206,48 @@ export default function CompleteProfilePage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
               <Label htmlFor="classNumber">Razred</Label>
-              <select
-                id="classNumber"
-                value={classNumber}
-                onChange={(e) => setClassNumber(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {CLASS_LABELS.map((label, i) => (
-                  <option key={i + 1} value={i + 1}>{label}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="classNumber"
+                  value={classNumber}
+                  onChange={(e) => setClassNumber(e.target.value)}
+                  className={selectClass}
+                >
+                  {CLASS_LABELS.map((label, i) => (
+                    <option key={i + 1} value={i + 1}>{label}</option>
+                  ))}
+                </select>
+                <ChevronDown className={selectChevron} strokeWidth={2.6} />
+              </div>
             </div>
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="sectionNumber">Odjeljenje</Label>
-              <select
-                id="sectionNumber"
-                value={sectionNumber}
-                onChange={(e) => setSectionNumber(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="sectionNumber"
+                  value={sectionNumber}
+                  onChange={(e) => setSectionNumber(e.target.value)}
+                  className={selectClass}
+                >
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+                <ChevronDown className={selectChevron} strokeWidth={2.6} />
+              </div>
             </div>
           </div>
           {error && (
-            <p className="text-destructive text-sm text-center">{error}</p>
+            <p className="text-destructive text-[13px] font-bold text-center">{error}</p>
           )}
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800"
+            className="w-full"
             disabled={loading}
           >
             {loading ? 'Čuvanje...' : 'Završi registraciju'}

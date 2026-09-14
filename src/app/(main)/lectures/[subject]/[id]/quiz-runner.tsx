@@ -1,29 +1,58 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Brain, ChevronLeft, RotateCcw, CheckCircle2, XCircle } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Brain, Check, CheckCircle2, ChevronLeft, Layers, RotateCcw, X, XCircle } from 'lucide-react'
 import type { FlashCard, QuizQuestion } from '../../lecture-utils'
+import { track } from '@/lib/analytics'
+import { syncQuizResult } from '@/lib/progress-sync'
 
 const QUESTION_SECONDS = 15
+const SWIPE_THRESHOLD = 80
+
+type Mode = 'quiz' | 'flashcards'
+type Mastery = { label: string; className: string }
+
+function masteryFor(percentage: number): Mastery {
+  if (percentage >= 80)
+    return {
+      label: 'Savladano',
+      className: 'border-primary-light-border bg-primary-light text-primary-text',
+    }
+  if (percentage >= 60)
+    return {
+      label: 'Poznato',
+      className: 'border-secondary-light-border bg-secondary-light text-secondary',
+    }
+  return {
+    label: 'Još učiš',
+    className: 'border-[#FFE28A] bg-[#FFF4C4] text-[#C79000]',
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Small pieces
+// ---------------------------------------------------------------------------
 
 function QuizTimer({ seconds, total }: { seconds: number; total: number }) {
   const radius = 18
   const circumference = 2 * Math.PI * radius
   const progress = (seconds / total) * circumference
-  const color = seconds <= 5 ? '#F44336' : seconds <= 10 ? '#FFC107' : '#7c5cfc'
+  const color = seconds <= 5 ? '#FF4B4B' : seconds <= 10 ? '#FFC800' : '#58CC02'
 
   return (
-    <div className="relative w-11 h-11">
+    <div className="relative w-11 h-11 shrink-0">
       <svg className="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
-        <circle cx="22" cy="22" r={radius} fill="none" stroke="currentColor" strokeWidth="3" className="text-muted/30" />
+        <circle cx="22" cy="22" r={radius} fill="none" stroke="currentColor" strokeWidth="4" className="text-border" />
         <circle
           cx="22"
           cy="22"
           r={radius}
           fill="none"
           stroke={color}
-          strokeWidth="3"
+          strokeWidth="4"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={circumference - progress}
@@ -31,7 +60,7 @@ function QuizTimer({ seconds, total }: { seconds: number; total: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className={`text-sm font-bold ${seconds <= 5 ? 'text-red-400' : 'text-foreground'}`}>
+        <span className={`text-[13px] font-black tabular-nums ${seconds <= 5 ? 'text-destructive' : 'text-heading'}`}>
           {seconds}
         </span>
       </div>
@@ -39,32 +68,162 @@ function QuizTimer({ seconds, total }: { seconds: number; total: number }) {
   )
 }
 
+/** Sticky strip: back link + one progress segment per item (§4.9 as a segmented tail). */
+function PracticeStrip({
+  onBack,
+  segments,
+}: {
+  onBack: () => void
+  segments: ('correct' | 'wrong' | 'current' | 'todo')[]
+}) {
+  return (
+    <div className="sticky top-16 z-40 -mx-4 px-4 bg-background border-b-2 border-border">
+      <div className="h-11 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center gap-1 h-11 -ml-1 pr-2 text-[13px] font-extrabold uppercase tracking-[0.04em] text-secondary rounded-lg shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          <ChevronLeft className="w-6 h-6" strokeWidth={2.6} />
+          <span className="hidden min-[400px]:inline">Nazad na lekciju</span>
+          <span className="min-[400px]:hidden">Nazad</span>
+        </button>
+        <div className="flex-1 flex gap-1" aria-hidden>
+          {segments.map((s, i) => (
+            <span
+              key={i}
+              className={`h-1.5 flex-1 rounded-full transition-colors duration-200 ${
+                s === 'correct'
+                  ? 'bg-primary'
+                  : s === 'wrong'
+                    ? 'bg-destructive'
+                    : s === 'current'
+                      ? 'bg-secondary'
+                      : 'bg-border'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ScoreRing({ percentage, correct, total }: { percentage: number; correct: number; total: number }) {
+  const circumference = 2 * Math.PI * 52
+  return (
+    <div className="relative w-32 h-32 mx-auto">
+      <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="10" className="text-border" />
+        <circle
+          cx="60"
+          cy="60"
+          r="52"
+          fill="none"
+          stroke="var(--color-primary)"
+          strokeWidth="10"
+          strokeLinecap="round"
+          strokeDasharray={`${(percentage / 100) * circumference} ${circumference}`}
+          className="transition-all duration-1000"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-[36px] leading-none font-black tabular-nums text-heading">{percentage}%</span>
+        <span className="text-[13px] font-bold text-muted-foreground mt-1">
+          {correct} od {total}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function Dots({ count, current, results }: { count: number; current: number; results: (boolean | null)[] }) {
+  return (
+    <div className="flex justify-center gap-1.5 flex-wrap" aria-hidden>
+      {Array.from({ length: count }, (_, i) => (
+        <span
+          key={i}
+          className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+            i === current
+              ? 'bg-secondary scale-125'
+              : results[i] === true
+                ? 'bg-primary'
+                : results[i] === false
+                  ? 'bg-destructive'
+                  : 'bg-border'
+          }`}
+        />
+      ))}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Runner
+// ---------------------------------------------------------------------------
+
 interface QuizRunnerProps {
   lectureTitle: string
+  /** Telemetry context — optional so older call sites keep working. */
+  lectureId?: string
+  subject?: string
+  classNumber?: number
   questions: QuizQuestion[]
   flashcards: FlashCard[]
   onExit: () => void
+  initialMode?: Mode
+  /** Called once per finished quiz round with the score in percent. */
+  onFinished?: (scorePercent: number) => void
 }
 
-export function QuizRunner({ lectureTitle, questions, flashcards, onExit }: QuizRunnerProps) {
+export function QuizRunner({ lectureTitle, lectureId, subject, classNumber, questions, flashcards, onExit, initialMode, onFinished }: QuizRunnerProps) {
   const hasQuiz = questions.length > 0
   const hasFlashcards = flashcards.length > 0
   const showModeSwitcher = hasQuiz && hasFlashcards
 
-  const [mode, setMode] = useState<'quiz' | 'flashcards'>(hasQuiz ? 'quiz' : 'flashcards')
+  const [mode, setMode] = useState<Mode>(() => {
+    if (initialMode === 'flashcards' && hasFlashcards) return 'flashcards'
+    if (initialMode === 'quiz' && hasQuiz) return 'quiz'
+    return hasQuiz ? 'quiz' : 'flashcards'
+  })
+
+  // Telemetry: one *_start per round (mount here, restarts in resetQuiz /
+  // restartCards); the round's start time feeds quiz_finish duration_s.
+  const trackCtx = { entity_id: lectureId ?? null, subject: subject ?? null }
+  const roundStartRef = useRef(Date.now())
+  const roundOpenRef = useRef(false) // a quiz round is in progress (started, not finished)
+  useEffect(() => {
+    if (mode === 'quiz' && hasQuiz) {
+      track('quiz_start', trackCtx)
+      roundStartRef.current = Date.now()
+      roundOpenRef.current = true
+    } else if (mode === 'flashcards' && hasFlashcards) {
+      track('flashcards_start', trackCtx)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ----- quiz state
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
   const [answered, setAnswered] = useState(false)
-  const [score, setScore] = useState(0)
+  const [results, setResults] = useState<(boolean | null)[]>(() => questions.map(() => null))
   const [finished, setFinished] = useState(false)
   const [timer, setTimer] = useState(QUESTION_SECONDS)
-
-  const [currentCard, setCurrentCard] = useState(0)
-  const [flipped, setFlipped] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // The countdown runs only while a question is on screen and unanswered; every
-  // state that ends it is a dependency, so the cleanup stops the interval.
+  // ----- flashcard state
+  const [deck, setDeck] = useState<number[]>(() => flashcards.map((_, i) => i))
+  const [cardPos, setCardPos] = useState(0)
+  const [flipped, setFlipped] = useState(false)
+  const [known, setKnown] = useState<Set<number>>(() => new Set())
+  const [unknown, setUnknown] = useState<Set<number>>(() => new Set())
+  const [drag, setDrag] = useState<{ startX: number; dx: number } | null>(null)
+  const [leaving, setLeaving] = useState<'left' | 'right' | null>(null)
+
+  const score = results.filter((r) => r === true).length
+
+  // The countdown runs only while a question is on screen and unanswered.
   useEffect(() => {
     if (mode !== 'quiz' || !hasQuiz || answered || finished) return
     const id = setInterval(() => {
@@ -72,6 +231,7 @@ export function QuizRunner({ lectureTitle, questions, flashcards, onExit }: Quiz
         if (prev <= 1) {
           setAnswered(true)
           setSelected(-1) // timed out — counts as wrong
+          setResults((r) => r.map((v, i) => (i === current ? false : v)))
           return 0
         }
         return prev - 1
@@ -82,24 +242,39 @@ export function QuizRunner({ lectureTitle, questions, flashcards, onExit }: Quiz
   }, [mode, current, hasQuiz, answered, finished])
 
   function resetQuiz() {
+    if (hasQuiz) {
+      if (roundOpenRef.current) track('quiz_abandon', trackCtx)
+      track('quiz_start', trackCtx)
+      roundStartRef.current = Date.now()
+      roundOpenRef.current = true
+    }
     setCurrent(0)
     setSelected(null)
     setAnswered(false)
-    setScore(0)
+    setResults(questions.map(() => null))
     setFinished(false)
     setTimer(QUESTION_SECONDS)
   }
 
   function handleAnswer(optionIdx: number) {
     if (answered) return
+    const correct = optionIdx === questions[current].correct
     setSelected(optionIdx)
     setAnswered(true)
-    if (optionIdx === questions[current].correct) setScore((s) => s + 1)
+    setResults((r) => r.map((v, i) => (i === current ? correct : v)))
   }
 
   function handleNext() {
     if (current + 1 >= questions.length) {
+      const pct = Math.round((score / questions.length) * 100)
+      const durationS = Math.max(0, Math.round((Date.now() - roundStartRef.current) / 1000))
+      roundOpenRef.current = false
+      track('quiz_finish', { ...trackCtx, value: pct, meta: { correct: score, total: questions.length, duration_s: durationS } })
+      if (lectureId && subject && typeof classNumber === 'number') {
+        syncQuizResult({ lectureId, subject, classNumber, score: pct, correct: score, total: questions.length, durationS, answers: results })
+      }
       setFinished(true)
+      onFinished?.(Math.round((score / questions.length) * 100))
     } else {
       setCurrent((c) => c + 1)
       setSelected(null)
@@ -109,352 +284,419 @@ export function QuizRunner({ lectureTitle, questions, flashcards, onExit }: Quiz
   }
 
   function exit() {
+    if (mode === 'quiz' && roundOpenRef.current) {
+      roundOpenRef.current = false
+      track('quiz_abandon', { ...trackCtx, meta: { answered: results.filter((r) => r !== null).length, total: questions.length } })
+    }
     if (timerRef.current) clearInterval(timerRef.current)
     onExit()
   }
 
-  const backButton = (
-    <button
-      onClick={exit}
-      className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all"
+  function restartCards(subset?: number[]) {
+    if (hasFlashcards) track('flashcards_start', { ...trackCtx, meta: { cards: (subset ?? flashcards).length } })
+    setDeck(subset ?? flashcards.map((_, i) => i))
+    setCardPos(0)
+    setFlipped(false)
+    setKnown(new Set())
+    setUnknown(new Set())
+    setDrag(null)
+    setLeaving(null)
+  }
+
+  function judgeCard(knows: boolean) {
+    if (leaving) return
+    const idx = deck[cardPos]
+    if (idx === undefined) return
+    setLeaving(knows ? 'right' : 'left')
+    setDrag(null)
+    if (cardPos + 1 >= deck.length) {
+      track('flashcards_finish', { ...trackCtx, value: deck.length, meta: { known: known.size + (knows ? 1 : 0), unknown: unknown.size + (knows ? 0 : 1) } })
+    }
+    window.setTimeout(() => {
+      ;(knows ? setKnown : setUnknown)((prev) => new Set(prev).add(idx))
+      setFlipped(false)
+      setCardPos((p) => p + 1)
+      setLeaving(null)
+    }, 220)
+  }
+
+  // Swipe: pointer-tracked horizontal drag; a short tap flips the card.
+  function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
+    if (leaving) return
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDrag({ startX: e.clientX, dx: 0 })
+  }
+  function onPointerMove(e: ReactPointerEvent<HTMLDivElement>) {
+    if (!drag) return
+    setDrag({ startX: drag.startX, dx: e.clientX - drag.startX })
+  }
+  function onPointerUp() {
+    if (!drag) return
+    const { dx } = drag
+    if (dx > SWIPE_THRESHOLD) judgeCard(true)
+    else if (dx < -SWIPE_THRESHOLD) judgeCard(false)
+    else {
+      if (Math.abs(dx) < 8) setFlipped((f) => !f)
+      setDrag(null)
+    }
+  }
+
+  const modeSwitcher = showModeSwitcher ? (
+    <Tabs
+      id="quiz-mode"
+      value={mode}
+      onValueChange={(value) => {
+        if (value === 'quiz') {
+          setMode('quiz')
+          resetQuiz()
+        } else {
+          if (roundOpenRef.current) {
+            roundOpenRef.current = false
+            track('quiz_abandon', trackCtx)
+          }
+          setMode('flashcards')
+          restartCards()
+        }
+      }}
     >
-      <ChevronLeft className="w-4 h-4" /> Nazad na lekciju
-    </button>
-  )
+      <TabsList>
+        <TabsTrigger value="quiz">Kviz</TabsTrigger>
+        <TabsTrigger value="flashcards">Kartice</TabsTrigger>
+      </TabsList>
+    </Tabs>
+  ) : null
 
   // ===== FLASHCARDS MODE =====
   if (mode === 'flashcards' && hasFlashcards) {
-    const card = flashcards[currentCard]
+    const cardIdx = deck[cardPos]
+    const card = cardIdx !== undefined ? flashcards[cardIdx] : null
+    const segments = deck.map((idx, i) =>
+      known.has(idx) ? 'correct' : unknown.has(idx) ? 'wrong' : i === cardPos ? 'current' : 'todo',
+    ) as ('correct' | 'wrong' | 'current' | 'todo')[]
+    const dx = leaving === 'right' ? 480 : leaving === 'left' ? -480 : (drag?.dx ?? 0)
+    const tilt = Math.max(-12, Math.min(12, dx / 12))
+    const missed = [...unknown]
+
     return (
-      <div className="space-y-6 animate-fade-in">
-        {backButton}
-        <div className="text-center space-y-1">
-          <h1 className="text-xl font-bold gradient-text">Kartice za učenje</h1>
-          <p className="text-xs text-muted-foreground">{lectureTitle}</p>
-          <p className="text-xs text-muted-foreground">
-            {currentCard + 1} / {flashcards.length}
-          </p>
+      <div className="space-y-5 animate-fade-in">
+        <PracticeStrip onBack={exit} segments={segments} />
+
+        <div className="space-y-1">
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-[20px] font-extrabold leading-[1.25] text-heading">Kartice za učenje</h1>
+            {card && (
+              <span className="text-[13px] font-extrabold text-muted-foreground tabular-nums shrink-0">
+                {cardPos + 1} / {deck.length}
+              </span>
+            )}
+          </div>
+          <p className="text-[13px] font-bold text-muted-foreground">{lectureTitle}</p>
         </div>
 
-        {showModeSwitcher && (
-          <div className="flex gap-1 p-1 bg-muted/50 rounded-xl">
-            <button
-              onClick={() => {
-                setMode('quiz')
-                resetQuiz()
-              }}
-              className="flex-1 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-all"
-            >
-              Kviz
-            </button>
-            <button className="flex-1 py-2 rounded-lg text-xs font-medium bg-background text-foreground shadow-sm">
-              Kartice
-            </button>
-          </div>
-        )}
+        {modeSwitcher}
 
-        {card && (
-          <div
-            className="relative min-h-[240px] cursor-pointer [perspective:800px]"
-            onClick={() => setFlipped(!flipped)}
-          >
-            <div
-              className="w-full min-h-[240px] transition-transform duration-500 [transform-style:preserve-3d]"
-              style={{ transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
-            >
-              <div className="absolute inset-0 [backface-visibility:hidden]">
-                <Card className="border-border/30 bg-card/50 backdrop-blur min-h-[240px] flex items-center justify-center h-full">
-                  <CardContent className="p-6 text-center space-y-4">
-                    <Brain className="w-8 h-8 mx-auto text-primary opacity-60" />
-                    <p className="text-lg font-medium leading-relaxed">{card.question}</p>
-                    <p className="text-xs text-muted-foreground">Tapni za odgovor</p>
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]">
-                <Card className="border-border/30 bg-card/50 backdrop-blur min-h-[240px] flex items-center justify-center h-full">
-                  <CardContent className="p-6 text-center space-y-4">
-                    <div className="w-8 h-8 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
-                      <span className="text-green-400 text-lg">✓</span>
-                    </div>
-                    <p className="text-lg font-medium text-green-400 leading-relaxed">{card.answer}</p>
-                    <p className="text-xs text-muted-foreground">Tapni za sljedeće</p>
-                  </CardContent>
-                </Card>
+        {card ? (
+          <>
+            {/* Clipped on the x-axis so the fly-out never widens the page. */}
+            <div className="overflow-x-clip -mx-4 px-4">
+              <div
+                className="relative min-h-[240px] select-none touch-pan-y [perspective:900px]"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={() => setDrag(null)}
+                style={{
+                  transform: `translateX(${dx}px) rotate(${tilt}deg)`,
+                  opacity: leaving ? 0 : 1,
+                  transition: drag ? 'none' : 'transform 220ms cubic-bezier(0.4,0,0.2,1), opacity 220ms',
+                  cursor: 'grab',
+                }}
+              >
+                <div
+                  className="w-full min-h-[240px] transition-transform duration-300 [transform-style:preserve-3d]"
+                  style={{
+                    transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                  }}
+                >
+                  <div className="absolute inset-0 [backface-visibility:hidden]">
+                    <Card className="min-h-[240px] h-full items-center justify-center">
+                      <CardContent className="p-2 text-center space-y-4">
+                        <div className="w-12 h-12 mx-auto rounded-full bg-secondary-light flex items-center justify-center">
+                          <Layers className="w-6 h-6 text-secondary" strokeWidth={2.4} />
+                        </div>
+                        <p className="text-[20px] font-extrabold leading-[1.25] text-heading">{card.question}</p>
+                        <p className="text-[13px] font-bold text-muted-foreground">Tapni za odgovor</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]">
+                    <Card className="min-h-[240px] h-full items-center justify-center border-primary-light-border bg-primary-light shadow-[0_2px_0_var(--color-primary-light-border)]">
+                      <CardContent className="p-2 text-center space-y-4">
+                        <div className="w-12 h-12 mx-auto rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
+                        </div>
+                        <p className="text-[17px] font-extrabold leading-[1.4] text-primary-text">{card.answer}</p>
+                        <p className="text-[13px] font-bold text-muted-foreground">Znaš li ovo?</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+                {/* Swipe hints */}
+                <span
+                  className="absolute top-3 left-3 rounded-lg border-2 border-[#FFB3B5] bg-[#FFDFE0] px-2 py-1 text-[12px] font-extrabold uppercase tracking-[0.04em] text-[#EA2B2B] transition-opacity"
+                  style={{
+                    opacity: dx < -20 ? Math.min(1, -dx / SWIPE_THRESHOLD) : 0,
+                  }}
+                >
+                  Ne znam
+                </span>
+                <span
+                  className="absolute top-3 right-3 rounded-lg border-2 border-primary-light-border bg-primary-light px-2 py-1 text-[12px] font-extrabold uppercase tracking-[0.04em] text-primary-text transition-opacity"
+                  style={{
+                    opacity: dx > 20 ? Math.min(1, dx / SWIPE_THRESHOLD) : 0,
+                  }}
+                >
+                  Znam
+                </span>
               </div>
             </div>
-          </div>
-        )}
 
-        <div className="flex gap-2 justify-center">
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setFlipped(false)
-              setCurrentCard(Math.max(0, currentCard - 1))
-            }}
-            disabled={currentCard === 0 && !flipped}
-            className="px-4 py-2.5 rounded-xl bg-muted text-sm disabled:opacity-30 transition-all active:scale-95"
-          >
-            ← Prethodno
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              if (!flipped) {
-                setFlipped(true)
-              } else if (currentCard < flashcards.length - 1) {
-                setFlipped(false)
-                setCurrentCard(currentCard + 1)
-              } else {
-                setFlipped(false)
-                setCurrentCard(0)
-              }
-            }}
-            className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm transition-all active:scale-95"
-          >
-            {!flipped ? (
-              'Otkrij'
-            ) : currentCard === flashcards.length - 1 ? (
-              <span className="flex items-center gap-1">
-                <RotateCcw className="w-3 h-3" /> Ponovo
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1 text-[#EA2B2B]" onClick={() => judgeCard(false)}>
+                <X strokeWidth={2.8} /> Ne znam
+              </Button>
+              <Button className="flex-1" onClick={() => judgeCard(true)}>
+                <Check strokeWidth={2.8} /> Znam
+              </Button>
+            </div>
+            <p className="text-center text-[13px] font-bold text-muted-foreground">
+              Prevuci desno = znam, lijevo = ne znam
+            </p>
+          </>
+        ) : (
+          <Card className="items-center text-center gap-4 py-8">
+            <div className="text-6xl">{missed.length === 0 ? '🏆' : '📚'}</div>
+            <h2 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">
+              Kartice završene!
+            </h2>
+            <div className="flex items-center gap-2 flex-wrap justify-center">
+              <span className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full border-2 border-primary-light-border bg-primary-light text-primary-text text-[13px] font-extrabold tabular-nums">
+                <Check className="w-4 h-4" strokeWidth={3} /> Znaš {known.size}
               </span>
-            ) : (
-              'Sljedeće →'
-            )}
-          </button>
-        </div>
-
-        <div className="flex justify-center gap-1.5">
-          {flashcards.map((_, i) => (
-            <div
-              key={i}
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === currentCard ? 'bg-primary scale-125' : i < currentCard ? 'bg-primary/40' : 'bg-muted'
-              }`}
-            />
-          ))}
-        </div>
+              <span className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full border-2 border-[#FFB3B5] bg-[#FFDFE0] text-[#EA2B2B] text-[13px] font-extrabold tabular-nums">
+                <X className="w-4 h-4" strokeWidth={3} /> Ne znaš {unknown.size}
+              </span>
+            </div>
+            <div className="flex flex-col gap-3 w-full pt-2">
+              {missed.length > 0 && (
+                <Button className="w-full" onClick={() => restartCards(missed)}>
+                  <RotateCcw strokeWidth={2.6} /> Ponovi{' '}
+                  {missed.length === 1 ? '1 karticu' : `${missed.length} kartice`}
+                </Button>
+              )}
+              <Button
+                variant={missed.length > 0 ? 'outline' : 'default'}
+                className="w-full"
+                onClick={() => restartCards()}
+              >
+                <RotateCcw strokeWidth={2.6} /> Ponovo
+              </Button>
+              {hasQuiz && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setMode('quiz')
+                    resetQuiz()
+                  }}
+                >
+                  <Brain strokeWidth={2.4} /> Provjeri znanje
+                </Button>
+              )}
+              <Button variant="outline" className="w-full" onClick={exit}>
+                Nazad na lekciju
+              </Button>
+            </div>
+          </Card>
+        )}
       </div>
     )
   }
 
   if (!hasQuiz) {
     return (
-      <div className="space-y-6 animate-fade-in text-center py-12">
-        <Brain className="w-12 h-12 mx-auto text-muted-foreground/30" />
-        <p className="text-muted-foreground">Kviz za ovu lekciju još nije dodat</p>
-        <button
-          onClick={exit}
-          className="px-5 py-2.5 rounded-xl bg-muted text-sm font-medium transition-all active:scale-95"
-        >
-          Nazad
-        </button>
+      <div className="space-y-4 animate-fade-in text-center py-12">
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+          <Brain className="w-8 h-8 text-disabled" strokeWidth={2.4} />
+        </div>
+        <p className="text-[17px] font-extrabold text-foreground">Kviz za ovu lekciju još nije dodat</p>
+        <Button variant="outline" onClick={exit}>
+          Nazad na lekciju
+        </Button>
       </div>
     )
   }
+
+  const quizSegments = questions.map((_, i) =>
+    results[i] === true ? 'correct' : results[i] === false ? 'wrong' : i === current && !finished ? 'current' : 'todo',
+  ) as ('correct' | 'wrong' | 'current' | 'todo')[]
 
   // ===== RESULT =====
   if (finished) {
     const percentage = Math.round((score / questions.length) * 100)
     const emoji = percentage >= 80 ? '🏆' : percentage >= 60 ? '👍' : percentage >= 40 ? '📚' : '💪'
+    const mastery = masteryFor(percentage)
     return (
-      <div className="space-y-6 animate-fade-in">
-        {backButton}
-        <div className="text-center space-y-4 py-8">
+      <div className="space-y-5 animate-fade-in">
+        <PracticeStrip onBack={exit} segments={quizSegments} />
+        <Card className="items-center text-center gap-4 py-8">
           <div className="text-6xl">{emoji}</div>
-          <h1 className="text-2xl font-bold gradient-text">Kviz završen!</h1>
-          <div className="relative w-32 h-32 mx-auto">
-            <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="8" className="text-muted/30" />
-              <circle
-                cx="60"
-                cy="60"
-                r="52"
-                fill="none"
-                stroke="url(#scoreGrad)"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray={`${percentage * 3.27} 327`}
-                className="transition-all duration-1000"
-              />
-              <defs>
-                <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#a78bfa" />
-                  <stop offset="100%" stopColor="#7c3aed" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold">{percentage}%</span>
-              <span className="text-xs text-muted-foreground">
-                {score} od {questions.length}
-              </span>
-            </div>
-          </div>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Kviz završen!</h1>
+          <ScoreRing percentage={percentage} correct={score} total={questions.length} />
+          <span
+            className={`inline-flex items-center h-9 px-4 rounded-full border-2 text-[12px] font-extrabold uppercase tracking-[0.06em] ${mastery.className}`}
+          >
+            {mastery.label}
+          </span>
+          <p className="text-[15px] font-bold text-muted-foreground">
             {percentage >= 80
               ? 'Odlično! Savladao/la si ovu lekciju!'
               : percentage >= 60
                 ? 'Dobro! Još malo vježbe i biće savršeno.'
                 : 'Probaj ponovo nakon što ponoviš lekciju.'}
           </p>
-          <div className="flex gap-3 justify-center pt-4">
-            <button
-              onClick={resetQuiz}
-              className="px-5 py-2.5 rounded-xl bg-muted text-sm font-medium flex items-center gap-2 transition-all active:scale-95 hover:bg-muted/80"
-            >
-              <RotateCcw className="w-4 h-4" /> Ponovo
-            </button>
+          <div className="flex flex-col gap-3 w-full pt-2">
+            <Button className="w-full" onClick={resetQuiz}>
+              <RotateCcw strokeWidth={2.6} /> Ponovo
+            </Button>
             {hasFlashcards && (
-              <button
+              <Button
+                variant="outline"
+                className="w-full"
                 onClick={() => {
                   setMode('flashcards')
-                  setCurrentCard(0)
-                  setFlipped(false)
+                  restartCards()
                 }}
-                className="px-5 py-2.5 rounded-xl bg-muted text-sm font-medium flex items-center gap-2 transition-all active:scale-95 hover:bg-muted/80"
               >
-                <Brain className="w-4 h-4" /> Kartice
-              </button>
+                <Layers strokeWidth={2.4} /> Kartice za učenje
+              </Button>
             )}
-            <button
-              onClick={exit}
-              className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-95"
-            >
-              Nazad
-            </button>
+            <Button variant="outline" className="w-full" onClick={exit}>
+              Nazad na lekciju
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
     )
   }
 
   // ===== QUESTION =====
   const q = questions[current]
+  const wasCorrect = answered && selected === q.correct
   return (
-    <div className="space-y-5 animate-fade-in">
-      {backButton}
+    <div className={`space-y-5 animate-fade-in ${answered ? 'pb-40' : ''}`}>
+      <PracticeStrip onBack={exit} segments={quizSegments} />
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-bold gradient-text">Provjeri znanje</h1>
-          <div className="flex items-center gap-2">
-            <QuizTimer seconds={timer} total={QUESTION_SECONDS} />
-            <span className="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
-              {current + 1} / {questions.length}
-            </span>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-[20px] font-extrabold leading-[1.25] text-heading">Provjeri znanje</h1>
+            <p className="text-[13px] font-bold text-muted-foreground tabular-nums">
+              Pitanje {current + 1} od {questions.length}
+            </p>
           </div>
+          <QuizTimer seconds={timer} total={QUESTION_SECONDS} />
         </div>
-
-        {showModeSwitcher && (
-          <div className="flex gap-1 p-1 bg-muted/50 rounded-xl">
-            <button className="flex-1 py-2 rounded-lg text-xs font-medium bg-background text-foreground shadow-sm">
-              Kviz
-            </button>
-            <button
-              onClick={() => {
-                setMode('flashcards')
-                setCurrentCard(0)
-                setFlipped(false)
-              }}
-              className="flex-1 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-all"
-            >
-              Kartice
-            </button>
-          </div>
-        )}
-
-        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] transition-all duration-500"
-            style={{ width: `${((current + (answered ? 1 : 0)) / questions.length) * 100}%` }}
-          />
-        </div>
+        {modeSwitcher}
       </div>
 
-      <Card className="border-border/30 bg-card/50 backdrop-blur">
-        <CardContent className="p-5 space-y-4">
-          <div className="flex items-start gap-3">
-            <span className="w-8 h-8 rounded-full bg-[#7c5cfc]/20 text-[#7c5cfc] text-sm font-bold flex items-center justify-center flex-shrink-0">
-              {current + 1}
-            </span>
-            <p className="text-base font-medium leading-relaxed pt-1">{q.question}</p>
-          </div>
+      <Card className="gap-4 overflow-visible">
+        <p className="text-[20px] font-extrabold leading-[1.3] text-heading">{q.question}</p>
 
-          <div className="space-y-2.5">
-            {q.options.map((option, idx) => {
-              let cardClass =
-                'border border-border/40 bg-background/50 hover:border-primary/50 hover:bg-primary/5 cursor-pointer'
-              if (answered) {
-                if (idx === q.correct) {
-                  cardClass = 'border-2 border-green-500/60 bg-green-500/10'
-                } else if (idx === selected && idx !== q.correct) {
-                  cardClass = 'border-2 border-red-500/60 bg-red-500/10'
-                } else {
-                  cardClass = 'border border-border/20 bg-background/30 opacity-50'
-                }
+        <div className="space-y-3">
+          {q.options.map((option, idx) => {
+            let cardClass =
+              'border-border bg-background text-foreground shadow-[0_4px_0_var(--color-border)] hover:bg-muted active:translate-y-[4px] active:shadow-none cursor-pointer'
+            if (answered) {
+              if (idx === q.correct) {
+                cardClass =
+                  'border-primary-light-border bg-primary-light text-primary-text shadow-[0_4px_0_var(--color-primary-light-border)]'
               } else if (idx === selected) {
-                cardClass = 'border-2 border-primary bg-primary/10'
+                cardClass = 'border-[#FFB3B5] bg-[#FFDFE0] text-[#EA2B2B] shadow-[0_4px_0_#FFB3B5]'
+              } else {
+                cardClass = 'border-border bg-background text-disabled shadow-none'
               }
+            }
 
-              return (
-                <button
-                  key={idx}
-                  onClick={() => handleAnswer(idx)}
-                  disabled={answered}
-                  className={`w-full text-left p-3.5 rounded-xl transition-all duration-300 flex items-center gap-3 ${cardClass}`}
-                >
-                  <span
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                      answered && idx === q.correct
-                        ? 'bg-green-500 text-white'
-                        : answered && idx === selected
-                          ? 'bg-red-500 text-white'
-                          : 'bg-muted text-muted-foreground'
-                    }`}
-                  >
-                    {answered && idx === q.correct ? (
-                      <CheckCircle2 className="w-4 h-4" />
-                    ) : answered && idx === selected && idx !== q.correct ? (
-                      <XCircle className="w-4 h-4" />
-                    ) : (
-                      String.fromCharCode(65 + idx)
-                    )}
-                  </span>
-                  <span className="text-sm">{option}</span>
-                </button>
-              )
-            })}
-          </div>
-
-          {answered && (
-            <div className="pt-2 animate-fade-in">
+            return (
               <button
-                onClick={handleNext}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] text-white font-medium text-sm transition-all active:scale-[0.98]"
+                key={idx}
+                type="button"
+                onClick={() => handleAnswer(idx)}
+                disabled={answered}
+                className={`w-full min-h-14 text-left px-4 py-3 rounded-2xl border-2 text-[15px] font-extrabold transition-[transform,box-shadow,background-color,border-color,color] duration-[80ms] flex items-center gap-3 disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${cardClass}`}
               >
-                {current + 1 >= questions.length ? 'Pogledaj rezultat' : 'Sljedeće pitanje →'}
+                <span
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-extrabold shrink-0 ${
+                    answered && idx === q.correct
+                      ? 'bg-primary text-primary-foreground'
+                      : answered && idx === selected
+                        ? 'bg-destructive text-destructive-foreground'
+                        : answered
+                          ? 'bg-muted text-disabled'
+                          : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {answered && idx === q.correct ? (
+                    <Check className="w-4 h-4" strokeWidth={3} />
+                  ) : answered && idx === selected ? (
+                    <X className="w-4 h-4" strokeWidth={3} />
+                  ) : (
+                    String.fromCharCode(65 + idx)
+                  )}
+                </span>
+                <span className="leading-[1.4]">{option}</span>
               </button>
-            </div>
-          )}
-        </CardContent>
+            )
+          })}
+        </div>
       </Card>
 
-      <div className="flex justify-center gap-1.5">
-        {questions.map((_, i) => (
-          <div
-            key={i}
-            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-              i === current
-                ? 'bg-primary scale-125 ring-2 ring-primary/30'
-                : i < current
-                  ? 'bg-primary/50'
-                  : 'bg-muted'
-            }`}
-          />
-        ))}
-      </div>
+      <Dots count={questions.length} current={current} results={results} />
+
+      {answered && (
+        <div
+          className={`fixed left-0 right-0 bottom-[calc(84px+env(safe-area-inset-bottom))] z-40 border-t-2 px-4 pt-4 pb-4 animate-slide-up ${
+            wasCorrect ? 'bg-[#D7FFB8] border-[#B5EE8A]' : 'bg-[#FFDFE0] border-[#FFB3B5]'
+          }`}
+          role="status"
+        >
+          <div className="max-w-md mx-auto space-y-3">
+            <div className="flex items-start gap-3">
+              {wasCorrect ? (
+                <CheckCircle2 className="w-7 h-7 text-[#58A700] shrink-0" strokeWidth={2.6} />
+              ) : (
+                <XCircle className="w-7 h-7 text-[#EA2B2B] shrink-0" strokeWidth={2.6} />
+              )}
+              <div className="min-w-0">
+                <p
+                  className={`text-[20px] font-extrabold leading-[1.25] ${wasCorrect ? 'text-[#58A700]' : 'text-[#EA2B2B]'}`}
+                >
+                  {wasCorrect ? 'Tačno!' : 'Netačno'}
+                </p>
+                {!wasCorrect && (
+                  <p className="text-[15px] font-bold text-[#EA2B2B] leading-[1.4]">
+                    {selected === -1 ? 'Vrijeme je isteklo. ' : ''}Tačan odgovor: {q.options[q.correct]}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Button className="w-full" variant={wasCorrect ? 'default' : 'destructive'} onClick={handleNext}>
+              {current + 1 >= questions.length ? 'Pogledaj rezultat' : 'Nastavi'}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

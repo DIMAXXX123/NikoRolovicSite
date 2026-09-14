@@ -20,14 +20,18 @@ export function LectureLikeButton({ lectureId }: { lectureId: string }) {
       {burst && <LikeBurst key={burst.key} x={burst.x} y={burst.y} onDone={() => setBurst(null)} />}
       <button
         onClick={toggle}
-        className="flex items-center gap-1.5 transition-all duration-200 active:scale-110"
+        aria-pressed={liked}
+        className={`inline-flex items-center justify-center gap-1.5 h-11 min-w-11 px-3 rounded-xl border-2 text-[13px] font-extrabold transition-[transform,box-shadow,background-color,border-color,color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+          liked
+            ? 'border-primary-light-border bg-primary-light text-primary-text shadow-[0_2px_0_var(--color-primary-light-border)]'
+            : 'border-border bg-background text-muted-foreground shadow-[0_2px_0_var(--color-border)]'
+        }`}
       >
         <ThumbsUp
-          className={`w-5 h-5 transition-all ${liked ? 'fill-blue-500 text-blue-500' : 'text-muted-foreground'}`}
+          className={`w-5 h-5 transition-all ${liked ? 'fill-current' : ''}`}
+          strokeWidth={2.4}
         />
-        <span className={`text-sm ${liked ? 'text-blue-500' : 'text-muted-foreground'}`}>
-          {liked ? 1 : 0}
-        </span>
+        <span>{liked ? 1 : 0}</span>
       </button>
     </>
   )

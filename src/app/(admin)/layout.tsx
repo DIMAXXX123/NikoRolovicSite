@@ -1,24 +1,79 @@
-import { redirect } from 'next/navigation'
-import { getCallerProfile, hasRole, STAFF_ROLES } from '@/lib/api-auth'
-import { AdminHeader } from './admin-header'
+'use client'
 
-/**
- * Server-side gate for the whole admin area. The role check used to run in a
- * client effect, so the admin screens rendered for everyone for a moment
- * before the redirect fired. Now nothing is sent to the browser unless the
- * session really belongs to a moderator/admin/creator.
- */
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  // A misconfigured server (no service role key) must not open the panel.
-  const profile = await getCallerProfile().catch(() => null)
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft, ShieldCheck } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { DEMO_AUTO_ADMIN } from '@/components/auto-login'
 
-  if (!profile) redirect('/login')
-  if (!hasRole(profile, STAFF_ROLES)) redirect('/news')
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const [authorized, setAuthorized] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const pathname = usePathname()
+  const supabase = createClient()
+
+  const isSubPage = pathname !== '/admin'
+
+  async function checkAuth() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      // Demo mode: <AutoLogin /> signs the visitor in and reloads — keep
+      // showing the spinner instead of bouncing to /login.
+      if (!DEMO_AUTO_ADMIN) router.push('/login')
+      return
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'moderator' && profile.role !== 'creator')) {
+      router.push('/news')
+      return
+    }
+
+    setAuthorized(true)
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-[3px] border-border border-t-primary rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!authorized) return null
 
   return (
-    <div className="min-h-dvh bg-[#050508]">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-md mx-auto px-4 pt-4 pb-8">
-        <AdminHeader />
+        {/* Admin Header */}
+        <div className="flex items-center justify-between mb-5">
+          <Link
+            href={isSubPage ? '/admin' : '/profile'}
+            className="inline-flex items-center gap-2 min-h-[44px] text-[15px] font-extrabold text-secondary transition-colors hover:text-secondary-dark group"
+          >
+            <div className="w-11 h-11 rounded-xl bg-background border-2 border-border shadow-[0_2px_0_var(--color-border)] flex items-center justify-center group-active:translate-y-[2px] group-active:shadow-none transition-[transform,box-shadow] duration-[80ms]">
+              <ArrowLeft className="w-5 h-5" strokeWidth={2.6} />
+            </div>
+            <span>{isSubPage ? 'Admin panel' : 'Nazad'}</span>
+          </Link>
+          <Badge variant="destructive" className="h-7 gap-1.5 px-3">
+            <ShieldCheck strokeWidth={2.6} />
+            Admin Panel
+          </Badge>
+        </div>
         <div className="admin-content">
           {children}
         </div>

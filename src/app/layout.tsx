@@ -1,20 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans } from "next/font/google";
+import { Nunito } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/toast";
-import { buildThemeBootstrapScript } from "@/lib/theme";
 import "./globals.css";
+import { AutoLogin } from "@/components/auto-login";
+import { AppAnalytics } from "@/components/app-analytics";
 
-// Self-hosted through next/font — no render-blocking request to
-// fonts.googleapis.com, and no layout shift while the font loads.
-const dmSans = DM_Sans({
+const nunito = Nunito({
+  weight: ["700", "800", "900"],
   subsets: ["latin", "latin-ext"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  style: ["normal", "italic"],
+  variable: "--font-nunito",
   display: "swap",
-  variable: "--font-dm-sans",
 });
 
 export const metadata: Metadata = {
@@ -25,11 +22,10 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "NR Gimnazija",
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
   },
   icons: {
     icon: [
-      { url: "/icons/icon.svg", type: "image/svg+xml" },
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
@@ -40,12 +36,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  // No maximumScale / userScalable: pinch-zoom stays available.
-  viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f7fb" },
-    { media: "(prefers-color-scheme: dark)", color: "#050508" },
-  ],
+  themeColor: "#FFFFFF",
 };
 
 export default function RootLayout({
@@ -54,25 +45,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // The theme class and CSS variables are set by the bootstrap script below
-    // before first paint, so the server-rendered markup deliberately differs.
-    <html lang="sr" suppressHydrationWarning className={dmSans.variable}>
+    <html lang="sr">
       <head>
-        <script
-          // Runs before paint: reads the saved palette and colour mode and
-          // applies them, falling back to the phone's system theme.
-          dangerouslySetInnerHTML={{ __html: buildThemeBootstrapScript() }}
-        />
         {/* Safari ignores the manifest, so it needs these spelled out. */}
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="NR Gimnazija" />
       </head>
-      <body className="min-h-dvh bg-background">
-        <ThemeProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </ThemeProvider>
+      <body
+        className={`${nunito.variable} ${nunito.className} min-h-screen bg-background overflow-x-hidden`}
+      >
+        <AutoLogin />
+        <AppAnalytics />
+        <ToastProvider>{children}</ToastProvider>
         <Analytics />
         <SpeedInsights />
       </body>

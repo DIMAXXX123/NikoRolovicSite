@@ -1,9 +1,12 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { track } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Clock, Edit3, Check, X } from 'lucide-react'
-import { BetaDisclaimer } from '@/components/beta-disclaimer'
 import {
   DAYS,
   DAY_SHORT,
@@ -12,7 +15,6 @@ import {
   DEFAULT_SCHEDULES,
   getStorageKey,
   getSubjectColor,
-  getSubjectBorderColor,
   type ScheduleData,
 } from './schedule-data'
 
@@ -20,6 +22,13 @@ interface ScheduleViewProps {
   initialClassNum: number
   initialSectionNum: number
 }
+
+// §4.8 chip — selected = blue tint, otherwise white with a grey 3D edge.
+const CHIP_BASE =
+  'inline-flex h-11 items-center justify-center rounded-xl border-2 px-2 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
+const CHIP_IDLE = 'bg-background border-border text-muted-foreground shadow-[0_2px_0_var(--color-border)] hover:text-foreground'
+const CHIP_ACTIVE =
+  'bg-secondary-light border-secondary-light-border text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]'
 
 export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleViewProps) {
   const [classNum, setClassNum] = useState(initialClassNum)
@@ -33,12 +42,26 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
   const [editCell, setEditCell] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [activeDay, setActiveDay] = useState(0)
+  // Period that is running right now (1-based), for the green row tint. Only
+  // known in the browser, for the same reason as `activeDay`.
+  const [currentPeriod, setCurrentPeriod] = useState<number | null>(null)
 
   // The class/section come pre-resolved from the server; only "today" has to be
   // decided in the browser, since the server clock is not the reader's clock.
   useEffect(() => {
-    const today = new Date().getDay()
+    track('schedule_view', { meta: { day: new Date().getDay() } })
+    const now = new Date()
+    const today = now.getDay()
     setActiveDay(today >= 1 && today <= 5 ? today - 1 : 0)
+    const minutes = now.getHours() * 60 + now.getMinutes()
+    const idx = PERIOD_TIMES.findIndex((range) => {
+      const [from, to] = range.split(' - ').map((t) => {
+        const [h, m] = t.split(':').map(Number)
+        return h * 60 + m
+      })
+      return minutes >= from && minutes <= to
+    })
+    setCurrentPeriod(idx >= 0 && today >= 1 && today <= 5 ? idx + 1 : null)
   }, [])
 
   const loadSchedule = useCallback(() => {
@@ -100,62 +123,58 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
   // Count classes for today
   const todayClasses = PERIODS.filter(p => schedule[cellKey(activeDay, p)]).length
 
+  // The day shown in the list is today only when it matches the real weekday.
+  const todayIndex = new Date().getDay() - 1
+  const isPeriodNow = (period: number) => currentPeriod === period && activeDay === todayIndex
+
   return (
     <div className="space-y-5 animate-fade-in pb-8">
-      <BetaDisclaimer />
 
       {/* Header */}
-      <div className="flex items-center justify-between pt-1" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '0ms', opacity: 0 }}>
-        <div>
-          <h1 className="text-2xl font-bold gradient-text">Raspored</h1>
-          <p className="text-xs text-[#6b6b80] mt-1">
+      <div className="flex items-center justify-between gap-3 pt-1" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '0ms', opacity: 0 }}>
+        <div className="min-w-0">
+          <h1 className="text-[26px] leading-[1.2] font-extrabold tracking-[-0.01em] text-heading">Raspored</h1>
+          <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground mt-1">
             {classNum}. razred, {sectionNum}. odjeljenje · {todayClasses} časova
           </p>
         </div>
         <Button
           variant={editing ? 'default' : 'outline'}
-          size="sm"
           onClick={() => { setEditing(!editing); cancelEdit() }}
-          className={`gap-1.5 rounded-xl ${editing ? 'bg-[#7c5cfc] hover:bg-[#6b4fe0] text-white border-0' : 'bg-white/[0.04] border-[#1a1a2e] hover:bg-white/[0.08]'}`}
+          className="shrink-0"
         >
-          <Edit3 className="w-3.5 h-3.5" />
+          <Edit3 strokeWidth={2.6} />
           {editing ? 'Gotovo' : 'Uredi'}
         </Button>
       </div>
 
       {/* Class/section selector */}
-      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] p-4 space-y-3" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '60ms', opacity: 0 }}>
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <label className="text-[10px] text-[#6b6b80] font-medium uppercase tracking-wider mb-2 block">Razred</label>
-            <div className="flex gap-1.5">
+      <Card className="gap-4" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '60ms', opacity: 0 }}>
+        <div className="space-y-4">
+          <div>
+            <label className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground mb-1.5 block">Razred</label>
+            <div className="flex gap-2">
               {[1, 2, 3, 4].map((n) => (
                 <button
                   key={n}
+                  type="button"
                   onClick={() => setClassNum(n)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    classNum === n
-                      ? 'bg-[#7c5cfc] text-white shadow-[0_0_16px_rgba(124,92,252,0.3)]'
-                      : 'bg-white/[0.04] text-[#6b6b80] hover:bg-white/[0.08] hover:text-[#e8e8f0]'
-                  }`}
+                  className={`flex-1 min-w-0 ${CHIP_BASE} ${classNum === n ? CHIP_ACTIVE : CHIP_IDLE}`}
                 >
                   {n}.
                 </button>
               ))}
             </div>
           </div>
-          <div className="flex-1">
-            <label className="text-[10px] text-[#6b6b80] font-medium uppercase tracking-wider mb-2 block">Odjeljenje</label>
-            <div className="flex gap-1">
+          <div>
+            <label className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground mb-1.5 block">Odjeljenje</label>
+            <div className="flex gap-2">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <button
                   key={n}
+                  type="button"
                   onClick={() => setSectionNum(n)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    sectionNum === n
-                      ? 'bg-[#7c5cfc] text-white shadow-[0_0_16px_rgba(124,92,252,0.3)]'
-                      : 'bg-white/[0.04] text-[#6b6b80] hover:bg-white/[0.08] hover:text-[#e8e8f0]'
-                  }`}
+                  className={`flex-1 min-w-0 ${CHIP_BASE} ${sectionNum === n ? CHIP_ACTIVE : CHIP_IDLE}`}
                 >
                   {n}.
                 </button>
@@ -163,7 +182,7 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Day selector pills */}
       <div className="flex gap-2 overflow-x-auto pb-1" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '120ms', opacity: 0 }}>
@@ -172,16 +191,13 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
           return (
             <button
               key={day}
+              type="button"
               onClick={() => setActiveDay(i)}
-              className={`flex-1 min-w-0 py-1.5 px-1.5 rounded-xl text-xs font-semibold transition-all duration-200 relative animate-press ${
-                activeDay === i
-                  ? 'bg-[#7c5cfc] text-white shadow-[0_0_16px_rgba(124,92,252,0.3)]'
-                  : 'bg-white/[0.04] text-[#6b6b80] hover:bg-white/[0.08] hover:text-[#e8e8f0]'
-              }`}
+              className={`flex-1 min-w-0 relative ${CHIP_BASE} ${activeDay === i ? CHIP_ACTIVE : CHIP_IDLE}`}
             >
               {day}
               {isToday && activeDay !== i && (
-                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#7c5cfc]" />
+                <div className="absolute top-1 right-1.5 w-1.5 h-1.5 rounded-full bg-primary" />
               )}
             </button>
           )
@@ -189,21 +205,21 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
       </div>
 
       {/* Weekly overview grid */}
-      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '180ms', opacity: 0 }}>
-        <div className="px-4 py-3 border-b border-[#1a1a2e]">
-          <h3 className="text-sm font-semibold text-[#e8e8f0]">Sedmični pregled</h3>
+      <Card className="gap-0 p-0" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '180ms', opacity: 0 }}>
+        <div className="px-4 py-3 border-b-2 border-border">
+          <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">Sedmični pregled</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="w-full text-[12px] font-bold">
             <thead>
-              <tr className="border-b border-[#1a1a2e]">
-                <th className="p-1.5 text-left text-[#6b6b80] font-medium w-8">#</th>
+              <tr className="border-b-2 border-border">
+                <th className="h-11 px-1.5 text-left text-muted-foreground font-extrabold w-8">#</th>
                 {DAY_SHORT.map((d, di) => (
                   <th
                     key={d}
                     onClick={() => setActiveDay(di)}
-                    className={`p-1.5 text-center font-medium cursor-pointer transition-colors ${
-                      activeDay === di ? 'text-[#7c5cfc]' : 'text-[#6b6b80] hover:text-[#e8e8f0]'
+                    className={`h-11 px-1 text-center font-extrabold uppercase tracking-[0.04em] cursor-pointer transition-colors ${
+                      activeDay === di ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     {d}
@@ -213,23 +229,28 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
             </thead>
             <tbody>
               {PERIODS.map((period) => (
-                <tr key={period} className="border-b border-[#1a1a2e]/50">
-                  <td className="p-1 text-[#6b6b80] font-medium text-[11px]">{period}</td>
+                <tr
+                  key={period}
+                  className={`border-b-2 border-border last:border-b-0 ${
+                    currentPeriod === period ? 'bg-[#F4FFEA]' : ''
+                  }`}
+                >
+                  <td className="p-1.5 text-muted-foreground font-extrabold text-[12px] tabular-nums">{period}</td>
                   {DAYS.map((_, di) => {
                     const subj = schedule[cellKey(di, period)] || ''
                     const color = getSubjectColor(subj)
                     return (
                       <td
                         key={di}
-                        className={`p-1 cursor-pointer transition-colors ${activeDay === di ? 'bg-[#7c5cfc]/5' : ''}`}
+                        className={`p-1.5 cursor-pointer transition-colors ${activeDay === di ? 'bg-secondary-light/50' : ''}`}
                         onClick={() => { setActiveDay(di); if (editing) startEdit(di, period) }}
                       >
                         {subj ? (
-                          <div className={`px-1.5 py-0.5 rounded-lg text-center truncate border text-[10px] ${color}`}>
+                          <div className={`px-1 py-1.5 rounded-lg text-center truncate border-2 text-[11px] leading-[1.2] font-extrabold ${color}`}>
                             {subj.length > 5 ? subj.slice(0, 5) + '.' : subj}
                           </div>
                         ) : (
-                          <div className="text-center text-[#3d3d50]">·</div>
+                          <div className="text-center text-disabled">·</div>
                         )}
                       </td>
                     )
@@ -239,50 +260,46 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
       {/* Schedule for active day */}
-      <div className="rounded-2xl bg-[#0c0c14] border border-[#1a1a2e] overflow-hidden" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '240ms', opacity: 0 }}>
-        <div className="px-5 py-4 border-b border-[#1a1a2e] flex items-center justify-between">
-          <h3 className="text-base font-bold text-[#e8e8f0]">{DAYS[activeDay]}</h3>
-          <span className="text-xs text-[#6b6b80] px-2.5 py-1 rounded-lg bg-white/[0.04]">
+      <Card className="gap-0 p-0" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '240ms', opacity: 0 }}>
+        <div className="px-4 py-3 border-b-2 border-border flex items-center justify-between">
+          <h3 className="text-[20px] leading-[1.25] font-extrabold text-heading">{DAYS[activeDay]}</h3>
+          <Badge variant="outline">
             {todayClasses} časova
-          </span>
+          </Badge>
         </div>
-        <div className="divide-y divide-[#1a1a2e]/50 animate-stagger">
+        <div className="divide-y-2 divide-border animate-stagger">
           {PERIODS.map((period) => {
             const key = cellKey(activeDay, period)
             const subject = schedule[key] || ''
             const isEditing = editCell === key
             const colorClass = getSubjectColor(subject)
-            const borderColor = getSubjectBorderColor(subject)
 
             return (
               <div
                 key={period}
                 onClick={() => startEdit(activeDay, period)}
-                className={`flex items-center gap-4 px-5 py-3.5 transition-all border-l-[3px] hover:bg-white/[0.02] ${
-                  subject ? borderColor : 'border-l-transparent'
+                className={`flex items-center gap-3 min-h-16 px-4 py-3 transition-colors ${
+                  isPeriodNow(period) ? 'bg-[#F4FFEA]' : ''
                 } ${
-                  editing ? 'cursor-pointer active:bg-white/[0.04]' : ''
+                  editing ? 'cursor-pointer hover:bg-muted active:bg-muted' : ''
                 }`}
               >
-                {/* Period number & time */}
-                <div className="flex-shrink-0 w-14 text-center">
-                  <div className="text-base font-bold text-[#e8e8f0]/90">{period}.</div>
-                  <div className="flex items-center justify-center gap-0.5 text-[10px] text-[#3d3d50]">
-                    <Clock className="w-2.5 h-2.5" />
-                    {PERIOD_TIMES[period - 1].split(' - ')[0]}
-                  </div>
+                {/* Leading circle (§4.10): period number on the subject tint */}
+                <div
+                  className={`flex size-11 shrink-0 items-center justify-center rounded-full border-2 text-[17px] font-extrabold tabular-nums ${
+                    subject ? colorClass : 'border-border bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {period}
                 </div>
-
-                {/* Divider line */}
-                <div className="w-px h-10 bg-white/[0.06] flex-shrink-0" />
 
                 <div className="flex-1 min-w-0">
                   {isEditing ? (
                     <div className="flex items-center gap-2 animate-fade-in">
-                      <input
+                      <Input
                         autoFocus
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
@@ -291,37 +308,36 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
                           if (e.key === 'Escape') cancelEdit()
                         }}
                         placeholder="Naziv predmeta..."
-                        className="flex-1 bg-white/[0.04] rounded-xl px-3.5 py-2 text-sm outline-none border border-[#1a1a2e] focus:border-[#7c5cfc]/40 transition-colors"
+                        className="flex-1 h-11"
                       />
-                      <button onClick={confirmEdit} className="p-2 rounded-xl bg-[#7c5cfc]/15 text-[#7c5cfc] hover:bg-[#7c5cfc]/25 transition-colors">
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <button onClick={cancelEdit} className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] transition-colors">
-                        <X className="w-4 h-4 text-[#6b6b80]" />
-                      </button>
-                    </div>
-                  ) : subject ? (
-                    <div className={`inline-block px-4 py-1.5 rounded-xl text-sm font-medium border backdrop-blur-sm ${colorClass}`}>
-                      {subject}
+                      <Button size="icon" variant="default" onClick={(e) => { e.stopPropagation(); confirmEdit() }} aria-label="Sačuvaj">
+                        <Check strokeWidth={2.6} />
+                      </Button>
+                      <Button size="icon" onClick={(e) => { e.stopPropagation(); cancelEdit() }} aria-label="Otkaži">
+                        <X className="text-muted-foreground" strokeWidth={2.6} />
+                      </Button>
                     </div>
                   ) : (
-                    <div className="text-sm text-[#3d3d50] italic flex items-center gap-2 animate-fade-in">
-                      {editing ? (
-                        'Dodaj predmet...'
-                      ) : (
-                        <>
-                          <div className="w-6 h-[2px] rounded-full bg-[#1a1a2e]" />
-                          <span className="text-[#3d3d50]">Slobodan čas</span>
-                        </>
-                      )}
-                    </div>
+                    <>
+                      <p
+                        className={`truncate text-[17px] leading-[1.3] font-extrabold ${
+                          subject ? 'text-heading' : editing ? 'text-disabled' : 'text-muted-foreground'
+                        }`}
+                      >
+                        {subject || (editing ? 'Dodaj predmet...' : 'Slobodan čas')}
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-1 text-[13px] leading-[1.4] font-bold text-muted-foreground tabular-nums">
+                        <Clock className="size-3.5" strokeWidth={2.4} />
+                        {PERIOD_TIMES[period - 1].split(' - ')[0]}
+                      </p>
+                    </>
                   )}
                 </div>
               </div>
             )
           })}
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronRight, ThumbsUp } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { formatMath, parseLectureDate } from '../lecture-utils'
 import { fetchLecturesPage } from '../lecture-queries'
@@ -57,50 +59,46 @@ export function LectureList({
           <Link
             key={lecture.id}
             href={`/lectures/${encodeURIComponent(subject)}/${lecture.id}`}
-            className={`w-full text-left rounded-2xl border bg-[#0c0c14] cursor-pointer hover:bg-white/[0.04] transition-all active:scale-[0.98] p-4 flex items-center justify-between hover-float ${
-              isCurrent ? 'border-violet-500/30 bg-violet-500/5' : 'border-[#1a1a2e]'
+            className={`w-full min-h-16 px-4 py-3 rounded-2xl border-2 flex items-center gap-3 transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+              isCurrent
+                ? 'border-primary-light-border bg-[#F4FFEA] shadow-[0_2px_0_var(--color-primary-light-border)]'
+                : 'border-border bg-card shadow-[0_2px_0_var(--color-border)]'
             }`}
           >
-            <div className="flex items-center gap-3.5 flex-1 min-w-0">
-              <span
-                className={`text-xs font-mono w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                  isCurrent ? 'bg-violet-500/15 text-violet-400 font-bold' : 'bg-white/[0.04] text-muted-foreground'
-                }`}
-              >
-                {idx + 1}
-              </span>
-              <div className="space-y-0.5 min-w-0">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  {formatMath(lecture.title)}
-                  {isCurrent && (
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-lg bg-violet-500/15 text-violet-400 border border-violet-500/20 whitespace-nowrap flex-shrink-0">
-                      📍 OVDJE SI
-                    </span>
-                  )}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  {lDate
-                    ? new Date(lDate).toLocaleDateString('sr-Latn')
-                    : new Date(lecture.created_at).toLocaleDateString('sr-Latn')}
-                </p>
-              </div>
+            <span
+              className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-[15px] font-extrabold ${
+                isCurrent ? 'bg-primary-light text-primary-text' : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              {idx + 1}
+            </span>
+            <div className="space-y-0.5 min-w-0 flex-1">
+              <h3 className="text-[17px] font-extrabold leading-[1.3] text-heading flex items-center gap-2 flex-wrap">
+                {formatMath(lecture.title)}
+                {isCurrent && <Badge className="shrink-0">📍 OVDJE SI</Badge>}
+              </h3>
+              <p className="text-[13px] font-bold text-muted-foreground">
+                {lDate
+                  ? new Date(lDate).toLocaleDateString('sr-Latn')
+                  : new Date(lecture.created_at).toLocaleDateString('sr-Latn')}
+              </p>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {liked[lecture.id] && <ThumbsUp className="w-3.5 h-3.5 fill-blue-500 text-blue-500" />}
-              <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
+            <div className="flex items-center gap-2 shrink-0">
+              {liked[lecture.id] && (
+                <Badge variant="secondary">
+                  <ThumbsUp className="fill-current" strokeWidth={2.6} />
+                </Badge>
+              )}
+              <ChevronRight className="w-5 h-5 text-disabled" strokeWidth={2.6} />
             </div>
           </Link>
         )
       })}
 
       {hasMore && (
-        <button
-          onClick={loadMore}
-          disabled={loading}
-          className="w-full py-3.5 rounded-2xl border border-dashed border-white/[0.08] text-sm text-muted-foreground hover:border-[#7c5cfc]/30 hover:text-[#7c5cfc] transition-all active:scale-[0.98] disabled:opacity-50"
-        >
+        <Button variant="outline" className="w-full" onClick={loadMore} disabled={loading}>
           {loading ? 'Učitavanje…' : 'Učitaj još'}
-        </button>
+        </Button>
       )}
     </div>
   )

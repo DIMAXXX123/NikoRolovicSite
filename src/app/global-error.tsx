@@ -28,16 +28,16 @@ export default function GlobalError({
           alignItems: 'center',
           justifyContent: 'center',
           padding: '1.5rem',
-          background: '#050508',
-          color: '#e8e8f0',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
+          background: '#FFFFFF',
+          color: '#4B4B4B',
+          fontFamily: 'Nunito, system-ui, -apple-system, sans-serif',
           textAlign: 'center',
         }}
       >
         <div style={{ maxWidth: '22rem' }}>
           <div style={{ fontSize: '2.5rem' }}>⚠️</div>
           <h1 style={{ fontSize: '1.25rem', margin: '1rem 0 0.5rem' }}>Portal se nije učitao</h1>
-          <p style={{ fontSize: '0.875rem', color: '#6b6b80', margin: 0 }}>
+          <p style={{ fontSize: '0.875rem', color: '#777777', margin: 0 }}>
             Greška je prijavljena. Osvježi stranicu da pokušaš ponovo.
           </p>
           <button
@@ -48,10 +48,11 @@ export default function GlobalError({
               padding: '0.75rem 1.25rem',
               border: 'none',
               borderRadius: '0.75rem',
-              background: '#7c5cfc',
+              background: '#58CC02',
+              boxShadow: '0 4px 0 #46A302',
               color: '#ffffff',
               fontSize: '0.875rem',
-              fontWeight: 600,
+              fontWeight: 800,
               cursor: 'pointer',
             }}
           >

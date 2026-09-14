@@ -2,9 +2,13 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useLoginPrompt } from '@/components/login-prompt'
 import { fetchNewsPage } from '@/lib/news-data'
 import { NewsHeroCard, NewsRegularCard } from './news-card'
+import { FloatingHearts } from '@/components/tap-like'
+import { Button } from '@/components/ui/button'
 import type { NewsItem } from '@/lib/types'
+import { track, trackOnce } from '@/lib/analytics'
 
 interface NewsFeedProps {
   initialItems: NewsItem[]
@@ -22,10 +26,30 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
   const likingIdsRef = useRef<Set<string>>(new Set())
   const likeDebounceRef = useRef<Record<string, number>>({})
-  const lastTapRef = useRef<Record<string, number>>({})
-  const heartsContainerRef = useRef<HTMLDivElement | null>(null)
+  const { prompt: promptLogin, element: loginPrompt } = useLoginPrompt()
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const feedRef = useRef<HTMLDivElement | null>(null)
   const supabase = createClient()
+
+  // news_view: a card counts as seen once ≥50% of it has been on screen,
+  // at most once per tab session.
+  useEffect(() => {
+    const root = feedRef.current
+    if (!root || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          const id = (entry.target as HTMLElement).dataset.newsId
+          if (id) trackOnce(id, 'news_view', { entity_id: id })
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.5 }
+    )
+    root.querySelectorAll<HTMLElement>('[data-news-id]').forEach((node) => observer.observe(node))
+    return () => observer.disconnect()
+  }, [news])
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => {
@@ -38,19 +62,6 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
 
   const handleImageError = useCallback((id: string) => {
     setFailedImages((prev) => new Set(prev).add(id))
-  }, [])
-
-  useEffect(() => {
-    // Container for the floating like hearts — created once, outside React.
-    let container = document.getElementById('news-hearts-container') as HTMLDivElement | null
-    if (!container) {
-      container = document.createElement('div')
-      container.id = 'news-hearts-container'
-      container.style.cssText =
-        'position:fixed;inset:0;z-index:100;pointer-events:none;overflow:hidden;'
-      document.body.appendChild(container)
-    }
-    heartsContainerRef.current = container
   }, [])
 
   const loadMore = useCallback(async () => {
@@ -86,7 +97,8 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
 
   const toggleLike = useCallback(
     async (newsId: string, currentlyLiked: boolean) => {
-      if (!userId) return
+      if (!currentlyLiked) track('news_like', { entity_id: newsId })
+      if (!userId) { promptLogin(); return }
       if (likingIdsRef.current.has(newsId)) return
 
       // Debounce: prevent rapid-fire likes (300ms cooldown)
@@ -132,101 +144,16 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
         likingIdsRef.current.delete(newsId)
       }
     },
-    [supabase, userId]
-  )
-
-  const spawnHeart = useCallback((clientX: number, clientY: number) => {
-    const container = heartsContainerRef.current
-    if (!container) return
-    const scale = 0.8 + Math.random() * 0.6
-    const size = 80 * scale
-    const driftX = (Math.random() - 0.5) * 80
-    const rot = (Math.random() - 0.5) * 40
-
-    const el = document.createElement('div')
-    el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
-    el.style.cssText = `position:absolute;left:${clientX - size / 2}px;top:${clientY - size / 2}px;width:${size}px;height:${size}px;pointer-events:none;will-change:transform;`
-
-    container.appendChild(el)
-
-    const anim = el.animate(
-      [
-        { opacity: 1, transform: `scale(0) rotate(0deg) translate(0, 0)` },
-        {
-          opacity: 1,
-          transform: `scale(1.1) rotate(${rot * 0.3}deg) translate(${driftX * 0.15}px, -30px)`,
-          offset: 0.12,
-        },
-        {
-          opacity: 1,
-          transform: `scale(1) rotate(${rot * 0.6}deg) translate(${driftX * 0.4}px, -80px)`,
-          offset: 0.3,
-        },
-        {
-          opacity: 0.6,
-          transform: `scale(0.9) rotate(${rot}deg) translate(${driftX * 0.8}px, -200px)`,
-          offset: 0.65,
-        },
-        { opacity: 0, transform: `scale(0.7) rotate(${rot}deg) translate(${driftX}px, -320px)` },
-      ],
-      {
-        duration: 1400,
-        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        fill: 'forwards',
-      }
-    )
-
-    anim.onfinish = () => el.remove()
-  }, [])
-
-  const likeOnDoubleTap = useCallback(
-    (newsId: string, clientX: number, clientY: number) => {
-      setNews((prev) => {
-        const item = prev.find((n) => n.id === newsId)
-        if (item && !item.user_liked) toggleLike(newsId, false)
-        return prev // no mutation, just reading current state
-      })
-      spawnHeart(clientX, clientY)
-    },
-    [spawnHeart, toggleLike]
-  )
-
-  const handleDoubleTap = useCallback(
-    (newsId: string, e: React.MouseEvent) => {
-      const now = Date.now()
-      const lastTap = lastTapRef.current[newsId] || 0
-      if (now - lastTap < 300) {
-        likeOnDoubleTap(newsId, e.clientX, e.clientY)
-        lastTapRef.current[newsId] = 0
-      } else {
-        lastTapRef.current[newsId] = now
-      }
-    },
-    [likeOnDoubleTap]
-  )
-
-  const handleDoubleTapTouch = useCallback(
-    (newsId: string, e: React.TouchEvent) => {
-      const now = Date.now()
-      const lastTap = lastTapRef.current[newsId] || 0
-      const touch = e.changedTouches[0]
-      if (now - lastTap < 400) {
-        likeOnDoubleTap(newsId, touch.clientX, touch.clientY)
-        lastTapRef.current[newsId] = 0
-      } else {
-        lastTapRef.current[newsId] = now
-      }
-    },
-    [likeOnDoubleTap]
+    [supabase, userId, promptLogin]
   )
 
   if (news.length === 0) {
     return (
       <div className="text-center py-24">
-        <div className="w-16 h-16 rounded-3xl bg-[#0c0c14] border border-[#1a1a2e] flex items-center justify-center mx-auto mb-4">
-          <Newspaper className="w-8 h-8 text-[#3d3d50]" />
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+          <Newspaper className="w-8 h-8 text-disabled" />
         </div>
-        <p className="text-[#6b6b80] text-sm">Jos nema novosti</p>
+        <p className="text-[17px] leading-[1.3] font-extrabold text-foreground">Jos nema novosti</p>
       </div>
     )
   }
@@ -237,12 +164,12 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
     onToggleExpand: toggleExpand,
     onToggleLike: toggleLike,
     onImageError: handleImageError,
-    onTap: handleDoubleTap,
-    onTouchEnd: handleDoubleTapTouch,
   }
 
   return (
-    <div className="space-y-4 animate-stagger">
+    <div ref={feedRef} className="space-y-4 animate-stagger">
+      {loginPrompt}
+      <FloatingHearts />
       <NewsHeroCard
         item={heroItem}
         expanded={expandedIds.has(heroItem.id)}
@@ -264,13 +191,14 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
 
       {hasMore && (
         <div ref={sentinelRef} className="pt-2">
-          <button
+          <Button
+            variant="outline"
             onClick={loadMore}
             disabled={loadingMore}
-            className="w-full py-3.5 rounded-2xl border border-dashed border-white/[0.08] text-sm text-[#6b6b80] hover:border-[#7c5cfc]/30 hover:text-[#7c5cfc] transition-all active:scale-[0.98] disabled:opacity-50"
+            className="w-full"
           >
             {loadingMore ? 'Učitavanje…' : 'Učitaj još'}
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -285,7 +213,7 @@ function Newspaper({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="2.4"
       strokeLinecap="round"
       strokeLinejoin="round"
     >

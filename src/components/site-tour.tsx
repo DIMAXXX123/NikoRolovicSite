@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { X, UserPlus, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 
 const slides = [
   {
@@ -10,82 +12,88 @@ const slides = [
     subtitle: 'Studentski Portal',
     description: 'Tvoj digitalni školski prostor — lekcije, novosti, galerija i zajednica na jednom mjestu.',
     illustration: 'logo' as const,
-    accent: '#a78bfa',
-    accentAlt: '#6d28d9',
+    accent: '#58CC02',
+    accentAlt: '#46A302',
   },
   {
     title: 'O školi',
     subtitle: 'Tradicija i kvalitet',
     description: 'Jedna od najprestižnijih gimnazija u Baru, Crna Gora. Osnovana u čast narodnog heroja Nika Rolovića. Bogata istorija, izvrsni profesori i generacije uspješnih učenika.',
     illustration: 'school' as const,
-    accent: '#818cf8',
-    accentAlt: '#4f46e5',
+    accent: '#1CB0F6',
+    accentAlt: '#1899D6',
   },
   {
     title: 'Dumbs',
     subtitle: 'Školska galerija',
     description: 'Dijeli slike iz školskog života! Moderacija sadržaja, anonimni mod i like sistem.',
     illustration: 'photos' as const,
-    accent: '#f472b6',
-    accentAlt: '#e11d48',
+    accent: '#FF86D0',
+    accentAlt: '#EA2B2B',
   },
   {
     title: 'Novosti',
     subtitle: 'Školski feed',
     description: 'Budi u toku sa svim dešavanjima, obavještenjima i lajkuj objave koje ti se sviđaju.',
     illustration: 'news' as const,
-    accent: '#60a5fa',
-    accentAlt: '#2563eb',
+    accent: '#1CB0F6',
+    accentAlt: '#1899D6',
   },
   {
     title: 'Kalendar',
     subtitle: 'Testovi & ispiti',
     description: 'Testovi, kontrolni, rokovi — sve označeno bojama. Nikad više zaboravljenih ispita!',
     illustration: 'calendar' as const,
-    accent: '#34d399',
-    accentAlt: '#059669',
+    accent: '#58CC02',
+    accentAlt: '#46A302',
   },
   {
     title: 'Lekcije',
     subtitle: 'Materijali po predmetima',
     description: 'Svi predmeti na jednom mjestu. Materijali organizovani po predmetima, spremni za učenje.',
     illustration: 'lectures' as const,
-    accent: '#fbbf24',
-    accentAlt: '#d97706',
+    accent: '#FFC800',
+    accentAlt: '#C79000',
   },
   {
     title: 'Kvizovi',
     subtitle: 'Testiraj znanje',
     description: 'Poslije svake lekcije provjeri šta si naučio — flashcard kvizovi, bodovi i statistika.',
     illustration: 'quizzes' as const,
-    accent: '#fb923c',
-    accentAlt: '#ea580c',
+    accent: '#FF9600',
+    accentAlt: '#E5A800',
   },
   {
     title: 'Raspored',
     subtitle: 'Časovi & smjene',
     description: 'Sedmični i dnevni pregled rasporeda. Uvijek znaj koji čas je sljedeći.',
     illustration: 'schedule' as const,
-    accent: '#2dd4bf',
-    accentAlt: '#0d9488',
+    accent: '#1CB0F6',
+    accentAlt: '#1899D6',
   },
   {
     title: 'Moje Ocjene',
     subtitle: 'Praćenje uspjeha',
     description: 'Prati ocjene iz svih predmeta po trimestrima. Prosek, napredak i statistika na jednom mjestu.',
     illustration: 'grades' as const,
-    accent: '#f87171',
-    accentAlt: '#dc2626',
+    accent: '#FF4B4B',
+    accentAlt: '#EA2B2B',
   },
   {
     title: 'Tvoj Profil',
     subtitle: 'Personalizacija',
     description: 'Biraj teme, prilagodi izgled, postavi avatar. Pridruži se zajednici!',
     illustration: 'profile' as const,
-    accent: '#c084fc',
-    accentAlt: '#7c3aed',
+    accent: '#CE82FF',
+    accentAlt: '#A560E8',
   },
 ]
+
+/** 18% tint of a palette colour over white (§2 subject-circle rule). */
+const tint = (c: string) => `${c}2E`
+
+const miniCard = 'rounded-2xl border-2 border-border bg-background shadow-[0_2px_0_var(--color-border)]'
+const miniCardSm = 'rounded-xl border-2 border-border bg-background shadow-[0_2px_0_var(--color-border)]'
 
 function Illustration({ type, accent, accentAlt }: { type: string; accent: string; accentAlt: string }) {
   switch (type) {
@@ -94,24 +102,23 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
         <div className="relative flex items-center justify-center w-full h-full">
           <div
             className="absolute w-44 h-44 rounded-full animate-[spin_20s_linear_infinite]"
-            style={{ border: `1px dashed ${accent}30` }}
+            style={{ border: `2px dashed ${accent}55` }}
           />
           <div
             className="absolute w-36 h-36 rounded-full animate-[spin_15s_linear_infinite_reverse]"
-            style={{ border: `1px solid ${accent}18` }}
+            style={{ border: `2px solid ${accent}33` }}
           >
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full" style={{ background: accent }} />
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 rounded-full" style={{ background: accentAlt, opacity: 0.6 }} />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 rounded-full" style={{ background: accentAlt }} />
           </div>
           <div
-            className="w-28 h-28 rounded-3xl flex items-center justify-center animate-pulse-glow relative overflow-hidden"
-            style={{ background: `linear-gradient(135deg, ${accent}, ${accentAlt})` }}
+            className="w-28 h-28 rounded-3xl flex items-center justify-center relative"
+            style={{ background: accent, boxShadow: `0 4px 0 ${accentAlt}` }}
           >
-            <div className="absolute inset-0 bg-white/10" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 30%, 0 70%)' }} />
             <span className="text-5xl font-black text-white tracking-tight relative z-10">NR</span>
           </div>
-          <div className="absolute -top-2 right-6 w-4 h-4 rounded-full animate-float" style={{ background: `${accent}60`, animationDelay: '0.3s' }} />
-          <div className="absolute bottom-4 left-4 w-3 h-3 rounded-md rotate-45 animate-float" style={{ background: `${accentAlt}50`, animationDelay: '1s' }} />
+          <div className="absolute -top-2 right-6 w-4 h-4 rounded-full animate-float" style={{ background: accent, animationDelay: '0.3s' }} />
+          <div className="absolute bottom-4 left-4 w-3 h-3 rounded-md rotate-45 animate-float" style={{ background: accentAlt, animationDelay: '1s' }} />
         </div>
       )
 
@@ -120,22 +127,19 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
         <div className="relative flex items-center justify-center w-full h-full">
           {/* School building */}
           <div className="relative">
-            <div
-              className="w-40 h-28 rounded-2xl flex flex-col items-center justify-center gap-1 animate-slide-up"
-              style={{ background: `linear-gradient(145deg, ${accent}20, ${accent}08)`, border: `1.5px solid ${accent}30` }}
-            >
+            <div className={`w-40 h-28 flex flex-col items-center justify-center gap-1 animate-slide-up ${miniCard}`}>
               <span className="text-5xl">🏫</span>
-              <span className="text-[10px] font-bold tracking-wider" style={{ color: `${accent}bb` }}>EST. 1921</span>
+              <span className="text-[10px] font-extrabold tracking-wider uppercase" style={{ color: accentAlt }}>EST. 1921</span>
             </div>
             {/* Diploma */}
             <div className="absolute -top-3 -right-4 animate-scale-in" style={{ animationDelay: '0.3s' }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${accentAlt}20`, border: `1px solid ${accentAlt}35` }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-border" style={{ background: tint(accentAlt) }}>
                 <span className="text-xl">🎓</span>
               </div>
             </div>
             {/* Book */}
             <div className="absolute -bottom-3 -left-4 animate-scale-in" style={{ animationDelay: '0.5s' }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${accent}20`, border: `1px solid ${accent}35` }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-border" style={{ background: tint(accent) }}>
                 <span className="text-xl">📚</span>
               </div>
             </div>
@@ -161,22 +165,19 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             ].map((card, i) => (
               <div
                 key={i}
-                className="absolute inset-0 rounded-2xl animate-slide-up flex flex-col items-center justify-center gap-2"
+                className={`absolute inset-0 animate-slide-up flex flex-col items-center justify-center gap-2 ${miniCard}`}
                 style={{
-                  background: `linear-gradient(145deg, ${accent}18, ${accent}08)`,
-                  border: `1.5px solid ${accent}35`,
                   transform: `rotate(${card.rotate}) translateX(${card.x})`,
                   animationDelay: card.delay,
                   zIndex: 3 - i,
-                  backdropFilter: 'blur(8px)',
                 }}
               >
                 <span className="text-4xl">{card.emoji}</span>
-                <span className="text-xs font-medium" style={{ color: `${accent}cc` }}>{card.label}</span>
+                <span className="text-xs font-extrabold text-muted-foreground">{card.label}</span>
               </div>
             ))}
           </div>
-          <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-xl flex items-center justify-center animate-scale-in" style={{ background: `${accentAlt}25`, border: `1px solid ${accentAlt}40`, animationDelay: '0.6s' }}>
+          <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full flex items-center justify-center animate-scale-in border-2 border-border" style={{ background: tint(accentAlt), animationDelay: '0.6s' }}>
             <span className="text-lg">🛡️</span>
           </div>
         </div>
@@ -192,76 +193,78 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
           ].map((item, i) => (
             <div
               key={i}
-              className="rounded-2xl p-3.5 flex items-center gap-3 animate-slide-up"
-              style={{
-                background: `linear-gradient(135deg, ${accent}10, ${accent}05)`,
-                border: `1px solid ${accent}25`,
-                animationDelay: `${i * 0.15}s`,
-              }}
+              className={`p-3 flex items-center gap-3 animate-slide-up ${miniCard}`}
+              style={{ animationDelay: `${i * 0.15}s` }}
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accent}20` }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: tint(accent) }}>
                 <span className="text-xl">{item.icon}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-foreground/80 truncate">{item.title}</div>
+                <div className="text-sm font-extrabold text-foreground truncate">{item.title}</div>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <div className="h-1.5 rounded-full flex-1" style={{ background: `${accent}20` }} />
+                  <div className="h-1.5 rounded-full flex-1 bg-border" />
                   {item.tag && (
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: '#ef444425', color: '#ef4444' }}>
+                    <Badge variant="destructive" className="h-5 px-2 text-[9px]">
                       {item.tag}
-                    </span>
+                    </Badge>
                   )}
                 </div>
               </div>
-              <span className="text-xs" style={{ color: `${accent}80` }}>❤️ 12</span>
+              <span className="text-xs font-bold text-muted-foreground">❤️ 12</span>
             </div>
           ))}
         </div>
       )
 
-    case 'calendar':
+    case 'calendar': {
+      const kinds = {
+        test: { dot: '#FF4B4B', text: '#EA2B2B' },
+        exam: { dot: '#FFC800', text: '#C79000' },
+        event: { dot: '#1CB0F6', text: '#1899D6' },
+      }
       return (
         <div className="w-60">
           <div className="text-center mb-2">
-            <span className="text-xs font-semibold" style={{ color: accent }}>Mart 2026</span>
+            <span className="text-xs font-extrabold" style={{ color: accentAlt }}>Mart 2026</span>
           </div>
           <div className="grid grid-cols-7 gap-1">
             {['P', 'U', 'S', 'Č', 'P', 'S', 'N'].map((d, i) => (
-              <div key={`${d}-${i}`} className="w-7 h-5 flex items-center justify-center text-[9px] text-muted-foreground/50 font-medium">{d}</div>
+              <div key={`${d}-${i}`} className="w-7 h-5 flex items-center justify-center text-[9px] text-disabled font-extrabold">{d}</div>
             ))}
             {Array.from({ length: 28 }, (_, i) => {
               const day = i + 1
               const isTest = [5, 12, 19].includes(day)
               const isExam = [8, 22].includes(day)
               const isEvent = [15, 25].includes(day)
-              const color = isTest ? '#ef4444' : isExam ? '#f59e0b' : isEvent ? '#3b82f6' : ''
+              const kind = isTest ? kinds.test : isExam ? kinds.exam : isEvent ? kinds.event : null
               return (
                 <div
                   key={i}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-medium animate-scale-in relative"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-extrabold animate-scale-in relative border-2"
                   style={{
-                    background: color ? `${color}18` : `${accent}06`,
-                    border: color ? `1px solid ${color}35` : `1px solid ${accent}10`,
-                    color: color || `${accent}70`,
+                    background: kind ? tint(kind.dot) : '#F7F7F7',
+                    borderColor: kind ? kind.dot : '#E5E5E5',
+                    color: kind ? kind.text : '#777777',
                     animationDelay: `${i * 0.02}s`,
                   }}
                 >
                   {day}
-                  {color && <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full" style={{ background: color }} />}
+                  {kind && <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{ background: kind.dot }} />}
                 </div>
               )
             })}
           </div>
           <div className="flex justify-center gap-3 mt-2.5">
-            {[['#ef4444', 'Test'], ['#f59e0b', 'Ispit'], ['#3b82f6', 'Event']].map(([c, l]) => (
+            {[[kinds.test.dot, 'Test'], [kinds.exam.dot, 'Ispit'], [kinds.event.dot, 'Event']].map(([c, l]) => (
               <div key={l} className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full" style={{ background: c }} />
-                <span className="text-[9px] text-muted-foreground/60">{l}</span>
+                <span className="text-[9px] font-bold text-muted-foreground">{l}</span>
               </div>
             ))}
           </div>
         </div>
       )
+    }
 
     case 'lectures':
       return (
@@ -279,17 +282,13 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
           ].map((subj, i) => (
             <div
               key={subj.name}
-              className="rounded-xl p-2.5 flex flex-col items-center gap-1.5 animate-scale-in"
-              style={{
-                background: `linear-gradient(145deg, ${accent}12, ${accent}06)`,
-                border: `1px solid ${accent}22`,
-                animationDelay: `${i * 0.06}s`,
-              }}
+              className={`p-2 flex flex-col items-center gap-1.5 animate-scale-in ${miniCardSm}`}
+              style={{ animationDelay: `${i * 0.06}s` }}
             >
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${accent}18` }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: tint(accent) }}>
                 <span className="text-lg">{subj.emoji}</span>
               </div>
-              <span className="text-[9px] font-medium" style={{ color: `${accent}bb` }}>{subj.name}</span>
+              <span className="text-[9px] font-extrabold text-muted-foreground">{subj.name}</span>
             </div>
           ))}
         </div>
@@ -301,33 +300,27 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
           {/* Flashcard stack */}
           <div className="relative w-52 h-28">
             <div
-              className="absolute inset-0 rounded-2xl animate-slide-up flex flex-col items-center justify-center"
+              className="absolute inset-0 rounded-2xl border-2 border-border bg-muted animate-slide-up"
               style={{
-                background: `linear-gradient(145deg, ${accent}15, ${accent}08)`,
-                border: `1.5px solid ${accent}30`,
                 transform: 'rotate(-4deg) translateY(4px)',
                 animationDelay: '0s',
               }}
             />
             <div
-              className="absolute inset-0 rounded-2xl animate-slide-up flex flex-col items-center justify-center gap-1"
-              style={{
-                background: `linear-gradient(145deg, ${accent}20, ${accent}10)`,
-                border: `1.5px solid ${accent}40`,
-                animationDelay: '0.15s',
-              }}
+              className={`absolute inset-0 animate-slide-up flex flex-col items-center justify-center gap-1 ${miniCard}`}
+              style={{ animationDelay: '0.15s' }}
             >
               <span className="text-2xl">🧠</span>
-              <span className="text-sm font-semibold" style={{ color: `${accent}dd` }}>Koliko je 2+2?</span>
-              <span className="text-[10px] mt-1 px-3 py-0.5 rounded-full" style={{ background: `${accentAlt}20`, color: `${accentAlt}cc` }}>
+              <span className="text-sm font-extrabold text-foreground">Koliko je 2+2?</span>
+              <Badge className="mt-1 h-5 text-[9px]" style={{ background: tint(accent), borderColor: accent, color: accentAlt }}>
                 Tap za odgovor
-              </span>
+              </Badge>
             </div>
           </div>
           {/* Score */}
           <div className="flex gap-2 animate-fade-in" style={{ animationDelay: '0.4s' }}>
             {['✅ 8', '❌ 2', '⭐ 80%'].map((s, i) => (
-              <span key={i} className="text-[10px] px-2 py-1 rounded-lg font-medium" style={{ background: `${accent}12`, color: `${accent}aa`, border: `1px solid ${accent}20` }}>
+              <span key={i} className="text-[10px] px-2 py-1 rounded-lg font-extrabold border-2 border-border bg-muted text-muted-foreground">
                 {s}
               </span>
             ))}
@@ -342,11 +335,11 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             {['Pon', 'Uto', 'Sri', 'Čet', 'Pet'].map((d, i) => (
               <div
                 key={d}
-                className="px-2 py-1 rounded-lg text-[9px] font-semibold animate-scale-in"
+                className="px-2 py-1 rounded-lg text-[9px] font-extrabold uppercase animate-scale-in border-2"
                 style={{
-                  background: i === 0 ? `${accent}25` : `${accent}08`,
-                  color: i === 0 ? accent : `${accent}60`,
-                  border: i === 0 ? `1px solid ${accent}40` : `1px solid ${accent}12`,
+                  background: i === 0 ? tint(accent) : '#FFFFFF',
+                  color: i === 0 ? accentAlt : '#777777',
+                  borderColor: i === 0 ? accent : '#E5E5E5',
                   animationDelay: `${i * 0.08}s`,
                 }}
               >
@@ -363,17 +356,13 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             ].map((cls, i) => (
               <div
                 key={cls.name}
-                className="rounded-xl p-2 flex items-center gap-2.5 animate-slide-up"
-                style={{
-                  background: `linear-gradient(135deg, ${accent}10, ${accent}05)`,
-                  border: `1px solid ${accent}20`,
-                  animationDelay: `${i * 0.12}s`,
-                }}
+                className={`p-2 flex items-center gap-2.5 animate-slide-up ${miniCardSm}`}
+                style={{ animationDelay: `${i * 0.12}s` }}
               >
                 <span className="text-base">{cls.emoji}</span>
                 <div className="flex-1">
-                  <div className="text-[11px] font-medium" style={{ color: `${accent}cc` }}>{cls.name}</div>
-                  <div className="text-[9px] text-muted-foreground/50">{cls.time} · {cls.room}</div>
+                  <div className="text-[11px] font-extrabold text-foreground">{cls.name}</div>
+                  <div className="text-[9px] font-bold text-muted-foreground">{cls.time} · {cls.room}</div>
                 </div>
               </div>
             ))}
@@ -388,11 +377,11 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             {['I', 'II', 'III'].map((t, i) => (
               <div
                 key={t}
-                className="px-3 py-1 rounded-lg text-[10px] font-bold animate-scale-in"
+                className="px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase animate-scale-in border-2"
                 style={{
-                  background: i === 0 ? `${accent}25` : `${accent}08`,
-                  color: i === 0 ? accent : `${accent}50`,
-                  border: `1px solid ${i === 0 ? `${accent}40` : `${accent}15`}`,
+                  background: i === 0 ? tint(accent) : '#FFFFFF',
+                  color: i === 0 ? accentAlt : '#777777',
+                  borderColor: i === 0 ? accent : '#E5E5E5',
                   animationDelay: `${i * 0.1}s`,
                 }}
               >
@@ -409,20 +398,16 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             ].map((subj, i) => (
               <div
                 key={subj.name}
-                className="rounded-xl p-2 flex items-center gap-2.5 animate-slide-up"
-                style={{
-                  background: `linear-gradient(135deg, ${accent}10, ${accent}05)`,
-                  border: `1px solid ${accent}20`,
-                  animationDelay: `${i * 0.12}s`,
-                }}
+                className={`p-2 flex items-center gap-2.5 animate-slide-up ${miniCardSm}`}
+                style={{ animationDelay: `${i * 0.12}s` }}
               >
                 <span className="text-base">{subj.emoji}</span>
                 <div className="flex-1">
-                  <div className="text-[11px] font-medium" style={{ color: `${accent}cc` }}>{subj.name}</div>
+                  <div className="text-[11px] font-extrabold text-foreground">{subj.name}</div>
                 </div>
                 <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
-                  style={{ background: `${accent}20`, color: accent, border: `1px solid ${accent}35` }}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black border-2"
+                  style={{ background: tint(accent), color: accentAlt, borderColor: accent }}
                 >
                   {subj.grade}
                 </div>
@@ -430,9 +415,9 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             ))}
           </div>
           <div className="mt-2 text-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <span className="text-[10px] font-semibold px-3 py-1 rounded-full" style={{ background: `${accent}15`, color: accent, border: `1px solid ${accent}25` }}>
+            <Badge style={{ background: tint(accent), borderColor: accent, color: accentAlt }}>
               Prosek: 4.25
-            </span>
+            </Badge>
           </div>
         </div>
       )
@@ -441,29 +426,28 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
       return (
         <div className="relative flex items-center justify-center w-full h-full">
           <div
-            className="w-24 h-24 rounded-full flex items-center justify-center animate-float relative"
-            style={{ background: `linear-gradient(135deg, ${accent}30, ${accentAlt}20)`, border: `2px solid ${accent}50` }}
+            className="w-24 h-24 rounded-full flex items-center justify-center animate-float relative border-2"
+            style={{ background: tint(accent), borderColor: accent }}
           >
             <span className="text-4xl">👤</span>
-            <div className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${accent}30`, color: accent, border: `1px solid ${accent}40` }}>
+            <Badge className="absolute -bottom-1 -right-1 h-5 px-2 text-[9px]" style={{ background: tint(accent), borderColor: accent, color: accentAlt }}>
               Učenik
-            </div>
+            </Badge>
           </div>
-          {['#a78bfa', '#f472b6', '#34d399', '#fbbf24', '#60a5fa'].map((c, i) => {
+          {['#CE82FF', '#FF86D0', '#58CC02', '#FFC800', '#1CB0F6'].map((c, i) => {
             const angle = (i * 72 - 90) * (Math.PI / 180)
             const x = Math.cos(angle) * 64
             const y = Math.sin(angle) * 64
             return (
               <div
                 key={c}
-                className="absolute w-6 h-6 rounded-full animate-scale-in flex items-center justify-center"
+                className="absolute w-6 h-6 rounded-full animate-scale-in flex items-center justify-center border-2"
                 style={{
-                  background: `${c}30`,
-                  border: `1.5px solid ${c}60`,
+                  background: tint(c),
+                  borderColor: c,
                   left: `calc(50% + ${x}px - 12px)`,
                   top: `calc(50% + ${y}px - 12px)`,
                   animationDelay: `${i * 0.1}s`,
-                  boxShadow: `0 0 16px ${c}30`,
                 }}
               >
                 <div className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />
@@ -472,7 +456,7 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
           })}
           <div className="absolute -bottom-6 flex gap-3">
             {[['🎨', 'Teme'], ['⭐', 'Avatar'], ['📊', 'Stats']].map(([emoji, label], i) => (
-              <div key={label} className="flex items-center gap-1 px-2 py-1 rounded-lg animate-fade-in text-[10px]" style={{ background: `${accent}12`, border: `1px solid ${accent}20`, color: `${accent}90`, animationDelay: `${0.5 + i * 0.1}s` }}>
+              <div key={label} className="flex items-center gap-1 px-2 py-1 rounded-lg animate-fade-in text-[10px] font-extrabold border-2 border-border bg-background text-muted-foreground" style={{ animationDelay: `${0.5 + i * 0.1}s` }}>
                 <span>{emoji}</span>{label}
               </div>
             ))}
@@ -544,38 +528,12 @@ export function SiteTour({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-background flex flex-col overflow-hidden"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-[max(env(safe-area-inset-bottom),1rem)]"
+      style={{ background: 'rgba(0,0,0,.4)' }}
       onMouseDown={() => setPaused(true)}
       onMouseUp={() => setPaused(false)}
     >
-      {/* Animated background gradients */}
-      <div
-        className="absolute inset-0 transition-all duration-1000 ease-out"
-        style={{
-          background: `
-            radial-gradient(ellipse 80% 50% at 50% 20%, ${slide.accent}12 0%, transparent 100%),
-            radial-gradient(ellipse 60% 40% at 80% 80%, ${slide.accentAlt}08 0%, transparent 100%)
-          `,
-        }}
-      />
-
-      {/* Moving gradient blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute w-96 h-96 rounded-full tour-blob-1 opacity-[0.07]"
-          style={{ background: `radial-gradient(circle, ${slide.accent}, transparent 70%)`, left: '-10%', top: '-10%' }}
-        />
-        <div
-          className="absolute w-80 h-80 rounded-full tour-blob-2 opacity-[0.05]"
-          style={{ background: `radial-gradient(circle, ${slide.accentAlt}, transparent 70%)`, right: '-10%', bottom: '-5%' }}
-        />
-        <div
-          className="absolute w-64 h-64 rounded-full tour-blob-3 opacity-[0.04]"
-          style={{ background: `radial-gradient(circle, ${slide.accent}, transparent 70%)`, left: '40%', top: '50%' }}
-        />
-      </div>
-
-      {/* Floating particles - more of them */}
+      {/* Floating particles (keep their colours) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 18 }, (_, i) => (
           <div
@@ -596,136 +554,124 @@ export function SiteTour({ onClose }: { onClose: () => void }) {
         ))}
       </div>
 
-      {/* Animated geometric shapes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute w-20 h-20 border rounded-full animate-[spin_25s_linear_infinite] opacity-[0.06]"
-          style={{ borderColor: slide.accent, top: '15%', right: '10%' }}
-        />
-        <div
-          className="absolute w-12 h-12 border rounded-lg animate-[spin_20s_linear_infinite_reverse] opacity-[0.05]"
-          style={{ borderColor: slide.accentAlt, bottom: '20%', left: '8%', transform: 'rotate(45deg)' }}
-        />
-        <div
-          className="absolute w-16 h-16 border rounded-full animate-[spin_30s_linear_infinite] opacity-[0.04]"
-          style={{ borderColor: slide.accent, top: '60%', right: '20%' }}
-        />
-      </div>
+      {/* Tour card (§4.6) */}
+      <div className="relative z-10 flex w-full max-w-sm max-h-full flex-col overflow-x-hidden overflow-y-auto rounded-3xl border-2 border-border bg-background p-6">
+        {/* Skip / top bar */}
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-[13px] font-bold text-muted-foreground">{current + 1}/{slides.length}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-11 gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            Preskoči <X className="size-4" />
+          </Button>
+        </div>
 
-      {/* Skip / top bar */}
-      <div className="relative z-10 flex justify-between items-center px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-2">
-        <span className="text-xs text-muted-foreground/50 font-medium">{current + 1}/{slides.length}</span>
-        <button
-          onClick={onClose}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs text-muted-foreground hover:text-foreground transition-all hover:bg-muted/50"
-        >
-          Preskoči <X className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      {/* Main content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6">
-        <div
-          key={current}
-          className={`flex flex-col items-center text-center max-w-sm w-full ${
-            direction === 'in' ? 'tour-slide-in' : 'tour-slide-out'
-          }`}
-        >
-          {/* Illustration */}
-          <div className="h-44 w-full flex items-center justify-center mb-8">
-            <Illustration type={slide.illustration} accent={slide.accent} accentAlt={slide.accentAlt} />
-          </div>
-
-          {/* Text content - animated in after slide transition */}
-          <div className={`flex flex-col items-center transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            {/* Subtitle chip */}
-            <div
-              className="px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase mb-3"
-              style={{
-                background: `${slide.accent}15`,
-                color: slide.accent,
-                border: `1px solid ${slide.accent}25`,
-                transitionDelay: textVisible ? '0ms' : '0ms',
-              }}
-            >
-              {slide.subtitle}
+        {/* Main content */}
+        <div className="flex-1 flex flex-col items-center justify-center py-2">
+          <div
+            key={current}
+            className={`flex flex-col items-center text-center w-full ${
+              direction === 'in' ? 'tour-slide-in' : 'tour-slide-out'
+            }`}
+          >
+            {/* Illustration */}
+            <div className="h-44 w-full flex items-center justify-center mb-8">
+              <Illustration type={slide.illustration} accent={slide.accent} accentAlt={slide.accentAlt} />
             </div>
 
-            {/* Title */}
-            <h2
-              className={`text-3xl font-bold mb-3 transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
-              style={{ color: slide.accent, transitionDelay: textVisible ? '150ms' : '0ms' }}
-            >
-              {slide.title}
-            </h2>
-
-            {/* Description */}
-            <p
-              className={`text-muted-foreground text-[15px] leading-relaxed max-w-xs transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
-              style={{ transitionDelay: textVisible ? '300ms' : '0ms' }}
-            >
-              {slide.description}
-            </p>
-          </div>
-
-          {/* CTA on last slide */}
-          {isLast && (
-            <div className={`flex flex-col gap-3 w-full mt-8 transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: textVisible ? '450ms' : '0ms' }}>
-              <Link href="/register" onClick={onClose}>
-                <button
-                  className="w-full py-3.5 rounded-2xl font-semibold text-white text-base flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] animate-pulse-glow"
-                  style={{ background: `linear-gradient(135deg, ${slide.accent}, ${slide.accentAlt})` }}
-                >
-                  <UserPlus className="w-5 h-5" />
-                  Registruj se
-                </button>
-              </Link>
-              <button
-                onClick={onClose}
-                className="py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            {/* Text content - animated in after slide transition */}
+            <div className={`flex flex-col items-center transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              {/* Subtitle chip */}
+              <Badge
+                className="mb-3"
+                style={{
+                  background: tint(slide.accent),
+                  borderColor: slide.accent,
+                  color: slide.accentAlt,
+                  transitionDelay: textVisible ? '0ms' : '0ms',
+                }}
               >
-                Nazad na prijavu
-              </button>
+                {slide.subtitle}
+              </Badge>
+
+              {/* Title */}
+              <h2
+                className={`text-[20px] leading-[1.25] font-extrabold text-heading mb-3 transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+                style={{ transitionDelay: textVisible ? '150ms' : '0ms' }}
+              >
+                {slide.title}
+              </h2>
+
+              {/* Description */}
+              <p
+                className={`text-muted-foreground text-[15px] font-bold leading-[1.5] max-w-xs transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+                style={{ transitionDelay: textVisible ? '300ms' : '0ms' }}
+              >
+                {slide.description}
+              </p>
             </div>
+
+            {/* CTA on last slide */}
+            {isLast && (
+              <div className={`flex flex-col gap-3 w-full mt-8 transition-all duration-700 ease-out ${textVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ transitionDelay: textVisible ? '450ms' : '0ms' }}>
+                <Link href="/register" onClick={onClose} className="block w-full">
+                  <Button className="w-full">
+                    <UserPlus className="size-5" />
+                    Registruj se
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  onClick={onClose}
+                  className="w-full text-muted-foreground hover:text-foreground"
+                >
+                  Nazad na prijavu
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom: progress dots + next button */}
+        <div className="flex items-center justify-between mt-4 min-h-11">
+          {/* Progress dots */}
+          <div className="flex gap-1.5">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                className="h-11 px-1 flex items-center"
+                aria-label={`${i + 1}/${slides.length}`}
+              >
+                <span
+                  className="block h-2 rounded-full transition-all duration-500"
+                  style={{
+                    width: i === current ? 24 : 6,
+                    background: i === current
+                      ? slide.accent
+                      : i < current
+                        ? `${slide.accent}80`
+                        : '#E5E5E5',
+                  }}
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* Next button */}
+          {!isLast && (
+            <Button
+              variant="default"
+              size="icon"
+              onClick={goNext}
+            >
+              <ChevronRight className="size-5" strokeWidth={2.6} />
+            </Button>
           )}
         </div>
-      </div>
-
-      {/* Bottom: progress dots + next button */}
-      <div className="relative z-10 flex items-center justify-between px-8 pb-[max(env(safe-area-inset-bottom),2rem)]">
-        {/* Progress dots */}
-        <div className="flex gap-1.5">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              className="h-2 rounded-full transition-all duration-500"
-              style={{
-                width: i === current ? 24 : 6,
-                background: i === current
-                  ? slide.accent
-                  : i < current
-                    ? `${slide.accent}50`
-                    : `${slide.accent}20`,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Next button */}
-        {!isLast && (
-          <button
-            onClick={goNext}
-            className="w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-            style={{
-              background: `${slide.accent}15`,
-              border: `1.5px solid ${slide.accent}30`,
-              color: slide.accent,
-            }}
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        )}
       </div>
     </div>
   )

@@ -8,6 +8,13 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { ChevronDown } from 'lucide-react'
+
+const selectClass =
+  'flex h-[50px] w-full appearance-none rounded-2xl border-2 border-border bg-muted pl-4 pr-11 text-[15px] font-bold text-foreground outline-none transition-colors focus-visible:border-secondary focus-visible:bg-background'
+
+const selectChevron =
+  'pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-disabled'
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('')
@@ -92,18 +99,18 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card className="animate-fade-in border-border/50 bg-card/50 backdrop-blur-xl">
+    <Card className="animate-fade-in">
       <CardHeader className="text-center space-y-2 pb-2">
-        <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-2" style={{ background: 'var(--theme-primary, #7c5cfc)' }}>
-          <span className="text-2xl font-bold text-white">NR</span>
+        <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)]">
+          <span className="text-2xl font-black text-primary-foreground">NR</span>
         </div>
-        <h1 className="text-2xl font-bold gradient-text">Registracija</h1>
-        <p className="text-muted-foreground text-sm">Unesi svoje podatke za verifikaciju</p>
+        <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Registracija</h1>
+        <p className="text-[13px] font-bold text-muted-foreground">Unesi svoje podatke za verifikaciju</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleRegister} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="firstName">Ime</Label>
               <Input
                 id="firstName"
@@ -111,10 +118,9 @@ export default function RegisterPage() {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
-                className="bg-background/50"
               />
             </div>
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="lastName">Prezime</Label>
               <Input
                 id="lastName"
@@ -122,39 +128,44 @@ export default function RegisterPage() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
-                className="bg-background/50"
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="class">Razred</Label>
-              <select
-                id="class"
-                value={classNumber}
-                onChange={(e) => setClassNumber(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {[1, 2, 3, 4].map((n) => (
-                  <option key={n} value={n}>{n}. razred</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="class"
+                  value={classNumber}
+                  onChange={(e) => setClassNumber(e.target.value)}
+                  className={selectClass}
+                >
+                  {[1, 2, 3, 4].map((n) => (
+                    <option key={n} value={n}>{n}. razred</option>
+                  ))}
+                </select>
+                <ChevronDown className={selectChevron} strokeWidth={2.6} />
+              </div>
             </div>
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="section">Odjeljenje</Label>
-              <select
-                id="section"
-                value={sectionNumber}
-                onChange={(e) => setSectionNumber(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <option key={n} value={n}>{n}. odjeljenje</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="section"
+                  value={sectionNumber}
+                  onChange={(e) => setSectionNumber(e.target.value)}
+                  className={selectClass}
+                >
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <option key={n} value={n}>{n}. odjeljenje</option>
+                  ))}
+                </select>
+                <ChevronDown className={selectChevron} strokeWidth={2.6} />
+              </div>
             </div>
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
@@ -163,10 +174,9 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="password">Lozinka</Label>
             <Input
               id="password"
@@ -176,10 +186,9 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="bg-background/50"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="confirmPassword">Potvrdi lozinku</Label>
             <Input
               id="confirmPassword"
@@ -189,16 +198,16 @@ export default function RegisterPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-              className="bg-background/50"
             />
           </div>
           {error && (
             <div className="space-y-3">
-              <p className="text-destructive text-sm text-center">{error}</p>
+              <p className="text-destructive text-[13px] font-bold text-center">{error}</p>
               {error.includes('Nismo te pronašli') && !showRequestForm && (
                 <Button
                   type="button"
-                  className="w-full h-12 text-base font-bold bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:shadow-[0_0_50px_rgba(245,158,11,0.7)] transition-all animate-pulse border border-amber-400/40"
+                  variant="gold"
+                  className="w-full"
                   onClick={() => {
                     setShowRequestForm(true)
                     setReqIme(firstName)
@@ -211,34 +220,41 @@ export default function RegisterPage() {
                 </Button>
               )}
               {showRequestForm && (
-                <div className="space-y-3 p-3 rounded-lg border border-border/50 bg-background/30">
+                <div className="space-y-3 rounded-2xl border-2 border-border bg-muted p-3">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
+                    <div>
                       <Label htmlFor="reqIme">Ime</Label>
-                      <Input id="reqIme" value={reqIme} onChange={(e) => setReqIme(e.target.value)} className="bg-background/50" required />
+                      <Input id="reqIme" value={reqIme} onChange={(e) => setReqIme(e.target.value)} className="bg-background" required />
                     </div>
-                    <div className="space-y-1">
+                    <div>
                       <Label htmlFor="reqPrezime">Prezime</Label>
-                      <Input id="reqPrezime" value={reqPrezime} onChange={(e) => setReqPrezime(e.target.value)} className="bg-background/50" required />
+                      <Input id="reqPrezime" value={reqPrezime} onChange={(e) => setReqPrezime(e.target.value)} className="bg-background" required />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
+                    <div>
                       <Label htmlFor="reqRazred">Razred</Label>
-                      <select id="reqRazred" value={reqRazred} onChange={(e) => setReqRazred(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                        {[1, 2, 3, 4].map((n) => (<option key={n} value={n}>{n}. razred</option>))}
-                      </select>
+                      <div className="relative">
+                        <select id="reqRazred" value={reqRazred} onChange={(e) => setReqRazred(e.target.value)} className={`${selectClass} bg-background`}>
+                          {[1, 2, 3, 4].map((n) => (<option key={n} value={n}>{n}. razred</option>))}
+                        </select>
+                        <ChevronDown className={selectChevron} strokeWidth={2.6} />
+                      </div>
                     </div>
-                    <div className="space-y-1">
+                    <div>
                       <Label htmlFor="reqOdjeljenje">Odjeljenje</Label>
-                      <select id="reqOdjeljenje" value={reqOdjeljenje} onChange={(e) => setReqOdjeljenje(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                        {[1, 2, 3, 4, 5, 6].map((n) => (<option key={n} value={n}>{n}. odjeljenje</option>))}
-                      </select>
+                      <div className="relative">
+                        <select id="reqOdjeljenje" value={reqOdjeljenje} onChange={(e) => setReqOdjeljenje(e.target.value)} className={`${selectClass} bg-background`}>
+                          {[1, 2, 3, 4, 5, 6].map((n) => (<option key={n} value={n}>{n}. odjeljenje</option>))}
+                        </select>
+                        <ChevronDown className={selectChevron} strokeWidth={2.6} />
+                      </div>
                     </div>
                   </div>
                   <Button
                     type="button"
-                    className="w-full h-12 text-base font-bold bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-[0_0_30px_rgba(245,158,11,0.4)] hover:shadow-[0_0_50px_rgba(245,158,11,0.6)] transition-all border border-amber-400/40"
+                    variant="gold"
+                    className="w-full"
                     onClick={async () => {
                       try {
                         const res = await fetch('/api/request-join', {
@@ -268,28 +284,28 @@ export default function RegisterPage() {
                   >
                     Pošalji zahtjev
                   </Button>
-                  <p className="text-muted-foreground text-xs text-center">Zahtjev se šalje administratoru. Maksimalno 2 pokušaja.</p>
+                  <p className="text-muted-foreground text-[13px] font-bold text-center">Zahtjev se šalje administratoru. Maksimalno 2 pokušaja.</p>
                 </div>
               )}
             </div>
           )}
-          <Button type="submit" className="animate-press w-full h-14 text-lg font-bold bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-400 hover:to-violet-500 shadow-[0_0_40px_rgba(139,92,246,0.5)] hover:shadow-[0_0_60px_rgba(139,92,246,0.7)] transition-all border border-purple-400/30 text-white tracking-wide" disabled={loading}>
+          <Button type="submit" className="animate-press w-full" disabled={loading}>
             {loading ? 'Registracija...' : 'REGISTRUJ SE'}
           </Button>
         </form>
-        <div className="mt-4 space-y-3">
+        <div className="mt-6 space-y-3">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border/50" />
+              <div className="w-full border-t-2 border-border" />
             </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-card px-2 text-muted-foreground">ili</span>
+            <div className="relative flex justify-center">
+              <span className="bg-card px-2 text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">ili</span>
             </div>
           </div>
           <Button
             type="button"
             variant="outline"
-            className="animate-press w-full py-5 text-base font-semibold gap-3 border-border/50 hover:bg-muted/50"
+            className="animate-press w-full gap-2"
             onClick={handleGoogleRegister}
             disabled={googleLoading}
           >
@@ -302,7 +318,7 @@ export default function RegisterPage() {
             {googleLoading ? 'Registracija...' : 'Registruj se sa Google'}
           </Button>
           <Link href="/login" className="block">
-            <Button variant="outline" className="w-full border-primary/50 text-primary hover:bg-primary/10 hover:border-primary text-base py-5 font-semibold gap-2">
+            <Button variant="outline" className="w-full gap-2">
               Već imaš nalog? Prijavi se
             </Button>
           </Link>

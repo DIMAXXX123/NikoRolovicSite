@@ -1,17 +1,34 @@
 'use client'
 
-import { Trophy, RotateCcw, Crown, Star } from 'lucide-react'
+import { Trophy, RotateCcw, Crown, Star, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { LeaderEntry } from './engine'
 
 const ROLE_BADGES: Record<string, { label: string; cls: string }> = {
-  creator: { label: '👑', cls: 'text-yellow-400' },
-  admin: { label: '⚡', cls: 'text-red-400' },
-  moderator: { label: '🛡️', cls: 'text-blue-400' },
-  student: { label: '📚', cls: 'text-gray-400' },
+  creator: { label: '👑', cls: 'text-accent' },
+  admin: { label: '⚡', cls: 'text-destructive' },
+  moderator: { label: '🛡️', cls: 'text-orange' },
+  student: { label: '📚', cls: 'text-muted-foreground' },
 }
 
 function roleBadge(role: string) {
   return ROLE_BADGES[role] || ROLE_BADGES.student
+}
+
+/** Rank circle (§7 /game): 1 = gold, 2 = #CECECE, 3 = #FF9600, rest = grey outline. */
+function rankCircleClass(i: number, isMe: boolean) {
+  if (i === 0) return 'bg-gold border-gold text-[#4B4B4B]'
+  if (i === 1) return 'bg-border-strong border-border-strong text-[#4B4B4B]'
+  if (i === 2) return 'bg-orange border-orange text-white'
+  if (isMe) return 'bg-primary-light border-primary-light-border text-primary-text'
+  return 'bg-muted border-border text-muted-foreground'
+}
+
+/** §4.10 row classes; "me" row gets the highlighted (green) card look. */
+function rowClass(i: number, isMe: boolean) {
+  if (isMe) return 'border-primary-light-border bg-[#F4FFEA] shadow-[0_2px_0_var(--color-primary-light-border)]'
+  if (i === 0) return 'border-[#FFE28A] bg-[#FFF9E0] shadow-[0_2px_0_#FFE28A]'
+  return 'border-border bg-background shadow-[0_2px_0_var(--color-border)]'
 }
 
 /** "Your place" row, shown only when the player sits outside the visible top 3. */
@@ -20,9 +37,9 @@ function MyPlace({ leaderboard, myUserId }: { leaderboard: LeaderEntry[]; myUser
   const myIdx = leaderboard.findIndex((e) => e.userId === myUserId)
   if (myIdx < 3) return null
   return (
-    <div className="mt-2 px-3 py-2 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-between">
-      <span className="text-xs text-purple-300">Tvoje mjesto</span>
-      <span className="text-sm font-bold text-purple-400">#{myIdx + 1} od {leaderboard.length}</span>
+    <div className="mt-3 px-4 py-3 rounded-2xl bg-primary-light border-2 border-primary-light-border flex items-center justify-between">
+      <span className="text-[13px] font-bold text-primary-text">Tvoje mjesto</span>
+      <span className="text-[15px] font-extrabold text-primary-text tabular-nums">#{myIdx + 1} od {leaderboard.length}</span>
     </div>
   )
 }
@@ -39,37 +56,48 @@ export function LeaderboardOverlay({
   onClose: () => void
 }) {
   return (
-      <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-        <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-4 w-full max-w-sm space-y-3 fade-in-up max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="fixed inset-0 z-[100] bg-[rgba(0,0,0,0.4)] flex items-center justify-center p-4" onClick={onClose}>
+        <div className="bg-card border-2 border-border rounded-3xl p-6 w-full max-w-sm space-y-3 fade-in-up max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2"><Trophy className="w-5 h-5" /> Tabela lidera</h3>
-            <button onClick={onClose} className="text-zinc-500 hover:text-white text-sm">✕</button>
+            <h3 className="text-[20px] leading-[1.25] font-extrabold text-heading flex items-center gap-2"><Trophy className="w-5 h-5 text-gold" strokeWidth={2.6} /> Tabela lidera</h3>
+            <button
+              onClick={onClose}
+              aria-label="Zatvori"
+              className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <X className="size-5" strokeWidth={2.6} />
+            </button>
           </div>
           {leaderLoading ? (
             <div className="flex flex-col items-center justify-center py-8 gap-3">
               <div className="relative w-12 h-12">
-                <div className="absolute inset-0 rounded-full border-2 border-amber-500/20" />
-                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-amber-400 animate-spin" />
-                <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-purple-400 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }} />
+                <div className="absolute inset-0 rounded-full border-2 border-border" />
+                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+                <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-secondary animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }} />
                 <span className="absolute inset-0 flex items-center justify-center text-lg">🏆</span>
               </div>
-              <p className="text-sm text-zinc-400 animate-pulse">Učitavanje tabele...</p>
+              <p className="text-[13px] font-bold text-muted-foreground animate-pulse">Učitavanje tabele...</p>
             </div>
           ) : leaderboard.length === 0 ? (
-            <p className="text-center text-zinc-500 py-4">Nema rezultata</p>
+            <div className="flex flex-col items-center text-center py-6">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Trophy className="w-8 h-8 text-disabled" strokeWidth={2.4} />
+              </div>
+              <p className="text-[17px] leading-[1.3] font-extrabold text-foreground">Nema rezultata</p>
+            </div>
           ) : (
             <>
-              <div className="space-y-1.5 max-h-[50vh] overflow-y-auto">
+              <div className="space-y-2.5 max-h-[50vh] overflow-y-auto pb-1">
                 {leaderboard.map((e, i) => {
-                  const isMe = myUserId && e.userId === myUserId
+                  const isMe = !!(myUserId && e.userId === myUserId)
                   return (
-                    <div key={i} className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${isMe ? 'bg-purple-500/20 border border-purple-500/40 ring-1 ring-purple-500/30' : i === 0 ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-zinc-800/50'}`}>
-                      <span className={`text-sm font-bold w-6 ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-zinc-300' : i === 2 ? 'text-orange-400' : isMe ? 'text-purple-400' : 'text-zinc-500'}`}>#{i + 1}</span>
+                    <div key={i} className={`flex items-center gap-3 min-h-[64px] px-4 py-3 rounded-2xl border-2 transition-all ${rowClass(i, isMe)}`}>
+                      <span className={`flex size-11 shrink-0 items-center justify-center rounded-full border-2 text-[15px] font-black tabular-nums ${rankCircleClass(i, isMe)}`}>{i + 1}</span>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium truncate ${isMe ? 'text-purple-300' : ''}`}>{e.name} {isMe ? '← ti' : ''}</p>
-                        <p className="text-[10px] text-zinc-500">{e.classInfo}</p>
+                        <p className={`text-[17px] leading-[1.3] font-extrabold truncate ${isMe ? 'text-primary-text' : 'text-heading'}`}>{e.name} {isMe ? '← ti' : ''}</p>
+                        <p className="text-[13px] font-bold text-muted-foreground">{e.classInfo}</p>
                       </div>
-                      <span className={`text-sm font-bold ${isMe ? 'text-purple-300' : 'text-zinc-300'}`}>{e.score.toLocaleString()}</span>
+                      <span className={`text-[17px] font-black tabular-nums ${isMe ? 'text-primary-text' : 'text-foreground'}`}>{e.score.toLocaleString()}</span>
                     </div>
                   )
                 })}
@@ -96,51 +124,47 @@ export function GameOverOverlay({
   onRestart: () => void
 }) {
   return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
-        <div className="fade-in-up bg-zinc-900/95 border border-zinc-600 rounded-2xl p-6 w-full max-w-sm shadow-2xl"
-          style={{ boxShadow: '0 0 60px rgba(168,85,247,0.15), 0 20px 40px rgba(0,0,0,0.5)' }}
-        >
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(0,0,0,0.4)] p-4">
+        <div className="fade-in-up bg-card border-2 border-border rounded-3xl p-6 w-full max-w-sm">
           <div className="text-center mb-5">
-            <h2 className="game-over-title text-3xl font-black text-white mb-2">
+            <h2 className="game-over-title text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading mb-2">
               Kraj igre!
             </h2>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Trophy className="w-6 h-6 text-yellow-400" />
-              <span className="text-4xl font-black bg-gradient-to-r from-yellow-300 via-orange-400 to-yellow-300 bg-clip-text text-transparent">
+              <Trophy className="w-7 h-7 text-gold" strokeWidth={2.6} />
+              <span className="text-[36px] leading-none font-black text-heading tabular-nums">
                 {score}
               </span>
             </div>
             {score >= highScore && score > 0 && (
-              <p className="text-sm text-purple-400 mt-1 flex items-center justify-center gap-1 font-semibold">
-                <Star className="w-4 h-4 fill-purple-400" /> Novi rekord!
+              <p className="text-[13px] text-primary-text mt-2 flex items-center justify-center gap-1 font-extrabold">
+                <Star className="w-4 h-4 text-gold fill-gold" strokeWidth={2.6} /> Novi rekord!
               </p>
             )}
           </div>
 
           {leaderboard.length > 0 && (
             <div className="mb-5">
-              <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-2 flex items-center gap-1">
-                <Crown className="w-3 h-3" /> Leaderboard
+              <h3 className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground mb-2 flex items-center gap-1">
+                <Crown className="w-3.5 h-3.5" strokeWidth={2.6} /> Leaderboard
               </h3>
-              <div className="space-y-1 max-h-[40vh] overflow-y-auto">
+              <div className="space-y-2.5 max-h-[40vh] overflow-y-auto pb-1">
                 {leaderboard.map((entry, i) => {
                   const badge = roleBadge(entry.role)
-                  const isMe = myUserId && entry.userId === myUserId
+                  const isMe = !!(myUserId && entry.userId === myUserId)
                   return (
-                    <div key={i} className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-sm ${
-                      isMe ? 'bg-purple-500/20 border border-purple-500/40 ring-1 ring-purple-500/30' : i === 0 ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-zinc-800/60'
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        <span className={`w-5 text-right font-mono text-xs ${
-                          i === 0 ? 'text-amber-400' : i === 1 ? 'text-zinc-300' : i === 2 ? 'text-orange-400' : isMe ? 'text-purple-400' : 'text-zinc-500'
-                        }`}>
-                          {i + 1}.
-                        </span>
-                        <span className={badge.cls}>{badge.label}</span>
-                        <span className={`truncate max-w-[120px] ${isMe ? 'text-purple-300' : 'text-white'}`}>{entry.name}{isMe ? ' ←' : ''}</span>
-                        <span className="text-zinc-600 text-xs">{entry.classInfo}</span>
+                    <div key={i} className={`flex items-center gap-3 min-h-[64px] px-4 py-3 rounded-2xl border-2 ${rowClass(i, isMe)}`}>
+                      <span className={`flex size-11 shrink-0 items-center justify-center rounded-full border-2 text-[15px] font-black tabular-nums ${rankCircleClass(i, isMe)}`}>
+                        {i + 1}
+                      </span>
+                      <div className="flex flex-1 min-w-0 items-center gap-2">
+                        <span className={`shrink-0 ${badge.cls}`}>{badge.label}</span>
+                        <div className="min-w-0">
+                          <p className={`text-[17px] leading-[1.3] font-extrabold truncate ${isMe ? 'text-primary-text' : 'text-heading'}`}>{entry.name}{isMe ? ' ←' : ''}</p>
+                          <p className="text-[13px] font-bold text-muted-foreground">{entry.classInfo}</p>
+                        </div>
                       </div>
-                      <span className={`font-semibold tabular-nums ${isMe ? 'text-purple-300' : 'text-purple-300'}`}>{entry.score.toLocaleString()}</span>
+                      <span className={`text-[17px] font-black tabular-nums ${isMe ? 'text-primary-text' : 'text-foreground'}`}>{entry.score.toLocaleString()}</span>
                     </div>
                   )
                 })}
@@ -149,14 +173,10 @@ export function GameOverOverlay({
             </div>
           )}
 
-          <button
-            onClick={onRestart}
-            className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 active:scale-95 transition-all rounded-xl text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg"
-            style={{ boxShadow: '0 4px 15px rgba(168,85,247,0.4)' }}
-          >
-            <RotateCcw className="w-5 h-5" />
+          <Button onClick={onRestart} className="w-full">
+            <RotateCcw strokeWidth={2.6} />
             Igraj ponovo
-          </button>
+          </Button>
         </div>
       </div>
   )

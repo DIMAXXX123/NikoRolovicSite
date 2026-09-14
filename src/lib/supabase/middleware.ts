@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { AUTH_PATHS, PUBLIC_PATHS, pathMatches } from '@/lib/public-paths'
+import { DEMO_AUTO_ADMIN } from '@/lib/demo'
 
 export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -37,7 +38,8 @@ export async function updateSession(request: NextRequest) {
   const isCompleteProfile = pathname.startsWith('/complete-profile')
 
   // Auth guard: anonymous visitors only get the public pages.
-  if (!user && !isPublicPage && !isCompleteProfile) {
+  // Disabled in demo mode — everyone gets in, <AutoLogin /> signs them in.
+  if (!DEMO_AUTO_ADMIN && !user && !isPublicPage && !isCompleteProfile) {
     const url = request.nextUrl.clone()
     const hasVisited = request.cookies.get('niko_visited')
     url.pathname = hasVisited ? '/login' : '/register'

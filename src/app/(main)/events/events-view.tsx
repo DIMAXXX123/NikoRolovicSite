@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useToast } from '@/components/toast'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Calendar, MapPin, Clock, ChevronLeft, ChevronRight, Plus, X, List, CalendarDays } from 'lucide-react'
 import {
   DAY_NAMES,
@@ -17,14 +19,7 @@ import {
   todayISO,
 } from './event-config'
 import type { Event, EventType, Profile } from '@/lib/types'
-
-const DAY_COLORS = [
-  'from-purple-500 to-violet-600',
-  'from-blue-500 to-cyan-600',
-  'from-emerald-500 to-green-600',
-  'from-orange-500 to-amber-600',
-  'from-pink-500 to-rose-600',
-]
+import { trackOnce } from '@/lib/analytics'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('sr-Latn', {
@@ -84,7 +79,7 @@ export function EventsView({
     event_type: 'test' as EventType,
   })
   const [addingForDay, setAddingForDay] = useState<number | null>(null)
-  const { toast } = useToast()
+  const [eventToast, setEventToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const purgedRef = useRef(false)
   const supabase = createClient()
 
@@ -195,11 +190,12 @@ export function EventsView({
 
   function getEventDotColor(event: Event): string {
     const type = event.event_type || 'drugo'
-    return EVENT_TYPE_CONFIG[type]?.dotColor || 'bg-green-500'
+    return EVENT_TYPE_CONFIG[type]?.dotColor || 'bg-[#58CC02]'
   }
 
   function showEventToast(message: string, type: 'success' | 'error' = 'success') {
-    toast(message, { type })
+    setEventToast({ message, type })
+    setTimeout(() => setEventToast(null), 3000)
   }
 
   async function handleAddEvent() {
@@ -253,69 +249,67 @@ export function EventsView({
         setShowAddEvent(false)
       }}
     >
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)]" />
       <div
-        className="relative w-full max-w-lg bg-background border-t border-border/50 rounded-t-3xl p-5 pb-24 animate-slide-up max-h-[60vh] overflow-y-auto"
+        className="relative w-full max-w-lg bg-background border-2 border-border rounded-t-3xl p-6 pb-24 animate-slide-up max-h-[60vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-12 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
+        <div className="w-12 h-1.5 bg-border rounded-full mx-auto mb-4" />
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">
+          <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">
             {selectedDay}. {MONTH_NAMES[currentMonth]} {currentYear}
           </h2>
-          <button
+          <Button
+            size="icon"
+            variant="ghost"
             onClick={() => {
               setSelectedDay(null)
               setShowAddEvent(false)
             }}
-            className="p-1"
           >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
+            <X className="text-muted-foreground" strokeWidth={2.4} />
+          </Button>
         </div>
 
         {/* Admin add event - top of modal */}
         {isAdmin && !showAddEvent && (
-          <button
+          <Button
+            variant="outline"
             onClick={() => {
               setAddingForDay(selectedDay)
               setShowAddEvent(true)
             }}
-            className="w-full mb-4 py-3 rounded-2xl border border-dashed border-border/50 text-sm text-muted-foreground flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary transition-all active:scale-[0.98]"
+            className="w-full mb-4"
           >
-            <Plus className="w-4 h-4" /> Dodaj događaj
-          </button>
+            <Plus strokeWidth={2.6} /> Dodaj događaj
+          </Button>
         )}
 
         {showAddEvent && (
           <div className="mb-4 space-y-3 animate-fade-in">
-            <input
+            <Input
               type="text"
               placeholder="Naziv događaja"
               value={newEvent.title}
               onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-muted border border-border/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
-            <input
+            <Input
               type="text"
               placeholder="Opis (opciono)"
               value={newEvent.description}
               onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-muted border border-border/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
             <div className="grid grid-cols-2 gap-3">
-              <input
+              <Input
                 type="time"
                 value={newEvent.event_time}
                 onChange={(e) => setNewEvent({ ...newEvent, event_time: e.target.value })}
-                className="px-4 py-3 rounded-xl bg-muted border border-border/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
-              <input
+              <Input
                 type="text"
                 placeholder="Lokacija"
                 value={newEvent.location}
                 onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
-                className="px-4 py-3 rounded-xl bg-muted border border-border/30 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
             {/* Type selector */}
@@ -323,51 +317,49 @@ export function EventsView({
               {Object.entries(EVENT_TYPE_CONFIG).map(([key, config]) => (
                 <button
                   key={key}
+                  type="button"
                   onClick={() => setNewEvent({ ...newEvent, event_type: key as EventType })}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all animate-press ${
+                  className={`inline-flex h-11 items-center gap-2 rounded-xl border-2 px-3.5 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                     newEvent.event_type === key
-                      ? config.color + ' ring-2 ring-primary/50'
-                      : 'bg-muted text-muted-foreground'
+                      ? 'bg-secondary-light border-secondary-light-border text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]'
+                      : 'bg-background border-border text-muted-foreground shadow-[0_2px_0_var(--color-border)]'
                   }`}
                 >
+                  <span className={`size-2 rounded-full ${config.dotColor}`} />
                   {config.label}
                 </button>
               ))}
             </div>
-            <button
-              onClick={handleAddEvent}
-              disabled={!newEvent.title.trim()}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-violet-700 text-white font-medium text-sm transition-all active:scale-[0.98] disabled:opacity-40"
-            >
+            <Button onClick={handleAddEvent} disabled={!newEvent.title.trim()} className="w-full">
               Sačuvaj
-            </button>
+            </Button>
           </div>
         )}
 
         {eventsByDay[selectedDay] && eventsByDay[selectedDay].length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {eventsByDay[selectedDay].map((event) => {
               const type = event.event_type || 'drugo'
               const config = EVENT_TYPE_CONFIG[type] || EVENT_TYPE_CONFIG.drugo
               return (
-                <Card key={event.id} className="border-border/30 bg-card/50 backdrop-blur">
-                  <CardContent className="p-4 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Badge className={`text-xs ${config.color} border-0`}>{config.label}</Badge>
-                      <h3 className="font-semibold text-sm">{event.title}</h3>
+                <Card key={event.id} className="gap-2 px-4 py-3">
+                  <CardContent className="space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className={config.color}>{config.label}</Badge>
+                      <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">{event.title}</h3>
                     </div>
                     {event.description && (
-                      <p className="text-sm text-muted-foreground">{event.description}</p>
+                      <p className="text-[15px] leading-[1.5] font-bold text-foreground">{event.description}</p>
                     )}
-                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap gap-3 text-[13px] font-bold text-muted-foreground">
                       {event.event_time && (
                         <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {formatTime(event.event_time)}
+                          <Clock className="w-3.5 h-3.5" strokeWidth={2.4} /> {formatTime(event.event_time)}
                         </span>
                       )}
                       {event.location && (
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" /> {event.location}
+                          <MapPin className="w-3.5 h-3.5" strokeWidth={2.4} /> {event.location}
                         </span>
                       )}
                     </div>
@@ -377,7 +369,7 @@ export function EventsView({
             })}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-6">Nema događaja za ovaj dan</p>
+          <p className="text-[13px] font-bold text-muted-foreground text-center py-6">Nema događaja za ovaj dan</p>
         )}
       </div>
     </div>
@@ -385,46 +377,47 @@ export function EventsView({
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div className="flex gap-1 bg-muted rounded-lg p-1">
-          <button
-            onClick={() => setView('calendar')}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1 btn-press animate-press ${
-              view === 'calendar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
-            }`}
-          >
-            <CalendarDays className="w-3 h-3" /> Kalendar
-          </button>
-          <button
-            onClick={() => setView('list')}
-            className={`px-2.5 py-1 text-xs rounded-md transition-all flex items-center gap-1 btn-press animate-press ${
-              view === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
-            }`}
-          >
-            <List className="w-3 h-3" /> Lista
-          </button>
+      {eventToast && (
+        <div
+          className={`fixed top-16 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-2xl text-[13px] font-extrabold animate-slide-down ${
+            eventToast.type === 'success'
+              ? 'bg-[#F4FFEA] border-2 border-primary-light-border text-primary-text shadow-[0_2px_0_var(--color-primary-light-border)]'
+              : 'bg-[#FFDFE0] border-2 border-[#FFB3B5] text-[#EA2B2B] shadow-[0_2px_0_#FFB3B5]'
+          }`}
+        >
+          {eventToast.message}
         </div>
-      </div>
+      )}
+      <Tabs id="events-view" value={view} onValueChange={(value) => setView(value as 'calendar' | 'list')}>
+        <TabsList>
+          <TabsTrigger value="calendar">
+            <CalendarDays strokeWidth={2.4} /> Kalendar
+          </TabsTrigger>
+          <TabsTrigger value="list">
+            <List strokeWidth={2.4} /> Lista
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {view === 'calendar' ? (
         <div className="space-y-3">
           {/* Month navigation */}
           <div className="flex items-center justify-between">
-            <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-muted transition-all btn-press animate-press">
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <h2 key={`${currentMonth}-${currentYear}`} className="text-lg font-semibold animate-fade-in">
+            <Button size="icon" onClick={prevMonth}>
+              <ChevronLeft strokeWidth={2.6} />
+            </Button>
+            <h2 key={`${currentMonth}-${currentYear}`} className="text-[20px] leading-[1.25] font-extrabold text-heading animate-fade-in">
               {MONTH_NAMES[currentMonth]} {currentYear}
             </h2>
-            <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-muted transition-all btn-press animate-press">
-              <ChevronRight className="w-5 h-5" />
-            </button>
+            <Button size="icon" onClick={nextMonth}>
+              <ChevronRight strokeWidth={2.6} />
+            </Button>
           </div>
 
           {/* Day headers */}
           <div className="grid grid-cols-7 gap-1">
             {DAY_NAMES.map((day) => (
-              <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
+              <div key={day} className="text-center text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground py-2">
                 {day}
               </div>
             ))}
@@ -433,7 +426,7 @@ export function EventsView({
           {/* Calendar grid */}
           <div key={`cal-${currentMonth}-${currentYear}`} className="grid grid-cols-7 gap-1 animate-fade-in">
             {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={`empty-${i}`} className="aspect-square" />
+              <div key={`empty-${i}`} className="h-12" />
             ))}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1
@@ -444,26 +437,34 @@ export function EventsView({
               return (
                 <button
                   key={day}
-                  onClick={() => setSelectedDay(day)}
-                  className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-sm transition-all active:scale-90 relative ${
-                    isTodayCell
-                      ? 'bg-primary text-primary-foreground font-bold'
-                      : selectedDay === day
-                        ? 'bg-muted ring-2 ring-primary/50'
-                        : 'hover:bg-muted/50'
-                  }`}
+                  type="button"
+                  onClick={() => {
+                    dayEvents.forEach((ev) => trackOnce(ev.id, 'event_view', { entity_id: ev.id, meta: { type: ev.event_type ?? null } }))
+                    setSelectedDay(day)
+                  }}
+                  className="group/day relative flex h-12 w-full flex-col items-center justify-start transition-transform active:scale-90"
                 >
-                  <span className={isTodayCell ? 'font-bold' : ''}>{day}</span>
+                  <span
+                    className={`flex size-10 items-center justify-center rounded-full text-[15px] transition-colors ${
+                      isTodayCell
+                        ? 'bg-primary text-primary-foreground font-extrabold'
+                        : selectedDay === day
+                          ? 'border-2 border-secondary bg-secondary-light text-secondary font-extrabold'
+                          : 'text-foreground font-bold group-hover/day:bg-muted'
+                    }`}
+                  >
+                    {day}
+                  </span>
                   {hasEvents && (
-                    <div className="flex gap-0.5 absolute bottom-1">
+                    <div className="flex gap-0.5 absolute bottom-0">
                       {dayEvents.slice(0, 3).map((event, ei) => (
-                        <div key={ei} className={`w-1.5 h-1.5 rounded-full ${getEventDotColor(event)}`} />
+                        <div key={ei} className={`size-1.5 rounded-full ${getEventDotColor(event)}`} />
                       ))}
                     </div>
                   )}
                   {isAdmin && !hasEvents && (
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <Plus className="w-3 h-3 text-muted-foreground" />
+                    <div className="absolute bottom-0 flex items-center justify-center opacity-0 group-hover/day:opacity-100 transition-opacity">
+                      <Plus className="w-3 h-3 text-disabled" strokeWidth={2.6} />
                     </div>
                   )}
                 </button>
@@ -474,71 +475,68 @@ export function EventsView({
           {/* Legend */}
           <div className="flex flex-wrap gap-3 pt-2">
             {Object.entries(EVENT_TYPE_CONFIG).map(([key, config]) => (
-              <div key={key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <div className={`w-2 h-2 rounded-full ${config.dotColor}`} />
+              <div key={key} className="flex items-center gap-1.5 text-[13px] font-bold text-muted-foreground">
+                <div className={`size-2 rounded-full ${config.dotColor}`} />
                 {config.label}
               </div>
             ))}
           </div>
         </div>
       ) : events.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Nema predstojećih događaja</p>
+        <div className="flex flex-col items-center text-center py-16">
+          <div className="flex size-16 items-center justify-center rounded-full bg-muted mb-3">
+            <Calendar className="w-7 h-7 text-disabled" strokeWidth={2.4} />
+          </div>
+          <p className="text-[17px] font-extrabold text-foreground">Nema predstojećih događaja</p>
         </div>
       ) : (
-        <div className="space-y-3 animate-stagger-scale">
+        <div className="space-y-2.5 animate-stagger-scale">
           {events.map((event, index) => {
             const type = event.event_type || 'drugo'
             const config = EVENT_TYPE_CONFIG[type] || EVENT_TYPE_CONFIG.drugo
+            const eventDate = new Date(event.event_date + 'T00:00:00')
             return (
               <Card
                 key={event.id}
-                className="border-border/30 bg-card/50 backdrop-blur animate-slide-up card-hover overflow-hidden gradient-overlay glow-hover hover-float"
+                className="flex-row items-center gap-3 min-h-16 px-4 py-3 animate-slide-up"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <CardContent className="p-0">
-                  <div className="flex min-h-[5rem]">
-                    <div
-                      className={`flex-shrink-0 w-20 bg-gradient-to-br ${DAY_COLORS[index % DAY_COLORS.length]} flex flex-col items-center justify-center p-3 rounded-l-xl self-stretch`}
-                    >
-                      <span className="text-2xl font-extrabold text-white leading-none">
-                        {new Date(event.event_date + 'T00:00:00').getDate()}
+                <div
+                  className={`flex size-11 shrink-0 flex-col items-center justify-center rounded-full border-2 ${config.color}`}
+                >
+                  <span className="text-[15px] font-black leading-none tabular-nums">
+                    {eventDate.getDate()}
+                  </span>
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.04em] leading-none mt-0.5">
+                    {eventDate.toLocaleDateString('sr-Latn', { month: 'short' })}
+                  </span>
+                </div>
+                <CardContent className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className={config.color}>{config.label}</Badge>
+                    <Badge variant="outline">{getDaysUntil(event.event_date)}</Badge>
+                  </div>
+                  <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">{event.title}</h3>
+                  {event.description && (
+                    <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground line-clamp-2">{event.description}</p>
+                  )}
+                  <div className="flex flex-wrap gap-3 text-[13px] font-bold text-muted-foreground pt-0.5">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" strokeWidth={2.4} />
+                      {formatDate(event.event_date)}
+                    </span>
+                    {event.event_time && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" strokeWidth={2.4} />
+                        {formatTime(event.event_time)}
                       </span>
-                      <span className="text-xs font-semibold text-white/90 uppercase mt-0.5">
-                        {new Date(event.event_date + 'T00:00:00').toLocaleDateString('sr-Latn', { month: 'short' })}
+                    )}
+                    {event.location && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5" strokeWidth={2.4} />
+                        {event.location}
                       </span>
-                      <span className="text-[9px] text-white/70 font-medium mt-1 bg-white/20 rounded-full px-1.5 py-0.5">
-                        {getDaysUntil(event.event_date)}
-                      </span>
-                    </div>
-                    <div className="flex-1 p-4 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge className={`text-[10px] ${config.color} border-0`}>{config.label}</Badge>
-                      </div>
-                      <h3 className="font-semibold">{event.title}</h3>
-                      {event.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">{event.description}</p>
-                      )}
-                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground pt-1">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {formatDate(event.event_date)}
-                        </span>
-                        {event.event_time && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {formatTime(event.event_time)}
-                          </span>
-                        )}
-                        {event.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {event.location}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -546,13 +544,9 @@ export function EventsView({
           })}
 
           {hasMore && (
-            <button
-              onClick={loadMoreUpcoming}
-              disabled={loadingMore}
-              className="w-full py-3.5 rounded-2xl border border-dashed border-border/50 text-sm text-muted-foreground hover:border-primary/50 hover:text-primary transition-all active:scale-[0.98] disabled:opacity-50"
-            >
+            <Button variant="outline" onClick={loadMoreUpcoming} disabled={loadingMore} className="w-full">
               {loadingMore ? 'Učitavanje…' : 'Učitaj još'}
-            </button>
+            </Button>
           )}
         </div>
       )}

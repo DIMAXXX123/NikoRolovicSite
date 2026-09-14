@@ -12,43 +12,52 @@ export const PERIOD_TIMES = [
   '12:45 - 13:30',
 ]
 
+// Subject tints from the §2 palette (bg / text / border), used for timetable chips.
 export const SUBJECT_COLORS: Record<string, string> = {
-  'Matematika': 'bg-blue-500/15 text-blue-300 border-blue-500/20',
-  'Srpski': 'bg-red-500/15 text-red-300 border-red-500/20',
-  'Engleski': 'bg-purple-500/15 text-purple-300 border-purple-500/20',
-  'Fizika': 'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',
-  'Hemija': 'bg-green-500/15 text-green-300 border-green-500/20',
-  'Biologija': 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
-  'Istorija': 'bg-amber-500/15 text-amber-300 border-amber-500/20',
-  'Geografija': 'bg-orange-500/15 text-orange-300 border-orange-500/20',
-  'Informatika': 'bg-violet-500/15 text-violet-300 border-violet-500/20',
-  'Filozofija': 'bg-pink-500/15 text-pink-300 border-pink-500/20',
-  'Muzička': 'bg-rose-500/15 text-rose-300 border-rose-500/20',
-  'Likovna': 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20',
-  'Fizičko': 'bg-lime-500/15 text-lime-300 border-lime-500/20',
-  'Latinski': 'bg-teal-500/15 text-teal-300 border-teal-500/20',
-  'Sociologija': 'bg-indigo-500/15 text-indigo-300 border-indigo-500/20',
-  'Psihologija': 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/20',
+  'Matematika': 'bg-[#D7FFB8] text-[#58A700] border-[#B5EE8A]',
+  'Srpski': 'bg-[#FFDFE0] text-[#EA2B2B] border-[#FFB3B5]',
+  'CSBH': 'bg-[#FFDFE0] text-[#EA2B2B] border-[#FFB3B5]',
+  'Italijanski': 'bg-[#D7FFB8] text-[#58A700] border-[#B5EE8A]',
+  'Engleski': 'bg-[#DDF4FF] text-[#1CB0F6] border-[#84D8FF]',
+  'Fizika': 'bg-[#DDF4FF] text-[#1CB0F6] border-[#84D8FF]',
+  'Hemija': 'bg-[#F3E3FF] text-[#A560E8] border-[#E1BDFF]',
+  'Biologija': 'bg-[#D7FFB8] text-[#58A700] border-[#B5EE8A]',
+  'Istorija': 'bg-[#FFF4C4] text-[#C79000] border-[#FFE28A]',
+  'Geografija': 'bg-[#DDF4FF] text-[#1CB0F6] border-[#84D8FF]',
+  'Informatika': 'bg-[#F3E3FF] text-[#A560E8] border-[#E1BDFF]',
+  'Filozofija': 'bg-[#FFE4F4] text-[#D6479F] border-[#FFB8E3]',
+  'Muzička': 'bg-[#FFE4F4] text-[#D6479F] border-[#FFB8E3]',
+  'Likovna': 'bg-[#FFE4F4] text-[#D6479F] border-[#FFB8E3]',
+  'Likovno': 'bg-[#FFE4F4] text-[#D6479F] border-[#FFB8E3]',
+  'Muzičko': 'bg-[#FFE4F4] text-[#D6479F] border-[#FFB8E3]',
+  'Fizičko': 'bg-[#FFF0DB] text-[#D97B00] border-[#FFD199]',
+  'Latinski': 'bg-[#FFF0DB] text-[#D97B00] border-[#FFD199]',
+  'Sociologija': 'bg-[#DDF4FF] text-[#1CB0F6] border-[#84D8FF]',
+  'Psihologija': 'bg-[#F3E3FF] text-[#A560E8] border-[#E1BDFF]',
 }
 
 // Map subject to a left-border color for daily view
 export const SUBJECT_BORDER_COLORS: Record<string, string> = {
-  'Matematika': 'border-l-blue-400',
-  'Srpski': 'border-l-red-400',
-  'Engleski': 'border-l-purple-400',
-  'Fizika': 'border-l-cyan-400',
-  'Hemija': 'border-l-green-400',
-  'Biologija': 'border-l-emerald-400',
-  'Istorija': 'border-l-amber-400',
-  'Geografija': 'border-l-orange-400',
-  'Informatika': 'border-l-violet-400',
-  'Filozofija': 'border-l-pink-400',
-  'Muzička': 'border-l-rose-400',
-  'Likovna': 'border-l-yellow-400',
-  'Fizičko': 'border-l-lime-400',
-  'Latinski': 'border-l-teal-400',
-  'Sociologija': 'border-l-indigo-400',
-  'Psihologija': 'border-l-fuchsia-400',
+  'Matematika': 'border-l-[#58CC02]',
+  'Srpski': 'border-l-[#FF4B4B]',
+  'CSBH': 'border-l-[#FF4B4B]',
+  'Italijanski': 'border-l-[#58CC02]',
+  'Engleski': 'border-l-[#1CB0F6]',
+  'Fizika': 'border-l-[#1CB0F6]',
+  'Hemija': 'border-l-[#CE82FF]',
+  'Biologija': 'border-l-[#58CC02]',
+  'Istorija': 'border-l-[#FFC800]',
+  'Geografija': 'border-l-[#1CB0F6]',
+  'Informatika': 'border-l-[#CE82FF]',
+  'Filozofija': 'border-l-[#FF86D0]',
+  'Muzička': 'border-l-[#FF86D0]',
+  'Likovna': 'border-l-[#FF86D0]',
+  'Likovno': 'border-l-[#FF86D0]',
+  'Muzičko': 'border-l-[#FF86D0]',
+  'Fizičko': 'border-l-[#FF9600]',
+  'Latinski': 'border-l-[#FF9600]',
+  'Sociologija': 'border-l-[#1CB0F6]',
+  'Psihologija': 'border-l-[#CE82FF]',
 }
 
 export function getSubjectColor(subject: string): string {
@@ -56,7 +65,7 @@ export function getSubjectColor(subject: string): string {
   for (const [key, val] of Object.entries(SUBJECT_COLORS)) {
     if (subject.toLowerCase().includes(key.toLowerCase())) return val
   }
-  return 'bg-primary/10 text-primary border-primary/20'
+  return 'bg-primary-light text-primary-text border-primary-light-border'
 }
 
 export function getSubjectBorderColor(subject: string): string {
@@ -64,7 +73,7 @@ export function getSubjectBorderColor(subject: string): string {
   for (const [key, val] of Object.entries(SUBJECT_BORDER_COLORS)) {
     if (subject.toLowerCase().includes(key.toLowerCase())) return val
   }
-  return 'border-l-purple-400'
+  return 'border-l-primary'
 }
 
 export type ScheduleData = Record<string, string>

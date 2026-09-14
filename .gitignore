@@ -42,6 +42,9 @@ next-env.d.ts
 
 .vercel
 
+# redesign QA screenshots
+docs/screens/
+
 # database dumps (см. README → Резервное копирование)
 backup-*.sql
 *.dump

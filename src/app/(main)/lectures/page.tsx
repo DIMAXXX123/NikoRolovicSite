@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { BetaDisclaimer } from '@/components/beta-disclaimer'
+import Link from 'next/link'
+import { Sparkles } from 'lucide-react'
 import { SubjectGrid } from './subject-grid'
 import type { Profile } from '@/lib/types'
 
@@ -17,16 +18,30 @@ export default async function LecturesPage() {
 
   return (
     <div className="space-y-5 animate-fade-in pb-4">
-      <BetaDisclaimer />
 
       <div className="pt-1">
-        <h1 className="text-2xl font-bold gradient-text">Lekcije</h1>
+        <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">
+          Lekcije
+        </h1>
         {profile && (
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[13px] font-bold text-muted-foreground mt-1">
             {profile.class_number}. razred, {profile.section_number}. odjeljenje
           </p>
         )}
       </div>
+
+      <Link
+        href="/lectures/nova"
+        className="flex items-center gap-3 min-h-16 px-4 py-3 rounded-2xl border-2 border-primary-light-border bg-[#F4FFEA] shadow-[0_2px_0_var(--color-primary-light-border)] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none"
+      >
+        <span className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-[0_3px_0_var(--color-primary-dark)]">
+          <Sparkles className="w-5 h-5" strokeWidth={2.6} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[17px] leading-[1.3] font-extrabold text-heading">Nova lekcija sa AI</span>
+          <span className="block text-[13px] leading-[1.4] font-bold text-muted-foreground">Slikaj udžbenik ili tablu — lekcija za par minuta</span>
+        </span>
+      </Link>
 
       <SubjectGrid />
     </div>

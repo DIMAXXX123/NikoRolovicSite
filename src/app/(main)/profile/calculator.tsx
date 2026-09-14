@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge, badgeVariants } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import type { VariantProps } from 'class-variance-authority'
 import { ChevronLeft, Plus, X, BarChart3 } from 'lucide-react'
 
 const DEFAULT_SUBJECTS = [
@@ -15,20 +18,24 @@ interface SubjectGrade {
   grade: number | null
 }
 
-const gradeColors: Record<number, { text: string; border: string; bg: string; glow: string; solid: string }> = {
-  5: { text: 'text-green-400', border: 'border-green-500/60', bg: 'bg-green-500/15', glow: 'shadow-[0_0_16px_rgba(74,222,128,0.4)]', solid: 'bg-green-500' },
-  4: { text: 'text-blue-400', border: 'border-blue-500/60', bg: 'bg-blue-500/15', glow: 'shadow-[0_0_16px_rgba(96,165,250,0.4)]', solid: 'bg-blue-500' },
-  3: { text: 'text-yellow-400', border: 'border-yellow-500/60', bg: 'bg-yellow-500/15', glow: 'shadow-[0_0_16px_rgba(250,204,21,0.4)]', solid: 'bg-yellow-500' },
-  2: { text: 'text-orange-400', border: 'border-orange-500/60', bg: 'bg-orange-500/15', glow: 'shadow-[0_0_16px_rgba(251,146,60,0.4)]', solid: 'bg-orange-500' },
-  1: { text: 'text-red-400', border: 'border-red-500/60', bg: 'bg-red-500/15', glow: 'shadow-[0_0_16px_rgba(248,113,113,0.4)]', solid: 'bg-red-500' },
+type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>
+
+// Grade colours from the palette (§2): 5 green, 4 blue, 3 gold, 2 orange, 1 red.
+// `selected` = solid coloured 3D button (§4.1), `badge` = matching §4.3 tint.
+const gradeColors: Record<number, { selected: string; badge: BadgeVariant; badgeClass: string; solid: string; hex: string }> = {
+  5: { selected: 'bg-primary text-primary-foreground shadow-[0_2px_0_var(--color-primary-dark)]', badge: 'default', badgeClass: '', solid: 'bg-primary', hex: '#58CC02' },
+  4: { selected: 'bg-secondary text-[#FFFFFF] shadow-[0_2px_0_var(--color-secondary-dark)]', badge: 'secondary', badgeClass: '', solid: 'bg-secondary', hex: '#1CB0F6' },
+  3: { selected: 'bg-gold text-[#4B4B4B] shadow-[0_2px_0_var(--color-gold-dark)]', badge: 'gold', badgeClass: '', solid: 'bg-gold', hex: '#FFC800' },
+  2: { selected: 'bg-orange text-[#FFFFFF] shadow-[0_2px_0_#D97F00]', badge: 'outline', badgeClass: 'border-[#FFD1A3] bg-[#FFF0E0] text-orange', solid: 'bg-orange', hex: '#FF9600' },
+  1: { selected: 'bg-destructive text-destructive-foreground shadow-[0_2px_0_var(--color-destructive-dark)]', badge: 'destructive', badgeClass: '', solid: 'bg-destructive', hex: '#FF4B4B' },
 }
 
-function avgGradient(avg: number): string {
-  if (avg >= 4.5) return 'from-[#4CAF50] to-emerald-600'
-  if (avg >= 3.5) return 'from-[#2196F3] to-blue-600'
-  if (avg >= 2.5) return 'from-[#FFC107] to-amber-600'
-  if (avg >= 1.5) return 'from-[#FF9800] to-orange-600'
-  return 'from-[#F44336] to-red-600'
+function avgColor(avg: number): string {
+  if (avg >= 4.5) return '#58CC02'
+  if (avg >= 3.5) return '#1CB0F6'
+  if (avg >= 2.5) return '#FFC800'
+  if (avg >= 1.5) return '#FF9600'
+  return '#FF4B4B'
 }
 
 function avgLabel(avg: number): string {
@@ -40,11 +47,11 @@ function avgLabel(avg: number): string {
 }
 
 const distBarColors: Record<number, string> = {
-  5: 'bg-green-500',
-  4: 'bg-blue-500',
-  3: 'bg-yellow-500',
-  2: 'bg-orange-500',
-  1: 'bg-red-500',
+  5: 'bg-primary',
+  4: 'bg-secondary',
+  3: 'bg-gold',
+  2: 'bg-orange',
+  1: 'bg-destructive',
 }
 
 export function GpaCalculator({ onBack }: { onBack: () => void }) {
@@ -103,80 +110,77 @@ export function GpaCalculator({ onBack }: { onBack: () => void }) {
   const circumference = 2 * Math.PI * 44
   const progressPercent = average > 0 ? (average / 5) : 0
   const offset = circumference * (1 - progressPercent)
+  const ringColor = average > 0 ? avgColor(average) : '#58CC02'
 
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Back button */}
-      <button
+      <Button
+        variant="ghost"
         onClick={onBack}
-        className="group flex items-center gap-2 px-3 py-2 -ml-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-white hover:bg-white/5 transition-all duration-200"
+        className="group h-11 px-3 -ml-3 text-[13px]"
       >
-        <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+        <ChevronLeft className="w-5 h-5 transition-transform group-hover:-translate-x-0.5" strokeWidth={2.6} />
         Nazad na profil
-      </button>
+      </Button>
 
       {/* Title */}
       <div>
-        <h1 className="text-2xl font-bold gradient-text">Kalkulator proseka</h1>
-        <p className="text-sm text-muted-foreground mt-1">Unesi ocjene i izracunaj prosjek</p>
+        <h1 className="text-[26px] leading-[1.2] font-extrabold tracking-[-0.01em] text-heading">Kalkulator proseka</h1>
+        <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground mt-1">Unesi ocjene i izracunaj prosjek</p>
       </div>
 
-      {/* Average display - gradient card with circular progress */}
-      <div className={`relative overflow-hidden rounded-3xl ${average > 0 ? `bg-gradient-to-br ${avgGradient(average)}` : 'bg-gradient-to-br from-[#7c5cfc]/80 to-[#7c5cfc]/40'} p-6 shadow-xl`}>
-        {/* Decorative circles */}
-        <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-
-        <div className="relative flex items-center justify-between">
-          <div className="space-y-1.5">
-            <p className="text-white/70 text-sm font-medium">Tvoj prosjek</p>
-            <p className="text-white text-lg font-bold">
+      {/* Average display - card with circular progress */}
+      <Card className="p-5">
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-1.5 min-w-0">
+            <p className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Tvoj prosjek</p>
+            <p className="text-[20px] leading-[1.25] font-extrabold text-heading">
               {average > 0 ? avgLabel(average) : 'Nema ocjena'}
             </p>
-            <p className="text-white/50 text-xs font-medium">
+            <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground">
               {graded.length} od {subjects.length} predmeta ocijenjeno
             </p>
           </div>
 
-          <div className="relative w-24 h-24">
+          <div className="relative w-24 h-24 flex-shrink-0">
             <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="6" />
+              <circle cx="50" cy="50" r="44" fill="none" stroke="#E5E5E5" strokeWidth="8" />
               <circle
                 cx="50" cy="50" r="44"
                 fill="none"
-                stroke="white"
-                strokeWidth="6"
+                stroke={ringColor}
+                strokeWidth="8"
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 strokeDashoffset={offset}
                 className="animate-circular-progress"
                 style={{
-                  filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.3))',
                   ['--circumference' as string]: circumference,
                   ['--offset' as string]: offset,
-                  transition: 'stroke-dashoffset 0.8s ease-out',
+                  transition: 'stroke-dashoffset 0.8s ease-out, stroke 0.3s ease-out',
                 }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl font-black text-white drop-shadow-lg">
+              <span className="text-[26px] leading-none font-black tabular-nums text-heading">
                 {average > 0 ? average.toFixed(2) : '---'}
               </span>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Grade distribution bar */}
       {graded.length > 0 && (
-        <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14]/80 backdrop-blur p-4 space-y-3 animate-fade-in">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <BarChart3 className="w-4 h-4" />
+        <Card className="gap-3 animate-fade-in">
+          <div className="flex items-center gap-2 text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">
+            <BarChart3 className="w-4 h-4" strokeWidth={2.4} />
             Raspodjela ocjena
           </div>
 
           {/* Stacked bar */}
-          <div className="flex h-3 rounded-full overflow-hidden bg-white/5">
+          <div className="flex h-4 rounded-full overflow-hidden bg-border">
             {([5, 4, 3, 2, 1] as const).map(g => {
               const count = distribution[g]
               if (count === 0) return null
@@ -184,7 +188,7 @@ export function GpaCalculator({ onBack }: { onBack: () => void }) {
               return (
                 <div
                   key={g}
-                  className={`${distBarColors[g]} transition-all duration-500`}
+                  className={`${distBarColors[g]} transition-all duration-500 shadow-[inset_0_4px_0_rgba(255,255,255,0.3)]`}
                   style={{ width: `${pct}%` }}
                 />
               )
@@ -192,40 +196,42 @@ export function GpaCalculator({ onBack }: { onBack: () => void }) {
           </div>
 
           {/* Legend */}
-          <div className="flex justify-between text-xs">
+          <div className="flex justify-between text-[13px] font-bold">
             {([5, 4, 3, 2, 1] as const).map(g => (
               <div key={g} className="flex items-center gap-1.5">
                 <div className={`w-2.5 h-2.5 rounded-full ${distBarColors[g]}`} />
                 <span className="text-muted-foreground">
-                  {g}: <span className="text-white/80 font-medium">{distribution[g]}</span>
+                  {g}: <span className="text-foreground font-extrabold tabular-nums">{distribution[g]}</span>
                 </span>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Subjects list */}
       <div className="space-y-2.5">
         {subjects.map((subject, i) => (
-          <div
+          <Card
             key={subject.name}
-            className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14]/80 backdrop-blur p-4 transition-all duration-200 hover:border-[#1a1a2e]/80"
+            className="gap-3"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-base font-semibold text-white/90 truncate flex-1">{subject.name}</span>
+            <div className="flex items-center justify-between gap-2 min-h-6">
+              <span className="text-[17px] leading-[1.3] font-extrabold text-heading truncate flex-1">{subject.name}</span>
               {subject.grade !== null && (
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${gradeColors[subject.grade].bg} ${gradeColors[subject.grade].text} mr-2`}>
+                <Badge variant={gradeColors[subject.grade].badge} className={gradeColors[subject.grade].badgeClass}>
                   Ocjena: {subject.grade}
-                </span>
+                </Badge>
               )}
               {!DEFAULT_SUBJECTS.includes(subject.name) && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => removeSubject(i)}
-                  className="text-muted-foreground hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-red-500/10"
+                  className="-my-2 -mr-2 text-muted-foreground hover:text-destructive"
                 >
-                  <X className="w-4 h-4" />
-                </button>
+                  <X className="w-5 h-5" strokeWidth={2.6} />
+                </Button>
               )}
             </div>
             <div className="flex gap-2">
@@ -238,11 +244,11 @@ export function GpaCalculator({ onBack }: { onBack: () => void }) {
                     key={g}
                     onClick={() => setGrade(i, g)}
                     className={`
-                      flex-1 py-2.5 rounded-xl text-base font-bold border-2 transition-all duration-200
-                      ${isAnimating ? 'scale-90' : 'active:scale-90'}
+                      flex-1 h-11 rounded-xl text-[15px] font-extrabold border-2 tabular-nums select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring
+                      ${isAnimating ? 'scale-90' : 'active:translate-y-[2px] active:shadow-none'}
                       ${isSelected
-                        ? `${colors.text} ${colors.border} ${colors.bg} ${colors.glow}`
-                        : 'border-[#1a1a2e] text-muted-foreground hover:border-white/20 hover:text-white/70 hover:bg-white/5'
+                        ? `border-transparent ${colors.selected}`
+                        : 'border-border bg-background text-muted-foreground shadow-[0_2px_0_var(--color-border)] hover:bg-muted'
                       }
                     `}
                     style={{
@@ -254,38 +260,39 @@ export function GpaCalculator({ onBack }: { onBack: () => void }) {
                 )
               })}
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 
       {/* Add custom subject */}
       {showAdd ? (
-        <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c14]/80 backdrop-blur p-4 animate-fade-in">
+        <Card className="animate-fade-in">
           <div className="flex gap-2">
-            <input
+            <Input
               value={newSubject}
               onChange={(e) => setNewSubject(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addSubject()}
               placeholder="Naziv predmeta..."
-              className="flex-1 bg-white/5 rounded-xl px-4 py-2.5 text-sm text-white outline-none border border-[#1a1a2e] focus:border-[#7c5cfc]/50 transition-colors placeholder:text-muted-foreground"
+              className="flex-1"
               autoFocus
             />
-            <Button size="sm" onClick={addSubject} disabled={!newSubject.trim()} className="px-4 rounded-xl">
+            <Button onClick={addSubject} disabled={!newSubject.trim()} className="px-4">
               Dodaj
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => { setShowAdd(false); setNewSubject('') }} className="rounded-xl">
-              <X className="w-4 h-4" />
+            <Button variant="ghost" size="icon" onClick={() => { setShowAdd(false); setNewSubject('') }} className="h-[50px] w-[50px]">
+              <X className="w-5 h-5" strokeWidth={2.6} />
             </Button>
           </div>
-        </div>
+        </Card>
       ) : (
-        <button
+        <Button
+          variant="outline"
           onClick={() => setShowAdd(true)}
-          className="w-full py-3.5 rounded-2xl border-2 border-dashed border-[#1a1a2e] text-sm font-medium text-muted-foreground flex items-center justify-center gap-2 hover:border-[#7c5cfc]/50 hover:text-[#7c5cfc] transition-all duration-200 active:scale-[0.98]"
+          className="w-full"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" strokeWidth={2.6} />
           Dodaj predmet
-        </button>
+        </Button>
       )}
     </div>
   )

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Lock, CheckCircle2 } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState('')
@@ -42,30 +42,30 @@ export default function UpdatePasswordPage() {
 
   if (success) {
     return (
-      <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
+      <Card className="animate-fade-in">
         <CardContent className="pt-8 pb-6 text-center space-y-4">
-          <div className="w-16 h-16 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
-            <CheckCircle2 className="w-8 h-8 text-green-400" />
+          <div className="w-16 h-16 mx-auto rounded-full bg-primary-light border-2 border-primary-light-border flex items-center justify-center animate-pop-in">
+            <CheckCircle2 className="w-8 h-8 text-primary-text" strokeWidth={2.4} />
           </div>
-          <h2 className="text-xl font-bold text-white">Lozinka promijenjena!</h2>
-          <p className="text-sm text-muted-foreground">Preusmjeravanje...</p>
+          <h2 className="text-[20px] font-extrabold leading-[1.25] text-heading">Lozinka promijenjena!</h2>
+          <p className="text-[13px] font-bold text-muted-foreground">Preusmjeravanje...</p>
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur-xl">
+    <Card className="animate-fade-in">
       <CardHeader className="text-center space-y-2 pb-2">
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-2">
-          <Lock className="w-7 h-7 text-purple-400" />
+        <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)]">
+          <span className="text-2xl font-black text-primary-foreground">NR</span>
         </div>
-        <h1 className="text-2xl font-bold gradient-text">Nova lozinka</h1>
-        <p className="text-muted-foreground text-sm">Unesite novu lozinku za vaš nalog</p>
+        <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Nova lozinka</h1>
+        <p className="text-[13px] font-bold text-muted-foreground">Unesite novu lozinku za vaš nalog</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleUpdate} className="space-y-4">
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="password">Nova lozinka</Label>
             <Input
               id="password"
@@ -75,10 +75,9 @@ export default function UpdatePasswordPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="bg-background/50"
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="confirm">Potvrdi lozinku</Label>
             <Input
               id="confirm"
@@ -87,13 +86,12 @@ export default function UpdatePasswordPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="bg-background/50"
             />
           </div>
           {error && (
-            <p className="text-destructive text-sm text-center">{error}</p>
+            <p className="text-destructive text-[13px] font-bold text-center">{error}</p>
           )}
-          <Button type="submit" className="w-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Čuvanje...' : 'Sačuvaj novu lozinku'}
           </Button>
         </form>

@@ -30,11 +30,11 @@ export function RoleAnimation({ role, onDone }: RoleAnimationProps) {
       title: 'Kreator',
     },
     admin: {
-      emojis: ['🛡️', '⭐', '💜', '🔮', '✨'],
+      emojis: ['🛡️', '⭐', '❤️', '🔴', '✨'],
       title: 'Administrator',
     },
     moderator: {
-      emojis: ['🌊', '💙', '🔵', '✨', '⚡'],
+      emojis: ['🏀', '🧡', '🟠', '✨', '⚡'],
       title: 'Moderator',
     },
     student: {

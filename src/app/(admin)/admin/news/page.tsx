@@ -5,9 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Plus, Trash2, X, ImagePlus } from 'lucide-react'
 import type { NewsItem } from '@/lib/types'
-import { useToast } from '@/components/toast'
 
 export default function AdminNewsPage() {
   const [news, setNews] = useState<NewsItem[]>([])
@@ -20,8 +20,6 @@ export default function AdminNewsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
-  useEffect(() => { loadNews() }, [])
-
   async function loadNews() {
     const { data } = await supabase
       .from('news')
@@ -29,6 +27,8 @@ export default function AdminNewsPage() {
       .order('created_at', { ascending: false })
     if (data) setNews(data)
   }
+
+  useEffect(() => { loadNews() }, [])
 
   function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -74,11 +74,11 @@ export default function AdminNewsPage() {
     setShowForm(false); setLoading(false); loadNews()
   }
 
-
-  const { toast } = useToast()
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   function showToast(message: string, type: 'success' | 'error' = 'success') {
-    toast(message, { type })
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
   }
 
   // NOTE: Delete requires RLS policy "Admins/mods delete news" (role IN ('admin', 'moderator'))
@@ -101,42 +101,49 @@ export default function AdminNewsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {toast && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-3 rounded-2xl text-[13px] font-extrabold bg-card border-2 animate-slide-down ${
+          toast.type === 'success'
+            ? 'text-primary-text border-primary-light-border shadow-[0_2px_0_var(--color-primary-light-border)]'
+            : 'text-[#EA2B2B] border-[#FFB3B5] shadow-[0_2px_0_#FFB3B5]'
+        }`}>
+          {toast.message}
+        </div>
+      )}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Novosti</h1>
+        <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">Novosti</h1>
         <Button
-          size="sm"
+          size={showForm ? 'icon' : 'default'}
+          variant={showForm ? 'outline' : 'default'}
+          aria-label={showForm ? 'Zatvori' : undefined}
           onClick={() => setShowForm(!showForm)}
-          className="bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-[#7c5cfc]/20 hover:shadow-[#7c5cfc]/30 transition-all"
         >
-          {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4 mr-1" />}
-          {showForm ? '' : 'Nova'}
+          {showForm ? <X strokeWidth={2.6} /> : <><Plus strokeWidth={2.6} />Nova</>}
         </Button>
       </div>
 
       {showForm && (
-        <div className="rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-[#7c5cfc]/20 p-5 animate-slide-up">
+        <div className="rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] p-4 animate-slide-up">
           <form onSubmit={createNews} className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Naslov</Label>
+            <div>
+              <Label>Naslov</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/30 focus:border-[#7c5cfc] focus:ring-purple-500/20"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Sadržaj</Label>
-              <textarea
+            <div>
+              <Label>Sadržaj</Label>
+              <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
                 rows={4}
-                className="flex min-h-[100px] w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#7c5cfc] focus:outline-none focus:ring-1 focus:ring-purple-500/20 transition-colors"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Slika (opciono)</Label>
+            <div>
+              <Label>Slika (opciono)</Label>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -146,30 +153,30 @@ export default function AdminNewsPage() {
               />
               {imagePreview ? (
                 <div className="relative">
-                  <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-xl" />
+                  <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-xl border-2 border-border" />
                   <button
                     type="button"
                     onClick={() => { setImageFile(null); setImagePreview(null) }}
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/10"
+                    className="absolute top-2 right-2 w-11 h-11 rounded-xl bg-background border-2 border-border shadow-[0_2px_0_var(--color-border)] flex items-center justify-center text-foreground active:translate-y-[2px] active:shadow-none"
                   >
-                    <X className="w-3 h-3 text-white" />
+                    <X className="w-5 h-5" strokeWidth={2.6} />
                   </button>
                 </div>
               ) : (
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-24 rounded-xl border-2 border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-1 text-white/30 hover:border-[#7c5cfc]/40 hover:text-[#7c5cfc] transition-colors"
+                  className="w-full h-24 rounded-2xl border-2 border-dashed border-border bg-muted flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-secondary hover:text-secondary transition-colors"
                 >
-                  <ImagePlus className="w-6 h-6" />
-                  <span className="text-xs">Izaberi sliku</span>
+                  <ImagePlus className="w-6 h-6" strokeWidth={2.4} />
+                  <span className="text-[12px] font-extrabold uppercase tracking-[0.04em]">Izaberi sliku</span>
                 </button>
               )}
             </div>
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#7c5cfc] to-[#5b3fd9] hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-[#7c5cfc]/20"
+              className="w-full"
             >
               {loading ? 'Objavljuje se...' : 'Objavi'}
             </Button>
@@ -177,24 +184,31 @@ export default function AdminNewsPage() {
         </div>
       )}
 
-      {news.map((item, index) => (
-        <div
-          key={item.id}
-          className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] p-4 flex items-start justify-between hover:-translate-y-[2px] hover:shadow-lg hover:shadow-[#7c5cfc]/10 hover:border-[#7c5cfc]/20 transition-all duration-300 group"
-          style={{ animationDelay: `${index * 60}ms` }}
-        >
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-white group-hover:text-purple-200 transition-colors">{item.title}</h3>
-            <p className="text-sm text-white/40 line-clamp-2 mt-1">{item.content}</p>
-            <p className="text-xs text-white/20 mt-2">
-              {new Date(item.created_at).toLocaleDateString('sr-Latn')}
-            </p>
+      <div className="space-y-2.5">
+        {news.map((item, index) => (
+          <div
+            key={item.id}
+            className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] p-4 flex items-start justify-between gap-3"
+            style={{ animationDelay: `${index * 60}ms` }}
+          >
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">{item.title}</h3>
+              <p className="text-[15px] font-bold text-foreground line-clamp-2 mt-1">{item.content}</p>
+              <p className="text-[13px] font-bold text-muted-foreground mt-2">
+                {new Date(item.created_at).toLocaleDateString('sr-Latn')}
+              </p>
+            </div>
+            <button
+              type="button"
+              aria-label="Obriši"
+              onClick={() => deleteNews(item.id)}
+              className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors"
+            >
+              <Trash2 className="w-5 h-5" strokeWidth={2.4} />
+            </button>
           </div>
-          <button onClick={() => deleteNews(item.id)} className="text-red-400/60 p-2 hover:text-red-400 transition-colors">
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }

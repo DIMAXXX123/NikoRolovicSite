@@ -33,40 +33,45 @@ export function BottomNav() {
   const items = getResolvedNavItems(orderedIds)
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav-premium" style={{ height: '70px' }}>
-      <div className="flex items-center justify-around h-full max-w-md mx-auto px-3">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t-2 border-border"
+      style={{
+        height: 'calc(84px + env(safe-area-inset-bottom))',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
+      <div className="max-w-md mx-auto flex justify-around items-start pt-2 px-[10px]">
         {items.map((item) => {
           const isActive = pathname.startsWith(item.href)
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`animate-press relative flex flex-col items-center gap-1.5 px-4 py-2 transition-all duration-200 ${
-                isActive
-                  ? 'text-primary'
-                  : 'text-[#3d3d50] hover:text-[#6b6b80]'
+              className={`flex flex-col items-center gap-[3px] w-[62px] transition-[color,transform] duration-[120ms] active:translate-y-[1px] ${
+                isActive ? 'text-primary-text' : 'text-disabled'
               }`}
             >
-              <item.IconComponent
-                className={`w-[22px] h-[22px] transition-all duration-200 ${
-                  isActive ? 'text-primary' : ''
+              <div
+                className={`w-[54px] h-11 rounded-xl border-2 flex items-center justify-center transition-[background-color,border-color] duration-[120ms] ${
+                  isActive
+                    ? 'bg-primary-light border-primary-light-border'
+                    : 'bg-transparent border-transparent'
                 }`}
-                strokeWidth={isActive ? 2.5 : 1.5}
-                fill={isActive ? 'currentColor' : 'none'}
-              />
-              <span className={`text-[10px] transition-all duration-200 ${
-                isActive ? 'font-bold text-primary' : 'font-medium'
-              }`}>{item.label}</span>
-              {/* Active dot — 4px below */}
-              {isActive && (
-                <div className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-primary animate-pop-in" />
-              )}
+              >
+                <item.IconComponent
+                  className="w-[26px] h-[26px]"
+                  strokeWidth={2.4}
+                  fill="none"
+                  stroke="currentColor"
+                />
+              </div>
+              <span className="text-[10px] leading-[12px] font-extrabold uppercase tracking-[0.04em]">
+                {item.label}
+              </span>
             </Link>
           )
         })}
       </div>
-      {/* Safe area spacer for iOS */}
-      <div className="h-safe-area-bottom" />
     </nav>
   )
 }

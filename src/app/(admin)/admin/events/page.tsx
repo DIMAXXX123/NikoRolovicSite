@@ -7,9 +7,9 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Plus, Trash2, X, Calendar } from 'lucide-react'
 import type { Event, EventType } from '@/lib/types'
-import { useToast } from '@/components/toast'
 
 const EVENT_TYPE_OPTIONS: { value: EventType; label: string }[] = [
   { value: 'test', label: 'Test' },
@@ -21,12 +21,12 @@ const EVENT_TYPE_OPTIONS: { value: EventType; label: string }[] = [
 ]
 
 const EVENT_TYPE_COLORS: Record<string, string> = {
-  test: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  ispit: 'bg-red-500/20 text-red-300 border-red-500/30',
-  dogadjaj: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-  domaci: 'bg-green-500/20 text-green-300 border-green-500/30',
-  pismeni: 'bg-red-500/20 text-red-300 border-red-500/30',
-  drugo: 'bg-white/10 text-white/50 border-white/[0.08]',
+  test: 'bg-[#FFF4C4] text-[#C79000] border-[#FFE28A]',
+  ispit: 'bg-[#FFDFE0] text-[#EA2B2B] border-[#FFB3B5]',
+  dogadjaj: 'bg-[#F3E3FF] text-accent-dark border-[#E1BDFF]',
+  domaci: 'bg-primary-light text-primary-text border-primary-light-border',
+  pismeni: 'bg-[#FFDFE0] text-[#EA2B2B] border-[#FFB3B5]',
+  drugo: 'bg-background text-muted-foreground border-border',
 }
 
 export default function AdminEventsPage() {
@@ -38,20 +38,20 @@ export default function AdminEventsPage() {
   const [eventTime, setEventTime] = useState('')
   const [eventType, setEventType] = useState<EventType>('dogadjaj')
   const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const supabase = createClient()
 
-  const { toast } = useToast()
-
   function showToast(message: string, type: 'success' | 'error' = 'success') {
-    toast(message, { type })
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
   }
-
-  useEffect(() => { loadEvents() }, [])
 
   async function loadEvents() {
     const { data } = await supabase.from('events').select('*').order('event_date', { ascending: true })
     if (data) setEvents(data)
   }
+
+  useEffect(() => { loadEvents() }, [])
 
   async function createEvent(e: React.FormEvent) {
     e.preventDefault()
@@ -99,75 +99,81 @@ export default function AdminEventsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {toast && (
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[60] px-4 py-3 rounded-2xl text-[13px] font-extrabold bg-card border-2 animate-slide-down ${
+          toast.type === 'success'
+            ? 'text-primary-text border-primary-light-border shadow-[0_2px_0_var(--color-primary-light-border)]'
+            : 'text-[#EA2B2B] border-[#FFB3B5] shadow-[0_2px_0_#FFB3B5]'
+        }`}>
+          {toast.message}
+        </div>
+      )}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Kalendar</h1>
+        <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">Kalendar</h1>
         <Button
-          size="sm"
+          size={showForm ? 'icon' : 'default'}
+          variant={showForm ? 'outline' : 'default'}
+          aria-label={showForm ? 'Zatvori' : undefined}
           onClick={() => setShowForm(!showForm)}
-          className="bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all"
         >
-          {showForm ? <X className="w-4 h-4" /> : <><Plus className="w-4 h-4 mr-1" />Novi</>}
+          {showForm ? <X strokeWidth={2.6} /> : <><Plus strokeWidth={2.6} />Novi</>}
         </Button>
       </div>
 
       {showForm && (
-        <div className="rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-purple-500/20 p-5 animate-slide-up">
+        <div className="rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] p-4 animate-slide-up">
           <form onSubmit={createEvent} className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Naslov</Label>
+            <div>
+              <Label>Naslov</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/30 focus:border-purple-500 focus:ring-purple-500/20"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Tip događaja</Label>
+            <div>
+              <Label>Tip događaja</Label>
               <select
                 value={eventType}
                 onChange={(e) => setEventType(e.target.value as EventType)}
-                className="flex h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/20 transition-colors"
+                className="flex h-[50px] w-full rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground focus:border-secondary focus:bg-background focus:outline-none transition-colors"
               >
                 {EVENT_TYPE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value} className="bg-[#1a1f35] text-white">{opt.label}</option>
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
             </div>
-            <div className="space-y-2">
-              <Label className="text-white/70 text-sm">Opis</Label>
-              <textarea
+            <div>
+              <Label>Opis</Label>
+              <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="flex min-h-[80px] w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/20 transition-colors"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="text-white/70 text-sm">Datum</Label>
+              <div>
+                <Label>Datum</Label>
                 <Input
                   type="date"
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
                   required
-                  className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white focus:border-purple-500 focus:ring-purple-500/20"
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-white/70 text-sm">Vrijeme (opciono)</Label>
+              <div>
+                <Label>Vrijeme (opciono)</Label>
                 <Input
                   type="time"
                   value={eventTime}
                   onChange={(e) => setEventTime(e.target.value)}
-                  className="rounded-xl bg-white/[0.04] border-white/[0.08] text-white focus:border-purple-500 focus:ring-purple-500/20"
                 />
               </div>
             </div>
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl shadow-lg shadow-purple-500/20"
+              className="w-full"
             >
               {loading ? 'Kreiranje...' : 'Kreiraj'}
             </Button>
@@ -176,34 +182,43 @@ export default function AdminEventsPage() {
       )}
 
       {events.length === 0 ? (
-        <div className="text-center py-20 text-white/30">
-          <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Nema događaja</p>
+        <div className="text-center py-20">
+          <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
+            <Calendar className="w-8 h-8 text-disabled" strokeWidth={2.4} />
+          </div>
+          <p className="text-[17px] font-extrabold text-foreground">Nema događaja</p>
         </div>
       ) : (
-        events.map((event, index) => (
-          <div
-            key={event.id}
-            className="animate-stagger-item rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] p-4 flex items-start justify-between hover:-translate-y-[2px] hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/20 transition-all duration-300 group"
-            style={{ animationDelay: `${index * 60}ms` }}
-          >
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-semibold text-white group-hover:text-purple-200 transition-colors">{event.title}</h3>
-                {event.event_type && (
-                  <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${EVENT_TYPE_COLORS[event.event_type] || EVENT_TYPE_COLORS.drugo}`}>
-                    {EVENT_TYPE_OPTIONS.find(o => o.value === event.event_type)?.label || event.event_type}
-                  </span>
-                )}
+        <div className="space-y-2.5">
+          {events.map((event, index) => (
+            <div
+              key={event.id}
+              className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] p-4 flex items-start justify-between gap-3"
+              style={{ animationDelay: `${index * 60}ms` }}
+            >
+              <div className="space-y-1.5 min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">{event.title}</h3>
+                  {event.event_type && (
+                    <span className={`inline-flex items-center h-6 text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] px-2.5 rounded-full border-2 whitespace-nowrap ${EVENT_TYPE_COLORS[event.event_type] || EVENT_TYPE_COLORS.drugo}`}>
+                      {EVENT_TYPE_OPTIONS.find(o => o.value === event.event_type)?.label || event.event_type}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[13px] font-bold text-muted-foreground">{event.event_date} {event.event_time && `· ${event.event_time.slice(0,5)}`}</p>
+                {event.location && <p className="text-[13px] font-bold text-muted-foreground">{event.location}</p>}
               </div>
-              <p className="text-xs text-white/40">{event.event_date} {event.event_time && `· ${event.event_time.slice(0,5)}`}</p>
-              {event.location && <p className="text-xs text-white/25">{event.location}</p>}
+              <button
+                type="button"
+                aria-label="Obriši"
+                onClick={() => deleteEvent(event.id)}
+                className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors"
+              >
+                <Trash2 className="w-5 h-5" strokeWidth={2.4} />
+              </button>
             </div>
-            <button onClick={() => deleteEvent(event.id)} className="text-red-400/60 p-2 hover:text-red-400 transition-colors">
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   )

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import { PUBLIC_PATHS, pathMatches } from '@/lib/public-paths'
+import { DEMO_AUTO_ADMIN } from '@/lib/demo'
 
 /**
  * Client-side companion to the middleware auth guard: it also catches the case
@@ -20,7 +21,9 @@ export function ProfileGuard() {
   const isPublicPage = pathMatches(pathname ?? '/', PUBLIC_PATHS)
 
   useEffect(() => {
-    if (isPublicPage) return
+    // Demo mode: the site is open and <AutoLogin /> owns the session —
+    // never bounce a visitor to /login or sign the shared account out.
+    if (DEMO_AUTO_ADMIN || isPublicPage) return
     let cancelled = false
 
     async function check() {

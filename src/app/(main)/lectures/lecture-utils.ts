@@ -1,6 +1,6 @@
 // Pure helpers for lecture content: math formatting and the inline
-// metadata blocks (QUIZ_DATA / KEY_TERMS / SUMMARY / LECTURE_DATE) that the
-// admin editor embeds into `lectures.content`.
+// metadata blocks (QUIZ_DATA / KEY_TERMS / SUMMARY / HOMEWORK / LECTURE_DATE)
+// that the admin editor embeds into `lectures.content`.
 
 export function formatMath(text: string): string {
   if (!text) return ''
@@ -60,6 +60,67 @@ export function parseKeyTerms(content: string): KeyTerm[] {
 export function parseSummary(content: string): string | null {
   const match = content.match(/SUMMARY:([\s\S]*?):SUMMARY/)
   return match ? match[1].trim() : null
+}
+
+export interface HomeworkTask {
+  /** "Zadatak 3", "Zadaci 1–4 (str. 57)" */
+  label: string
+  /** The task in one sentence. */
+  what: string
+  /** A short method hint — not the solution. */
+  how: string
+}
+
+export interface Homework {
+  /** 1–3 plain sentences: what to do and how. May contain newlines. */
+  text: string
+  tasks: HomeworkTask[]
+  /** Public URLs of textbook-page photos. */
+  images: string[]
+  /** ISO date or null. */
+  due: string | null
+}
+
+const HOMEWORK_MAX_TASKS = 8
+const HOMEWORK_MAX_IMAGES = 4
+
+const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '')
+
+/**
+ * Reads the `HOMEWORK:<json>:HOMEWORK` block. Anything malformed — bad JSON,
+ * wrong shapes, non-http image URLs — degrades to "no homework" rather than
+ * throwing; the block sits between SUMMARY and QUIZ_DATA.
+ */
+export function parseHomework(content: string): Homework | null {
+  if (!content) return null
+  const match = content.match(/HOMEWORK:([\s\S]*?):HOMEWORK/)
+  if (!match) return null
+  try {
+    const raw: unknown = JSON.parse(match[1])
+    if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null
+    const obj = raw as { text?: unknown; tasks?: unknown; images?: unknown; due?: unknown }
+
+    const text = str(obj.text)
+    const tasks: HomeworkTask[] = (Array.isArray(obj.tasks) ? obj.tasks : [])
+      .map((t: unknown) => {
+        if (typeof t !== 'object' || t === null) return null
+        const task = t as { label?: unknown; what?: unknown; how?: unknown }
+        const item = { label: str(task.label), what: str(task.what), how: str(task.how) }
+        return item.label || item.what ? item : null
+      })
+      .filter((t): t is HomeworkTask => t !== null)
+      .slice(0, HOMEWORK_MAX_TASKS)
+    const images = (Array.isArray(obj.images) ? obj.images : [])
+      .map(str)
+      .filter((u) => /^https?:\/\//i.test(u))
+      .slice(0, HOMEWORK_MAX_IMAGES)
+    const due = str(obj.due) || null
+
+    if (!text && tasks.length === 0 && images.length === 0) return null
+    return { text, tasks, images, due }
+  } catch {
+    return null
+  }
 }
 
 export function parseSections(content: string): { heading: string; content: string }[] {
@@ -160,6 +221,7 @@ export function stripMetadata(html: string): string {
   result = result.replace(/\n*(?:<!--\s*)?QUIZ_DATA:[\s\S]*?:QUIZ_DATA(?:\s*-->)?\n*/g, '')
   result = result.replace(/\n*KEY_TERMS:[\s\S]*?:KEY_TERMS\n*/g, '')
   result = result.replace(/\n*SUMMARY:[\s\S]*?:SUMMARY\n*/g, '')
+  result = result.replace(/\n*HOMEWORK:[\s\S]*?:HOMEWORK\n*/g, '')
   result = result.replace(/\n*LECTURE_DATE:[\s\S]*?:LECTURE_DATE\n*/g, '')
   result = result.replace('<!-- CURRENT -->', '')
   // Fallback cleanup
