@@ -16,6 +16,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const supabase = createClient()
 
   const isSubPage = pathname !== '/admin'
+  // /direktor and /nastavnik live in this route group but have their own
+  // server-side role gate and chrome (src/app/(admin)/direktor/layout.tsx).
+  const isPanel = pathname.startsWith('/direktor') || pathname.startsWith('/nastavnik')
 
   async function checkAuth() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -32,7 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .eq('id', user.id)
       .single()
 
-    if (!profile || (profile.role !== 'admin' && profile.role !== 'moderator' && profile.role !== 'creator')) {
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'moderator' && profile.role !== 'creator' && profile.role !== 'direktor')) {
       router.push('/news')
       return
     }
@@ -42,8 +45,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   useEffect(() => {
+    if (isPanel) return
     checkAuth()
   }, [])
+
+  if (isPanel) return <>{children}</>
 
   if (loading) {
     return (

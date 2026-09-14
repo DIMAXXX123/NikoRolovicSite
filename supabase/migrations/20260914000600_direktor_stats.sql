@@ -935,3 +935,6 @@ GRANT EXECUTE ON FUNCTION public.direktor_stats(TEXT, INT, INT, TEXT) TO authent
 
 COMMENT ON FUNCTION public.direktor_stats(TEXT, INT, INT, TEXT) IS
   'All Direktor panel blocks as one JSON. Roles: direktor/admin/creator/pedagog (or service key). Shape: src/lib/direktor-types.ts DirektorStats.';
+
+-- (applied 2026-09-15) direktor_stats_cache + direktor_stats_cached() + refresh_direktor_stats():
+-- see supabase/migrations/20260915000100_direktor_stats_cache.sql

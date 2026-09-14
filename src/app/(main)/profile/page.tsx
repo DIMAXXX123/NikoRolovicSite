@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users, UserRound, Gamepad2, Trophy, ClipboardList, Palette } from 'lucide-react'
+import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users, UserRound, Gamepad2, Trophy, ClipboardList, Palette, BarChart3, BookOpenCheck } from 'lucide-react'
 import { useThemeCycle } from '@/components/theme-switcher'
 import { RoleBadge } from '@/components/role-badge'
 import { GuestLoginButton } from '@/components/guest-login-button'
@@ -59,6 +59,44 @@ const QUICK_ACCESS_PAGES = [
   { id: 'tournament', href: '/tournament', label: 'Turnir u košarci', icon: Trophy, color: '#FFC800' },
   { id: 'ednevnik', href: '/ednevnik', label: 'eDnevnik', icon: ClipboardList, color: '#CE82FF' },
 ]
+
+const DIREKTOR_PANEL_ROLES = ['direktor', 'admin', 'creator', 'pedagog']
+const NASTAVNIK_PANEL_ROLES = ['teacher', 'razredni', 'pedagog', 'direktor', 'admin', 'creator']
+
+/** Prominent entry points to the Direktor / Profesor panels, gated by role. */
+function PanelRows({ role }: { role: string }) {
+  const showDirektor = DIREKTOR_PANEL_ROLES.includes(role)
+  const showNastavnik = NASTAVNIK_PANEL_ROLES.includes(role)
+  if (!showDirektor && !showNastavnik) return null
+  return (
+    <div className="space-y-2.5" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '240ms', opacity: 0 }}>
+      {showDirektor && (
+        <Link href="/direktor" className={`${ROW_CLASS} border-[#FFB3B5] bg-[#FFF3F3] shadow-[0_2px_0_#FFB3B5]`}>
+          <div className={ROW_ICON_CLASS} style={tint('#FF4B4B')}>
+            <BarChart3 className="w-5 h-5" strokeWidth={2.4} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={ROW_TITLE_CLASS}>Panel direktora</p>
+            <p className={ROW_SUB_CLASS}>Zdravlje škole, razredi, AI analiza, izvještaj</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-[#FF4B4B] flex-shrink-0" strokeWidth={2.6} />
+        </Link>
+      )}
+      {showNastavnik && (
+        <Link href="/nastavnik" className={`${ROW_CLASS} border-[#84D8FF] bg-[#EEF9FF] shadow-[0_2px_0_#84D8FF]`}>
+          <div className={ROW_ICON_CLASS} style={tint('#1CB0F6')}>
+            <BookOpenCheck className="w-5 h-5" strokeWidth={2.4} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={ROW_TITLE_CLASS}>Panel profesora</p>
+            <p className={ROW_SUB_CLASS}>Moje lekcije, razredi, domaći</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-secondary flex-shrink-0" strokeWidth={2.6} />
+        </Link>
+      )}
+    </div>
+  )
+}
 
 function QuickAccessCards() {
   const [navIds, setNavIds] = useState<string[]>([])
@@ -554,6 +592,8 @@ export default function ProfilePage() {
       </Card>
 
       <RoleSwitcher />
+
+      <PanelRows role={profile.role} />
 
       {/* Action buttons */}
       <div className="space-y-2.5" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '300ms', opacity: 0 }}>

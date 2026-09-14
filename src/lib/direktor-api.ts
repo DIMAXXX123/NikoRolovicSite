@@ -65,7 +65,7 @@ export async function rpcJson<T>(fn: string, args: Record<string, unknown>): Pro
 }
 
 export async function fetchDirektorStats<T>(q: StatsQuery): Promise<T> {
-  return rpcJson<T>('direktor_stats', {
+  return rpcJson<T>('direktor_stats_cached', {
     period: q.period,
     class_number: q.class,
     section_number: q.section,

@@ -1,15 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
-export type AppRole =
-  | 'student'
-  | 'teacher'
-  | 'razredni'
-  | 'pedagog'
-  | 'direktor'
-  | 'moderator'
-  | 'admin'
-  | 'creator'
+import type { AppRole } from '@/lib/roles'
+
+export type { AppRole }
+export { STAFF_ROLES, ADMIN_ROLES, DIREKTOR_ROLES, STUDENT_LIST_ROLES, NASTAVNIK_ROLES, NASTAVNIK_PICKER_ROLES } from '@/lib/roles'
 
 export interface CallerProfile {
   id: string
@@ -42,23 +37,6 @@ export async function getCallerProfile(): Promise<CallerProfile | null> {
   return (profile as CallerProfile | null) ?? null
 }
 
-/** Roles allowed into the admin area. */
-export const STAFF_ROLES: AppRole[] = ['moderator', 'admin', 'creator']
-
-/** Roles allowed to manage accounts, roles and the student roster. */
-export const ADMIN_ROLES: AppRole[] = ['admin', 'creator']
-
-/** Roles allowed into the Direktor panel (/direktor, /api/direktor/*). */
-export const DIREKTOR_ROLES: AppRole[] = ['direktor', 'admin', 'creator', 'pedagog']
-
-/** Roles allowed to see at-risk pupils WITH names (razredni: own homeroom only). */
-export const STUDENT_LIST_ROLES: AppRole[] = ['direktor', 'admin', 'creator', 'pedagog', 'razredni']
-
-/** Roles allowed into the Nastavnik panel (/nastavnik, /api/nastavnik/*). */
-export const NASTAVNIK_ROLES: AppRole[] = ['teacher', 'razredni', 'pedagog', 'direktor', 'admin', 'creator']
-
-/** Roles that may pick another teacher's author in the Nastavnik panel. */
-export const NASTAVNIK_PICKER_ROLES: AppRole[] = ['pedagog', 'direktor', 'admin', 'creator']
 
 export function hasRole(profile: CallerProfile | null, roles: readonly AppRole[]): boolean {
   return !!profile && (roles as readonly string[]).includes(profile.role)
