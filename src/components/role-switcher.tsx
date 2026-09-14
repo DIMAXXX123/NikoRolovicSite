@@ -67,7 +67,7 @@ export function RoleSwitcher() {
     <section aria-label="Promijeni ulogu" className="rounded-2xl border-2 border-border bg-card shadow-[0_2px_0_var(--color-border)] p-4 space-y-3">
       <div>
         <p className="text-[12px] leading-none text-muted-foreground font-extrabold uppercase tracking-[0.04em]">Isprobaj kao</p>
-        <p className="mt-1.5 text-[13px] leading-[1.4] font-bold text-muted-foreground">Prebaci cijelu aplikaciju na iskustvo učenika, nastavnika ili direktora.</p>
+        <p className="mt-1.5 text-[13px] leading-[1.4] font-bold text-muted-foreground">Prebaci cijelu aplikaciju na iskustvo učenika, profesora ili direktora.</p>
       </div>
       <div className="grid grid-cols-3 gap-2">
         {(Object.keys(DEMO_ACCOUNTS) as DemoRole[]).map((role) => {

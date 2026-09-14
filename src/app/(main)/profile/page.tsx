@@ -32,7 +32,7 @@ const roleLabel: Record<string, string> = {
   moderator: 'Moderator',
   admin: 'Administrator',
   creator: 'Kreator',
-  teacher: 'Nastavnik',
+  teacher: 'Profesor',
   razredni: 'Razredni starješina',
   pedagog: 'Pedagog',
   direktor: 'Direktor',
