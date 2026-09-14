@@ -163,6 +163,10 @@ export default function EDnevnikPage() {
       setConnected(true)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(edData))
       localStorage.setItem(TOKEN_KEY, token)
+      // Sync to the account so the phone/computer pick it up without re-connecting.
+      if (session?.user) {
+        await supabase.from('ednevnik_tokens').upsert({ user_id: session.user.id, token, updated_at: new Date().toISOString() })
+      }
     } catch (err) {
       setError((err as { message?: string }).message || 'Greška pri povezivanju sa eDnevnikom')
     } finally {
@@ -179,9 +183,11 @@ export default function EDnevnikPage() {
     fetchEDnevnik(token)
   }
 
-  function handleLogout() {
+  async function handleLogout() {
     localStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem(TOKEN_KEY)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) await supabase.from('ednevnik_tokens').delete().eq('user_id', user.id)
     setData(null)
     setConnected(false)
     setTokenInput('')
@@ -192,6 +198,20 @@ export default function EDnevnikPage() {
     const token = localStorage.getItem(TOKEN_KEY)
     if (token) fetchEDnevnik(token)
   }
+
+  // No token on this device → use the one saved in the account (connected elsewhere).
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (localStorage.getItem(TOKEN_KEY) || window.location.hash.includes('token=')) return
+    let cancelled = false
+    ;(async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || cancelled) return
+      const { data } = await supabase.from('ednevnik_tokens').select('token').eq('user_id', user.id).maybeSingle()
+      if (data?.token && !cancelled) fetchEDnevnik(data.token)
+    })()
+    return () => { cancelled = true }
+  }, [supabase, fetchEDnevnik])
 
   // The phone bookmarklet returns here as /ednevnik#token=… — the token stays
   // in the fragment, so it never reaches the server or its logs.
@@ -449,7 +469,8 @@ export default function EDnevnikPage() {
 
           {guide === 'phone' ? (
             <div className="space-y-3">
-              <p className="text-[13px] font-bold text-muted-foreground">Jednom napraviš bookmark. Poslije toga: prijavi se na eDnevnik → tapni bookmark → vraća te ovdje već povezanog.</p>
+              <div className="rounded-xl border-2 border-primary-light-border bg-[#F4FFEA] p-3 text-[13px] font-bold text-primary-text">Najbrže: poveži eDnevnik jednom na računaru (kartica „Računar“) dok si prijavljen na ovaj sajt — telefon ga sam preuzme sa naloga.</div>
+              <p className="text-[13px] font-bold text-muted-foreground">Samo sa telefona: jednom napraviš bookmark. Poslije toga: prijavi se na eDnevnik → tapni bookmark → vraća te ovdje već povezanog.</p>
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 flex size-6 flex-shrink-0 items-center justify-center rounded-full border-2 border-secondary-light-border bg-secondary-light text-[11px] font-extrabold text-secondary">1</span>
                 <div className="min-w-0 flex-1">
