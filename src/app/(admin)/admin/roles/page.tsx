@@ -22,8 +22,8 @@ interface CustomRole {
 }
 
 const ROLE_COLORS = [
-  '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4',
-  '#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#14b8a6',
+  '#FF4B4B', '#FF9600', '#FFC800', '#58CC02', '#1CB0F6',
+  '#1899D6', '#CE82FF', '#FF86D0', '#EA2B2B', '#46A302',
 ]
 
 export default function AdminRolesPage() {
@@ -201,7 +201,7 @@ export default function AdminRolesPage() {
           <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">Prilagođene uloge</h3>
           <Button
             variant="ghost"
-            size="sm"
+            className="px-3"
             onClick={() => setShowCustomRoleForm(!showCustomRoleForm)}
           >
             {showCustomRoleForm ? <X strokeWidth={2.6} /> : <Plus strokeWidth={2.6} />}
@@ -266,7 +266,7 @@ export default function AdminRolesPage() {
               >
                 {role.icon && <span>{role.icon}</span>}
                 <span>{role.name}</span>
-                <button onClick={() => deleteCustomRole(i)} className="w-8 h-8 rounded-full flex items-center justify-center hover:text-destructive transition-colors">
+                <button type="button" aria-label="Ukloni ulogu" onClick={() => deleteCustomRole(i)} className="w-8 h-8 rounded-full flex items-center justify-center hover:text-destructive transition-colors">
                   <X className="w-4 h-4" strokeWidth={2.6} />
                 </button>
               </div>
@@ -284,18 +284,20 @@ export default function AdminRolesPage() {
             <ShieldAlert className="w-8 h-8 text-disabled" strokeWidth={2.4} />
           </div>
           <p className="text-[17px] font-extrabold text-foreground">Nema korisnika</p>
+          <p className="text-[13px] font-bold text-muted-foreground mt-1">Promijeni filter ili pojam za pretragu.</p>
         </div>
       ) : (
-        filteredUsers.map((user, index) => {
+        <div className="space-y-2.5">
+        {filteredUsers.map((user, index) => {
           const roleDisplay = getRoleDisplay(user.role)
           return (
             <div
               key={user.id}
-              className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] p-3 min-h-[64px] flex items-center justify-between gap-3"
+              className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] px-4 py-3 min-h-[64px] flex items-center justify-between gap-3"
               style={{ animationDelay: `${index * 40}ms` }}
             >
               <div className="min-w-0 flex-1">
-                <p className="text-[15px] font-extrabold text-heading truncate">
+                <p className="text-[15px] leading-[1.3] font-extrabold text-heading truncate">
                   {user.first_name} {user.last_name}
                 </p>
                 <p className="text-[13px] font-bold text-muted-foreground truncate">{user.email}</p>
@@ -323,7 +325,8 @@ export default function AdminRolesPage() {
               </div>
             </div>
           )
-        })
+        })}
+        </div>
       )}
     </div>
   )

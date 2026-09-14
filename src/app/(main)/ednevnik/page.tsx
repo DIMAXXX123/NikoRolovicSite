@@ -345,7 +345,7 @@ export default function EDnevnikPage() {
                                 <span className="text-[11px] font-bold uppercase tracking-[0.04em]">{g.type}</span>
                               )}
                               {g.date && (
-                                <span className="text-[11px] font-bold opacity-70">{g.date}</span>
+                                <span className="text-[11px] font-bold">{g.date}</span>
                               )}
                             </div>
                           ))}

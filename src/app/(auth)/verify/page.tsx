@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Mail } from 'lucide-react'
 import { SuccessAnimation } from '@/components/success-animation'
 
 export default function VerifyPage() {
@@ -100,9 +99,9 @@ export default function VerifyPage() {
 
   return (
     <Card className="animate-fade-in text-center">
-      <CardHeader className="space-y-4 pb-2">
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-secondary-light border-2 border-secondary-light-border flex items-center justify-center">
-          <Mail className="w-7 h-7 text-secondary" strokeWidth={2.4} />
+      <CardHeader className="space-y-2 pb-2">
+        <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)]">
+          <span className="text-2xl font-black text-primary-foreground">NR</span>
         </div>
         <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Unesi kod</h1>
         <p className="text-[13px] font-bold text-muted-foreground">
@@ -133,6 +132,7 @@ export default function VerifyPage() {
           </Button>
         </form>
         <button
+          type="button"
           onClick={handleResend}
           className="mt-4 inline-flex min-h-11 items-center text-[15px] font-extrabold text-secondary hover:underline"
         >

@@ -83,7 +83,7 @@ export default function MainLayout({
         </div>
       </header>
       <ProfileGuard />
-      <main className="max-w-md mx-auto px-4 pt-16 pb-[100px]">
+      <main className="max-w-md mx-auto px-4 pt-20 pb-[100px]">
         <div key={animKey} className="animate-fade-in">
           {children}
         </div>

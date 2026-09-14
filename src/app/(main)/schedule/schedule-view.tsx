@@ -15,7 +15,6 @@ import {
   DEFAULT_SCHEDULES,
   getStorageKey,
   getSubjectColor,
-  getSubjectBorderColor,
   type ScheduleData,
 } from './schedule-data'
 
@@ -26,7 +25,7 @@ interface ScheduleViewProps {
 
 // §4.8 chip — selected = blue tint, otherwise white with a grey 3D edge.
 const CHIP_BASE =
-  'inline-flex h-10 items-center justify-center rounded-xl border-2 px-2 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-colors duration-120 animate-press'
+  'inline-flex h-10 items-center justify-center rounded-xl border-2 px-2 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
 const CHIP_IDLE = 'bg-background border-border text-muted-foreground shadow-[0_2px_0_var(--color-border)] hover:text-foreground'
 const CHIP_ACTIVE =
   'bg-secondary-light border-secondary-light-border text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]'
@@ -214,12 +213,12 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
           <table className="w-full text-[12px] font-bold">
             <thead>
               <tr className="border-b-2 border-border">
-                <th className="p-1.5 text-left text-muted-foreground font-extrabold w-8">#</th>
+                <th className="px-1.5 py-2.5 text-left text-muted-foreground font-extrabold w-8">#</th>
                 {DAY_SHORT.map((d, di) => (
                   <th
                     key={d}
                     onClick={() => setActiveDay(di)}
-                    className={`p-1.5 text-center font-extrabold uppercase tracking-[0.04em] cursor-pointer transition-colors ${
+                    className={`px-1 py-2.5 text-center font-extrabold uppercase tracking-[0.04em] cursor-pointer transition-colors ${
                       activeDay === di ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -236,18 +235,18 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
                     currentPeriod === period ? 'bg-[#F4FFEA]' : ''
                   }`}
                 >
-                  <td className="p-1 text-muted-foreground font-extrabold text-[11px]">{period}</td>
+                  <td className="p-1.5 text-muted-foreground font-extrabold text-[12px] tabular-nums">{period}</td>
                   {DAYS.map((_, di) => {
                     const subj = schedule[cellKey(di, period)] || ''
                     const color = getSubjectColor(subj)
                     return (
                       <td
                         key={di}
-                        className={`p-1 cursor-pointer transition-colors ${activeDay === di ? 'bg-secondary-light/50' : ''}`}
+                        className={`p-1.5 cursor-pointer transition-colors ${activeDay === di ? 'bg-secondary-light/50' : ''}`}
                         onClick={() => { setActiveDay(di); if (editing) startEdit(di, period) }}
                       >
                         {subj ? (
-                          <div className={`px-1.5 py-0.5 rounded-lg text-center truncate border-2 text-[10px] font-extrabold ${color}`}>
+                          <div className={`px-1 py-1.5 rounded-lg text-center truncate border-2 text-[11px] leading-[1.2] font-extrabold ${color}`}>
                             {subj.length > 5 ? subj.slice(0, 5) + '.' : subj}
                           </div>
                         ) : (
@@ -277,31 +276,25 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
             const subject = schedule[key] || ''
             const isEditing = editCell === key
             const colorClass = getSubjectColor(subject)
-            const borderColor = getSubjectBorderColor(subject)
 
             return (
               <div
                 key={period}
                 onClick={() => startEdit(activeDay, period)}
-                className={`flex items-center gap-3 min-h-16 px-4 py-3 transition-colors border-l-4 ${
-                  subject ? borderColor : 'border-l-transparent'
-                } ${
+                className={`flex items-center gap-3 min-h-16 px-4 py-3 transition-colors ${
                   isPeriodNow(period) ? 'bg-[#F4FFEA]' : ''
                 } ${
                   editing ? 'cursor-pointer hover:bg-muted active:bg-muted' : ''
                 }`}
               >
-                {/* Period number & time */}
-                <div className="flex-shrink-0 w-14 text-center">
-                  <div className="text-[17px] font-black text-heading tabular-nums">{period}.</div>
-                  <div className="flex items-center justify-center gap-0.5 text-[11px] font-bold text-muted-foreground">
-                    <Clock className="w-3 h-3" strokeWidth={2.4} />
-                    {PERIOD_TIMES[period - 1].split(' - ')[0]}
-                  </div>
+                {/* Leading circle (§4.10): period number on the subject tint */}
+                <div
+                  className={`flex size-11 shrink-0 items-center justify-center rounded-full border-2 text-[17px] font-extrabold tabular-nums ${
+                    subject ? colorClass : 'border-border bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {period}
                 </div>
-
-                {/* Divider line */}
-                <div className="w-0.5 h-10 rounded-full bg-border flex-shrink-0" />
 
                 <div className="flex-1 min-w-0">
                   {isEditing ? (
@@ -317,28 +310,27 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
                         placeholder="Naziv predmeta..."
                         className="flex-1 h-11"
                       />
-                      <Button size="icon" variant="default" onClick={confirmEdit}>
+                      <Button size="icon" variant="default" onClick={confirmEdit} aria-label="Sačuvaj">
                         <Check strokeWidth={2.6} />
                       </Button>
-                      <Button size="icon" onClick={cancelEdit}>
+                      <Button size="icon" onClick={cancelEdit} aria-label="Otkaži">
                         <X className="text-muted-foreground" strokeWidth={2.6} />
                       </Button>
                     </div>
-                  ) : subject ? (
-                    <div className={`inline-flex h-9 items-center px-3.5 rounded-xl text-[13px] font-extrabold border-2 ${colorClass}`}>
-                      {subject}
-                    </div>
                   ) : (
-                    <div className="text-[13px] font-bold text-disabled italic flex items-center gap-2 animate-fade-in">
-                      {editing ? (
-                        'Dodaj predmet...'
-                      ) : (
-                        <>
-                          <div className="w-6 h-[2px] rounded-full bg-border" />
-                          <span className="text-disabled">Slobodan čas</span>
-                        </>
-                      )}
-                    </div>
+                    <>
+                      <p
+                        className={`truncate text-[17px] leading-[1.3] font-extrabold ${
+                          subject ? 'text-heading' : editing ? 'text-disabled' : 'text-muted-foreground'
+                        }`}
+                      >
+                        {subject || (editing ? 'Dodaj predmet...' : 'Slobodan čas')}
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-1 text-[13px] leading-[1.4] font-bold text-muted-foreground tabular-nums">
+                        <Clock className="size-3.5" strokeWidth={2.4} />
+                        {PERIOD_TIMES[period - 1]}
+                      </p>
+                    </>
                   )}
                 </div>
               </div>

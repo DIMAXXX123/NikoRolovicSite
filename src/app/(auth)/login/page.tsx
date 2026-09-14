@@ -149,7 +149,7 @@ export default function LoginPage() {
           <Button
             type="button"
             variant="outline"
-            className="animate-press w-full gap-3"
+            className="animate-press w-full gap-2"
             onClick={handleGoogleLogin}
             disabled={googleLoading}
           >
@@ -163,7 +163,7 @@ export default function LoginPage() {
           </Button>
           <Link href="/register" className="block">
             <Button variant="outline" className="animate-press w-full gap-2">
-              <UserPlus className="w-5 h-5" />
+              <UserPlus className="w-5 h-5" strokeWidth={2.4} />
               Nemaš nalog? Registruj se
             </Button>
           </Link>
@@ -173,7 +173,7 @@ export default function LoginPage() {
             className="w-full gap-2"
             onClick={() => setShowTour(true)}
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-5 h-5" strokeWidth={2.4} />
             Pogledaj sajt
           </Button>
         </div>

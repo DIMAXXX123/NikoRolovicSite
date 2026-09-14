@@ -108,6 +108,7 @@ export default function AdminPhotosPage() {
                 <Camera className="w-8 h-8 text-disabled" strokeWidth={2.4} />
               </div>
               <p className="text-[17px] font-extrabold text-foreground">Nema fotografija na čekanju</p>
+              <p className="text-[13px] font-bold text-muted-foreground mt-1">Nove fotografije učenika pojaviće se ovdje.</p>
             </div>
           ) : (
             pendingPhotos.map((photo, index) => (
@@ -170,6 +171,7 @@ export default function AdminPhotosPage() {
                 <Camera className="w-8 h-8 text-disabled" strokeWidth={2.4} />
               </div>
               <p className="text-[17px] font-extrabold text-foreground">Nema objavljenih fotografija</p>
+              <p className="text-[13px] font-bold text-muted-foreground mt-1">Odobrene fotografije pojaviće se ovdje.</p>
             </div>
           ) : (
             approvedPhotos.map((photo, index) => (

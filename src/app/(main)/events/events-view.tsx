@@ -318,13 +318,13 @@ export function EventsView({
                   key={key}
                   type="button"
                   onClick={() => setNewEvent({ ...newEvent, event_type: key as EventType })}
-                  className={`inline-flex h-10 items-center gap-2 rounded-xl border-2 px-3.5 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-colors animate-press ${
+                  className={`inline-flex h-10 items-center gap-2 rounded-xl border-2 px-3.5 text-[12px] font-extrabold uppercase tracking-[0.04em] transition-[transform,box-shadow,background-color,color,border-color] duration-[80ms] active:translate-y-[2px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
                     newEvent.event_type === key
                       ? 'bg-secondary-light border-secondary-light-border text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]'
                       : 'bg-background border-border text-muted-foreground shadow-[0_2px_0_var(--color-border)]'
                   }`}
                 >
-                  <span className={`size-1.5 rounded-full ${config.dotColor}`} />
+                  <span className={`size-2 rounded-full ${config.dotColor}`} />
                   {config.label}
                 </button>
               ))}
@@ -472,7 +472,7 @@ export function EventsView({
           <div className="flex flex-wrap gap-3 pt-2">
             {Object.entries(EVENT_TYPE_CONFIG).map(([key, config]) => (
               <div key={key} className="flex items-center gap-1.5 text-[13px] font-bold text-muted-foreground">
-                <div className={`size-1.5 rounded-full ${config.dotColor}`} />
+                <div className={`size-2 rounded-full ${config.dotColor}`} />
                 {config.label}
               </div>
             ))}
@@ -503,7 +503,7 @@ export function EventsView({
                   <span className="text-[15px] font-black leading-none tabular-nums">
                     {eventDate.getDate()}
                   </span>
-                  <span className="text-[9px] font-extrabold uppercase leading-none mt-0.5">
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.04em] leading-none mt-0.5">
                     {eventDate.toLocaleDateString('sr-Latn', { month: 'short' })}
                   </span>
                 </div>

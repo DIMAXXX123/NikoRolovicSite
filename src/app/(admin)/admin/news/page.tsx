@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Trash2, X, ImagePlus } from 'lucide-react'
+import { Plus, Trash2, X, ImagePlus, Newspaper } from 'lucide-react'
 import type { NewsItem } from '@/lib/types'
 
 export default function AdminNewsPage() {
@@ -116,12 +116,12 @@ export default function AdminNewsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">Novosti</h1>
         <Button
-          size="sm"
+          size={showForm ? 'icon' : 'default'}
           variant={showForm ? 'outline' : 'default'}
+          aria-label={showForm ? 'Zatvori' : undefined}
           onClick={() => setShowForm(!showForm)}
         >
-          {showForm ? <X strokeWidth={2.6} /> : <Plus strokeWidth={2.6} />}
-          {showForm ? '' : 'Nova'}
+          {showForm ? <X strokeWidth={2.6} /> : <><Plus strokeWidth={2.6} />Nova</>}
         </Button>
       </div>
 
@@ -143,7 +143,6 @@ export default function AdminNewsPage() {
                 onChange={(e) => setContent(e.target.value)}
                 required
                 rows={4}
-                className="min-h-[100px]"
               />
             </div>
             <div>
@@ -188,24 +187,41 @@ export default function AdminNewsPage() {
         </div>
       )}
 
-      {news.map((item, index) => (
-        <div
-          key={item.id}
-          className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] p-4 flex items-start justify-between gap-3"
-          style={{ animationDelay: `${index * 60}ms` }}
-        >
-          <div className="min-w-0 flex-1">
-            <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">{item.title}</h3>
-            <p className="text-[15px] font-bold text-foreground line-clamp-2 mt-1">{item.content}</p>
-            <p className="text-[13px] font-bold text-muted-foreground mt-2">
-              {new Date(item.created_at).toLocaleDateString('sr-Latn')}
-            </p>
+      {news.length === 0 ? (
+        <div className="text-center py-20">
+          <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
+            <Newspaper className="w-8 h-8 text-disabled" strokeWidth={2.4} />
           </div>
-          <button onClick={() => deleteNews(item.id)} className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors">
-            <Trash2 className="w-5 h-5" strokeWidth={2.4} />
-          </button>
+          <p className="text-[17px] font-extrabold text-foreground">Nema novosti</p>
+          <p className="text-[13px] font-bold text-muted-foreground mt-1">Dodaj prvu novost dugmetom „Nova“.</p>
         </div>
-      ))}
+      ) : (
+        <div className="space-y-2.5">
+          {news.map((item, index) => (
+            <div
+              key={item.id}
+              className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] p-4 flex items-start justify-between gap-3"
+              style={{ animationDelay: `${index * 60}ms` }}
+            >
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">{item.title}</h3>
+                <p className="text-[15px] font-bold text-foreground line-clamp-2 mt-1">{item.content}</p>
+                <p className="text-[13px] font-bold text-muted-foreground mt-2">
+                  {new Date(item.created_at).toLocaleDateString('sr-Latn')}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Obriši"
+                onClick={() => deleteNews(item.id)}
+                className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors"
+              >
+                <Trash2 className="w-5 h-5" strokeWidth={2.4} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,5 +1,9 @@
 import { Card } from '@/components/ui/card';
 
+// §4.8 chip, 44px tall so the footer links are real tap targets.
+const SEE_ALSO_CHIP =
+  'inline-flex h-11 items-center rounded-xl border-2 border-border bg-background px-3.5 text-[12px] font-extrabold uppercase tracking-[0.04em] text-secondary shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow] duration-[80ms] hover:bg-muted active:translate-y-[2px] active:shadow-none';
+
 export const metadata = {
   title: 'Terms of Use — Gimnazija Niko Rolović',
   description: 'Terms of Use for the Gimnazija Niko Rolović student portal and mobile application.',
@@ -43,7 +47,7 @@ export default function TermsPage() {
 
         <Card className="gap-3">
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">4. User Accounts</h2>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li>You must provide accurate and complete information when creating an account.</li>
             <li>You are responsible for maintaining the confidentiality of your login credentials.</li>
             <li>You must not share your account with others or use another person&apos;s account.</li>
@@ -58,7 +62,7 @@ export default function TermsPage() {
             The App allows users to upload photos and other content (&quot;User Content&quot;). By
             uploading User Content, you:
           </p>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li>Confirm that you own or have the right to share the content.</li>
             <li>Grant us a non-exclusive, royalty-free license to display the content within the App.</li>
             <li>Agree that all User Content is subject to moderation and may be removed without notice.</li>
@@ -69,7 +73,7 @@ export default function TermsPage() {
         <Card className="gap-3">
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">6. Prohibited Conduct</h2>
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">You agree not to:</p>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li>Upload or share content that is offensive, harmful, threatening, abusive, harassing, defamatory, vulgar, obscene, or otherwise objectionable.</li>
             <li>Bully, harass, or intimidate other users.</li>
             <li>Impersonate any person or entity.</li>
@@ -171,13 +175,12 @@ export default function TermsPage() {
           </p>
         </Card>
 
-        <div className="mt-6 pt-6 border-t-2 border-border">
-          <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground">
-            See also:{' '}
-            <a href="/privacy" className="font-extrabold text-secondary underline underline-offset-4">Privacy Policy</a>
-            {' · '}
-            <a href="/content-policy" className="font-extrabold text-secondary underline underline-offset-4">Content Moderation Policy</a>
-          </p>
+        <div className="mt-6 pt-6 border-t-2 border-border space-y-2.5">
+          <p className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground px-1">See also</p>
+          <div className="flex flex-wrap gap-2">
+            <a href="/privacy" className={SEE_ALSO_CHIP}>Privacy Policy</a>
+            <a href="/content-policy" className={SEE_ALSO_CHIP}>Content Moderation Policy</a>
+          </div>
         </div>
       </div>
     </div>

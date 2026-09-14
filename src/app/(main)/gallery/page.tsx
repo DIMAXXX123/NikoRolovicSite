@@ -449,7 +449,7 @@ export default function GalleryPage() {
 
   if (loading) {
     return (
-      <div className="py-3 space-y-6 pb-24">
+      <div className="py-3 space-y-4 pb-4">
         {[1, 2, 3].map((i) => (
           <Card key={i} className="gap-3">
             <div className="flex items-center gap-3">
@@ -572,13 +572,13 @@ export default function GalleryPage() {
         </Button>
       )}
 
-      <div className="py-3 space-y-6 pb-24 animate-stagger">
+      <div className="py-3 space-y-4 pb-4 animate-stagger">
         {photos.length === 0 ? (
           <div className="h-[60vh] flex flex-col items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
               <Camera className="w-8 h-8 text-disabled" strokeWidth={2.4} />
             </div>
-            <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground">Još nema fotografija</p>
+            <p className="text-[17px] leading-[1.3] font-extrabold text-foreground">Još nema fotografija</p>
           </div>
         ) : (
           photos.map((photo) => {

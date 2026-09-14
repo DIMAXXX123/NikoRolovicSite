@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users } from 'lucide-react'
+import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users, UserRound } from 'lucide-react'
 import { RoleBadge } from '@/components/role-badge'
 import { RoleAnimation } from '@/components/role-animation'
 import { AVATARS, AvatarById } from '@/components/avatars'
@@ -276,7 +276,21 @@ export default function ProfilePage() {
     )
   }
 
-  if (!profile) return null
+  if (!profile) {
+    // §4.11 empty state — no session, nothing to show.
+    return (
+      <div className="animate-fade-in flex flex-col items-center text-center py-24">
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+          <UserRound className="w-8 h-8 text-disabled" strokeWidth={2.4} />
+        </div>
+        <p className="text-[17px] leading-[1.3] font-extrabold text-foreground">Nisi prijavljen</p>
+        <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground mt-1">Prijavi se da vidiš svoj profil.</p>
+        <Button variant="outline" nativeButton={false} render={<Link href="/login" />} className="mt-5">
+          Prijavi se
+        </Button>
+      </div>
+    )
+  }
 
   if (showCalculator) {
     return <GpaCalculator onBack={() => setShowCalculator(false)} />
@@ -354,7 +368,7 @@ export default function ProfilePage() {
             <span className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Razred</span>
           </div>
           <div className="flex flex-col items-center gap-1.5 px-2 text-center">
-            <span className="text-[20px] leading-none font-black text-heading truncate max-w-full">{roleLabel[profile.role] || profile.role}</span>
+            <span className="text-[15px] leading-none font-black text-heading truncate max-w-full">{roleLabel[profile.role] || profile.role}</span>
             <span className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground">Uloga</span>
           </div>
           <div className="flex flex-col items-center gap-1.5 px-2 text-center">
@@ -656,7 +670,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Creator credit */}
-      <p className="text-center text-[13px] font-bold text-disabled pb-4">
+      <p className="text-center text-[13px] font-bold text-muted-foreground pb-4">
         Napravio: Dmitrij Ivascenko II-1
       </p>
     </div>

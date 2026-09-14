@@ -50,7 +50,7 @@ export default function AdminPage() {
       {/* Dashboard Header */}
       <div className="flex items-center gap-3">
         <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-primary shadow-[0_3px_0_var(--color-primary-dark)]">
-          <LayoutDashboard className="w-5 h-5 text-white" strokeWidth={2.4} />
+          <LayoutDashboard className="w-5 h-5 text-primary-foreground" strokeWidth={2.4} />
         </div>
         <div>
           <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">Admin panel</h1>
@@ -80,7 +80,7 @@ export default function AdminPage() {
         {visibleLinks.map((link, index) => (
           <Link key={link.href} href={link.href} className="block">
             <div
-              className="animate-stagger-item rounded-2xl p-4 min-h-[64px] flex items-center gap-3 mb-3 bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none"
+              className="animate-stagger-item rounded-2xl px-4 py-3 min-h-[64px] flex items-center gap-3 bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none"
               style={{ animationDelay: `${index * 80}ms` }}
             >
               <div

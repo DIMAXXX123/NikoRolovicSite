@@ -114,8 +114,9 @@ export default function AdminEventsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">Kalendar</h1>
         <Button
-          size="sm"
+          size={showForm ? 'icon' : 'default'}
           variant={showForm ? 'outline' : 'default'}
+          aria-label={showForm ? 'Zatvori' : undefined}
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? <X strokeWidth={2.6} /> : <><Plus strokeWidth={2.6} />Novi</>}
@@ -151,7 +152,6 @@ export default function AdminEventsPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="min-h-[80px]"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -190,31 +190,39 @@ export default function AdminEventsPage() {
             <Calendar className="w-8 h-8 text-disabled" strokeWidth={2.4} />
           </div>
           <p className="text-[17px] font-extrabold text-foreground">Nema događaja</p>
+          <p className="text-[13px] font-bold text-muted-foreground mt-1">Kreiraj prvi događaj dugmetom „Novi“.</p>
         </div>
       ) : (
-        events.map((event, index) => (
-          <div
-            key={event.id}
-            className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] p-4 flex items-start justify-between gap-3"
-            style={{ animationDelay: `${index * 60}ms` }}
-          >
-            <div className="space-y-1.5 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">{event.title}</h3>
-                {event.event_type && (
-                  <span className={`inline-flex items-center h-6 text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] px-2.5 rounded-full border-2 ${EVENT_TYPE_COLORS[event.event_type] || EVENT_TYPE_COLORS.drugo}`}>
-                    {EVENT_TYPE_OPTIONS.find(o => o.value === event.event_type)?.label || event.event_type}
-                  </span>
-                )}
+        <div className="space-y-2.5">
+          {events.map((event, index) => (
+            <div
+              key={event.id}
+              className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] p-4 flex items-start justify-between gap-3"
+              style={{ animationDelay: `${index * 60}ms` }}
+            >
+              <div className="space-y-1.5 min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-[17px] leading-[1.3] font-extrabold text-heading">{event.title}</h3>
+                  {event.event_type && (
+                    <span className={`inline-flex items-center h-6 text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] px-2.5 rounded-full border-2 whitespace-nowrap ${EVENT_TYPE_COLORS[event.event_type] || EVENT_TYPE_COLORS.drugo}`}>
+                      {EVENT_TYPE_OPTIONS.find(o => o.value === event.event_type)?.label || event.event_type}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[13px] font-bold text-muted-foreground">{event.event_date} {event.event_time && `· ${event.event_time.slice(0,5)}`}</p>
+                {event.location && <p className="text-[13px] font-bold text-muted-foreground">{event.location}</p>}
               </div>
-              <p className="text-[13px] font-bold text-muted-foreground">{event.event_date} {event.event_time && `· ${event.event_time.slice(0,5)}`}</p>
-              {event.location && <p className="text-[13px] font-bold text-muted-foreground">{event.location}</p>}
+              <button
+                type="button"
+                aria-label="Obriši"
+                onClick={() => deleteEvent(event.id)}
+                className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors"
+              >
+                <Trash2 className="w-5 h-5" strokeWidth={2.4} />
+              </button>
             </div>
-            <button onClick={() => deleteEvent(event.id)} className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors">
-              <Trash2 className="w-5 h-5" strokeWidth={2.4} />
-            </button>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   )

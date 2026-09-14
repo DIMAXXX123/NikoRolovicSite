@@ -125,7 +125,7 @@ Overlay `rgba(0,0,0,.4)` (no blur). Panel: `background #FFFFFF; border-radius 24
 Circle with `border 2px solid #E5E5E5; background #F7F7F7`. Fallback initials 800 on a role-tinted background. No rings/glows.
 
 ### 4.8 Chips / filter pills (inline in pages)
-`height 40px; padding 0 14px; border-radius 12px; border 2px solid #E5E5E5; background #FFFFFF; font 800 12px uppercase; color #777777; box-shadow 0 2px 0 #E5E5E5`. Selected: `background #DDF4FF; border-color #84D8FF; color #1CB0F6; box-shadow 0 2px 0 #84D8FF`.
+`height 44px (40px only inside dense table/row contexts); padding 0 14px; border-radius 12px; border 2px solid #E5E5E5; background #FFFFFF; font 800 12px uppercase; color #777777; box-shadow 0 2px 0 #E5E5E5`. Selected: `background #DDF4FF; border-color #84D8FF; color #1CB0F6; box-shadow 0 2px 0 #84D8FF`.
 
 ### 4.9 Progress bar
 `height 16px; border-radius 999px; background #E5E5E5; overflow hidden`; fill `background #58CC02` with an inner highlight `box-shadow: inset 0 4px 0 rgba(255,255,255,.3)`; fill radius 999.

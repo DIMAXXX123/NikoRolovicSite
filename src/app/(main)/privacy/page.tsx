@@ -1,5 +1,9 @@
 import { Card } from '@/components/ui/card';
 
+// §4.8 chip, 44px tall so the footer links are real tap targets.
+const SEE_ALSO_CHIP =
+  'inline-flex h-11 items-center rounded-xl border-2 border-border bg-background px-3.5 text-[12px] font-extrabold uppercase tracking-[0.04em] text-secondary shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow] duration-[80ms] hover:bg-muted active:translate-y-[2px] active:shadow-none';
+
 export const metadata = {
   title: 'Privacy Policy — Gimnazija Niko Rolović',
   description: 'Privacy Policy for the Gimnazija Niko Rolović student portal and mobile application.',
@@ -32,7 +36,7 @@ export default function PrivacyPage() {
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             We collect the following personal data:
           </p>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li><strong className="font-extrabold text-heading">Account information:</strong> Email address, full name, class and section number.</li>
             <li><strong className="font-extrabold text-heading">Authentication data:</strong> Login method (email OTP or Google OAuth), session tokens.</li>
             <li><strong className="font-extrabold text-heading">User-generated content:</strong> Photos voluntarily uploaded to the gallery.</li>
@@ -47,7 +51,7 @@ export default function PrivacyPage() {
 
         <Card className="gap-3">
           <h2 className="text-[20px] leading-[1.25] font-extrabold text-heading">3. How We Use Your Data</h2>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li>Authentication and secure portal access.</li>
             <li>Displaying personalized schedules, grades, and lessons.</li>
             <li>Photo gallery moderation and display.</li>
@@ -77,7 +81,7 @@ export default function PrivacyPage() {
             Your data is stored on Supabase servers located in the EU (AWS EU region). We implement
             the following security measures:
           </p>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li>Encryption in transit (HTTPS/TLS) and at rest.</li>
             <li>Secure authentication with OTP and OAuth 2.0.</li>
             <li>Row-level security (RLS) policies on database tables.</li>
@@ -92,7 +96,7 @@ export default function PrivacyPage() {
             We do <strong className="font-extrabold text-heading">not</strong> sell, rent, or share your personal
             data with third parties for commercial purposes. Data is shared only with:
           </p>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li><strong className="font-extrabold text-heading">Supabase:</strong> Cloud infrastructure provider (data processing agreement in place).</li>
             <li><strong className="font-extrabold text-heading">Google:</strong> If you use Google OAuth for authentication (only basic profile info).</li>
             <li><strong className="font-extrabold text-heading">Other users:</strong> Photos you upload may be visible to other portal users after admin approval.</li>
@@ -125,7 +129,7 @@ export default function PrivacyPage() {
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             Under applicable data protection laws (including GDPR), you have the right to:
           </p>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li><strong className="font-extrabold text-heading">Access:</strong> Request a copy of your personal data.</li>
             <li><strong className="font-extrabold text-heading">Rectification:</strong> Correct inaccurate or incomplete data.</li>
             <li><strong className="font-extrabold text-heading">Erasure:</strong> Request deletion of your personal data.</li>
@@ -178,7 +182,7 @@ export default function PrivacyPage() {
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             The App uses the following third-party services:
           </p>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li><strong className="font-extrabold text-heading">Supabase:</strong> Authentication, database, and file storage.</li>
             <li><strong className="font-extrabold text-heading">Google OAuth:</strong> Optional sign-in method.</li>
             <li><strong className="font-extrabold text-heading">Vercel:</strong> Web application hosting.</li>
@@ -212,13 +216,12 @@ export default function PrivacyPage() {
           </p>
         </Card>
 
-        <div className="mt-6 pt-6 border-t-2 border-border">
-          <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground">
-            See also:{' '}
-            <a href="/terms" className="font-extrabold text-secondary underline underline-offset-4">Terms of Use</a>
-            {' · '}
-            <a href="/content-policy" className="font-extrabold text-secondary underline underline-offset-4">Content Moderation Policy</a>
-          </p>
+        <div className="mt-6 pt-6 border-t-2 border-border space-y-2.5">
+          <p className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground px-1">See also</p>
+          <div className="flex flex-wrap gap-2">
+            <a href="/terms" className={SEE_ALSO_CHIP}>Terms of Use</a>
+            <a href="/content-policy" className={SEE_ALSO_CHIP}>Content Moderation Policy</a>
+          </div>
         </div>
       </div>
     </div>

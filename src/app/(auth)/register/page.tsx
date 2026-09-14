@@ -8,9 +8,13 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { ChevronDown } from 'lucide-react'
 
 const selectClass =
-  'flex h-[50px] w-full appearance-none rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground outline-none transition-colors focus-visible:border-secondary focus-visible:bg-background'
+  'flex h-[50px] w-full appearance-none rounded-2xl border-2 border-border bg-muted pl-4 pr-11 text-[15px] font-bold text-foreground outline-none transition-colors focus-visible:border-secondary focus-visible:bg-background'
+
+const selectChevron =
+  'pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-disabled'
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState('')
@@ -130,29 +134,35 @@ export default function RegisterPage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="class">Razred</Label>
-              <select
-                id="class"
-                value={classNumber}
-                onChange={(e) => setClassNumber(e.target.value)}
-                className={selectClass}
-              >
-                {[1, 2, 3, 4].map((n) => (
-                  <option key={n} value={n}>{n}. razred</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="class"
+                  value={classNumber}
+                  onChange={(e) => setClassNumber(e.target.value)}
+                  className={selectClass}
+                >
+                  {[1, 2, 3, 4].map((n) => (
+                    <option key={n} value={n}>{n}. razred</option>
+                  ))}
+                </select>
+                <ChevronDown className={selectChevron} strokeWidth={2.6} />
+              </div>
             </div>
             <div>
               <Label htmlFor="section">Odjeljenje</Label>
-              <select
-                id="section"
-                value={sectionNumber}
-                onChange={(e) => setSectionNumber(e.target.value)}
-                className={selectClass}
-              >
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <option key={n} value={n}>{n}. odjeljenje</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="section"
+                  value={sectionNumber}
+                  onChange={(e) => setSectionNumber(e.target.value)}
+                  className={selectClass}
+                >
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <option key={n} value={n}>{n}. odjeljenje</option>
+                  ))}
+                </select>
+                <ChevronDown className={selectChevron} strokeWidth={2.6} />
+              </div>
             </div>
           </div>
           <div>
@@ -224,15 +234,21 @@ export default function RegisterPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label htmlFor="reqRazred">Razred</Label>
-                      <select id="reqRazred" value={reqRazred} onChange={(e) => setReqRazred(e.target.value)} className={`${selectClass} bg-background`}>
-                        {[1, 2, 3, 4].map((n) => (<option key={n} value={n}>{n}. razred</option>))}
-                      </select>
+                      <div className="relative">
+                        <select id="reqRazred" value={reqRazred} onChange={(e) => setReqRazred(e.target.value)} className={`${selectClass} bg-background`}>
+                          {[1, 2, 3, 4].map((n) => (<option key={n} value={n}>{n}. razred</option>))}
+                        </select>
+                        <ChevronDown className={selectChevron} strokeWidth={2.6} />
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="reqOdjeljenje">Odjeljenje</Label>
-                      <select id="reqOdjeljenje" value={reqOdjeljenje} onChange={(e) => setReqOdjeljenje(e.target.value)} className={`${selectClass} bg-background`}>
-                        {[1, 2, 3, 4, 5, 6].map((n) => (<option key={n} value={n}>{n}. odjeljenje</option>))}
-                      </select>
+                      <div className="relative">
+                        <select id="reqOdjeljenje" value={reqOdjeljenje} onChange={(e) => setReqOdjeljenje(e.target.value)} className={`${selectClass} bg-background`}>
+                          {[1, 2, 3, 4, 5, 6].map((n) => (<option key={n} value={n}>{n}. odjeljenje</option>))}
+                        </select>
+                        <ChevronDown className={selectChevron} strokeWidth={2.6} />
+                      </div>
                     </div>
                   </div>
                   <Button
@@ -273,41 +289,41 @@ export default function RegisterPage() {
               )}
             </div>
           )}
-          <Button type="submit" size="lg" className="animate-press w-full" disabled={loading}>
+          <Button type="submit" className="animate-press w-full" disabled={loading}>
             {loading ? 'Registracija...' : 'REGISTRUJ SE'}
           </Button>
         </form>
-        <div className="mt-4 space-y-3">
+        <div className="mt-6 space-y-3">
           <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-border" />
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t-2 border-border" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-card px-2 text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">ili</span>
+              </div>
             </div>
-            <div className="relative flex justify-center">
-              <span className="bg-card px-2 text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground">ili</span>
-            </div>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="animate-press w-full gap-3"
-            onClick={handleGoogleRegister}
-            disabled={googleLoading}
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            {googleLoading ? 'Registracija...' : 'Registruj se sa Google'}
-          </Button>
-          <Link href="/login" className="block">
-            <Button variant="outline" className="w-full gap-2">
-              Već imaš nalog? Prijavi se
+            <Button
+              type="button"
+              variant="outline"
+              className="animate-press w-full gap-2"
+              onClick={handleGoogleRegister}
+              disabled={googleLoading}
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              {googleLoading ? 'Registracija...' : 'Registruj se sa Google'}
             </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+            <Link href="/login" className="block">
+              <Button variant="outline" className="w-full gap-2">
+                Već imaš nalog? Prijavi se
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }

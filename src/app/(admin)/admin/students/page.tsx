@@ -99,8 +99,9 @@ export default function AdminStudentsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-[26px] leading-[1.2] tracking-[-0.01em] font-extrabold text-heading">Učenici</h1>
         <Button
-          size="sm"
+          size={showForm ? 'icon' : 'default'}
           variant={showForm ? 'outline' : 'default'}
+          aria-label={showForm ? 'Zatvori' : undefined}
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? <X strokeWidth={2.6} /> : <><Plus strokeWidth={2.6} />Dodaj</>}
@@ -163,30 +164,38 @@ export default function AdminStudentsPage() {
             <Users className="w-8 h-8 text-disabled" strokeWidth={2.4} />
           </div>
           <p className="text-[17px] font-extrabold text-foreground">{searchQuery ? 'Nema rezultata' : 'Nema učenika u bazi'}</p>
+          <p className="text-[13px] font-bold text-muted-foreground mt-1">{searchQuery ? 'Probaj drugi pojam za pretragu.' : 'Dodaj prvog učenika dugmetom „Dodaj“.'}</p>
         </div>
       ) : (
-        filteredStudents.map((student, index) => (
-          <div
-            key={student.id}
-            className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] p-3 min-h-[64px] flex items-center justify-between gap-3"
-            style={{ animationDelay: `${index * 40}ms` }}
-          >
-            <div className="min-w-0">
-              <p className="text-[15px] font-extrabold text-heading truncate">{student.first_name} {student.last_name}</p>
-              <p className="text-[13px] font-bold text-muted-foreground truncate">
-                {student.class_number}-{student.section_number}{student.email && !student.email.includes('@pending.local') && !student.email.includes('@temp.com') ? ` · ${student.email}` : ''}
-              </p>
+        <div className="space-y-2.5">
+          {filteredStudents.map((student, index) => (
+            <div
+              key={student.id}
+              className="animate-stagger-item rounded-2xl bg-card border-2 border-border shadow-[0_2px_0_var(--color-border)] px-4 py-3 min-h-[64px] flex items-center justify-between gap-3"
+              style={{ animationDelay: `${index * 40}ms` }}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] leading-[1.3] font-extrabold text-heading truncate">{student.first_name} {student.last_name}</p>
+                <p className="text-[13px] font-bold text-muted-foreground truncate">
+                  {student.class_number}-{student.section_number}{student.email && !student.email.includes('@pending.local') && !student.email.includes('@temp.com') ? ` · ${student.email}` : ''}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className={`inline-flex items-center h-6 text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] px-2.5 rounded-full border-2 whitespace-nowrap ${student.used ? 'bg-primary-light text-primary-text border-primary-light-border' : 'bg-background text-muted-foreground border-border'}`}>
+                  {student.used ? 'Registrovan' : 'Čeka'}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Obriši"
+                  onClick={() => deleteStudent(student.id, student)}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors"
+                >
+                  <Trash2 className="w-5 h-5" strokeWidth={2.4} />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className={`inline-flex items-center h-6 text-[11px] leading-none font-extrabold uppercase tracking-[0.06em] px-2.5 rounded-full border-2 ${student.used ? 'bg-primary-light text-primary-text border-primary-light-border' : 'bg-background text-muted-foreground border-border'}`}>
-                {student.used ? 'Registrovan' : 'Čeka'}
-              </span>
-              <button onClick={() => deleteStudent(student.id, student)} className="w-11 h-11 rounded-xl flex items-center justify-center text-destructive hover:bg-[#FFDFE0] transition-colors">
-                <Trash2 className="w-5 h-5" strokeWidth={2.4} />
-              </button>
-            </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   )

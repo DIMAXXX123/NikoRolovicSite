@@ -8,6 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { SuccessAnimation } from '@/components/success-animation'
+import { ChevronDown } from 'lucide-react'
+
+const selectClass =
+  'flex h-[50px] w-full appearance-none rounded-2xl border-2 border-border bg-muted pl-4 pr-11 text-[15px] font-bold text-foreground outline-none transition-colors focus-visible:border-secondary focus-visible:bg-background'
+
+const selectChevron =
+  'pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-disabled'
 
 const CLASS_LABELS = ['I', 'II', 'III', 'IV']
 
@@ -152,7 +159,7 @@ export default function CompleteProfilePage() {
     return (
       <Card className="animate-fade-in">
         <CardContent className="flex items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-primary" />
         </CardContent>
       </Card>
     )
@@ -234,32 +241,38 @@ export default function CompleteProfilePage() {
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="classNumber">Razred</Label>
-              <select
-                id="classNumber"
-                value={classNumber}
-                onChange={(e) => setClassNumber(e.target.value)}
-                className="flex h-[50px] w-full appearance-none rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground outline-none transition-colors focus-visible:border-secondary focus-visible:bg-background"
-              >
-                {CLASS_LABELS.map((label, i) => (
-                  <option key={i + 1} value={i + 1}>{label}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="classNumber"
+                  value={classNumber}
+                  onChange={(e) => setClassNumber(e.target.value)}
+                  className={selectClass}
+                >
+                  {CLASS_LABELS.map((label, i) => (
+                    <option key={i + 1} value={i + 1}>{label}</option>
+                  ))}
+                </select>
+                <ChevronDown className={selectChevron} strokeWidth={2.6} />
+              </div>
             </div>
             <div>
               <Label htmlFor="sectionNumber">Odjeljenje</Label>
-              <select
-                id="sectionNumber"
-                value={sectionNumber}
-                onChange={(e) => setSectionNumber(e.target.value)}
-                className="flex h-[50px] w-full appearance-none rounded-2xl border-2 border-border bg-muted px-4 text-[15px] font-bold text-foreground outline-none transition-colors focus-visible:border-secondary focus-visible:bg-background"
-              >
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="sectionNumber"
+                  value={sectionNumber}
+                  onChange={(e) => setSectionNumber(e.target.value)}
+                  className={selectClass}
+                >
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+                <ChevronDown className={selectChevron} strokeWidth={2.6} />
+              </div>
             </div>
           </div>
           {error && (

@@ -145,7 +145,7 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
     const rot = (Math.random() - 0.5) * 40
 
     const el = document.createElement('div')
-    el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
+    el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FF4B4B" stroke="#FF4B4B" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
     el.style.cssText = `position:absolute;left:${clientX - size / 2}px;top:${clientY - size / 2}px;width:${size}px;height:${size}px;pointer-events:none;will-change:transform;`
 
     container.appendChild(el)
@@ -227,7 +227,7 @@ export function NewsFeed({ initialItems, initialHasMore, userId, pageSize }: New
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
           <Newspaper className="w-8 h-8 text-disabled" />
         </div>
-        <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground">Jos nema novosti</p>
+        <p className="text-[17px] leading-[1.3] font-extrabold text-foreground">Jos nema novosti</p>
       </div>
     )
   }

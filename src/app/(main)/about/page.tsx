@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
 import { Card } from '@/components/ui/card'
 import { MapPin, Clock, GraduationCap, BookOpen, Users, Building2, Globe } from 'lucide-react'
 import { BetaDisclaimer } from '@/components/beta-disclaimer'
@@ -11,27 +10,6 @@ const META_CLASS = 'text-[13px] leading-[1.4] font-bold text-muted-foreground'
 const ICON_CIRCLE_CLASS = 'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0'
 
 export default function AboutPage() {
-  const sectionsRef = useRef<(HTMLDivElement | null)[]>([])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-visible')
-          }
-        })
-      },
-      { threshold: 0.1 }
-    )
-
-    sectionsRef.current.forEach((el) => {
-      if (el) observer.observe(el)
-    })
-
-    return () => observer.disconnect()
-  }, [])
-
   return (
     <div className="space-y-4 animate-fade-in pb-8">
       <BetaDisclaimer />
@@ -54,10 +32,7 @@ export default function AboutPage() {
       </Card>
 
       {/* History */}
-      <div
-        ref={(el) => { sectionsRef.current[0] = el }}
-        className="animate-on-scroll"
-      >
+      <div className="animate-slide-up" style={{ animationDelay: '60ms' }}>
         <Card className="gap-3">
           <div className="flex items-center gap-3">
             <div className={`${ICON_CIRCLE_CLASS} bg-secondary-light text-secondary`}>
@@ -83,10 +58,7 @@ export default function AboutPage() {
       </div>
 
       {/* Programs */}
-      <div
-        ref={(el) => { sectionsRef.current[1] = el }}
-        className="animate-on-scroll"
-      >
+      <div className="animate-slide-up" style={{ animationDelay: '120ms' }}>
         <Card className="gap-3">
           <div className="flex items-center gap-3">
             <div className={`${ICON_CIRCLE_CLASS} bg-primary-light text-primary-text`}>
@@ -117,10 +89,7 @@ export default function AboutPage() {
       </div>
 
       {/* Stats */}
-      <div
-        ref={(el) => { sectionsRef.current[2] = el }}
-        className="animate-on-scroll"
-      >
+      <div className="animate-slide-up" style={{ animationDelay: '180ms' }}>
         <div className="grid grid-cols-3 gap-3">
           {[
             { icon: Users, label: 'Razreda', value: 'I-IV' },
@@ -137,10 +106,7 @@ export default function AboutPage() {
       </div>
 
       {/* Contact */}
-      <div
-        ref={(el) => { sectionsRef.current[3] = el }}
-        className="animate-on-scroll"
-      >
+      <div className="animate-slide-up" style={{ animationDelay: '240ms' }}>
         <Card className="gap-4">
           <div className="flex items-center gap-3">
             <div className={`${ICON_CIRCLE_CLASS} bg-[#FFDFE0] text-destructive`}>
@@ -172,18 +138,6 @@ export default function AboutPage() {
           </div>
         </Card>
       </div>
-
-      <style jsx>{`
-        .animate-on-scroll {
-          opacity: 0;
-          transform: translateY(20px);
-          transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-        }
-        .animate-visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      `}</style>
     </div>
   )
 }

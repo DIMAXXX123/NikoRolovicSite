@@ -1,6 +1,6 @@
 'use client'
 
-import { Trophy, RotateCcw, Crown, Star } from 'lucide-react'
+import { Trophy, RotateCcw, Crown, Star, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { LeaderEntry } from './engine'
 
@@ -62,8 +62,11 @@ export function LeaderboardOverlay({
             <h3 className="text-[20px] leading-[1.25] font-extrabold text-heading flex items-center gap-2"><Trophy className="w-5 h-5 text-gold" strokeWidth={2.6} /> Tabela lidera</h3>
             <button
               onClick={onClose}
-              className="flex size-11 shrink-0 items-center justify-center rounded-xl text-[18px] font-extrabold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >✕</button>
+              aria-label="Zatvori"
+              className="flex size-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <X className="size-5" strokeWidth={2.6} />
+            </button>
           </div>
           {leaderLoading ? (
             <div className="flex flex-col items-center justify-center py-8 gap-3">
@@ -76,7 +79,12 @@ export function LeaderboardOverlay({
               <p className="text-[13px] font-bold text-muted-foreground animate-pulse">Učitavanje tabele...</p>
             </div>
           ) : leaderboard.length === 0 ? (
-            <p className="text-center text-[15px] font-bold text-muted-foreground py-4">Nema rezultata</p>
+            <div className="flex flex-col items-center text-center py-6">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Trophy className="w-8 h-8 text-disabled" strokeWidth={2.4} />
+              </div>
+              <p className="text-[17px] leading-[1.3] font-extrabold text-foreground">Nema rezultata</p>
+            </div>
           ) : (
             <>
               <div className="space-y-2.5 max-h-[50vh] overflow-y-auto pb-1">

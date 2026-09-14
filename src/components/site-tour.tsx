@@ -93,6 +93,7 @@ const slides = [
 const tint = (c: string) => `${c}2E`
 
 const miniCard = 'rounded-2xl border-2 border-border bg-background shadow-[0_2px_0_var(--color-border)]'
+const miniCardSm = 'rounded-xl border-2 border-border bg-background shadow-[0_2px_0_var(--color-border)]'
 
 function Illustration({ type, accent, accentAlt }: { type: string; accent: string; accentAlt: string }) {
   switch (type) {
@@ -132,13 +133,13 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             </div>
             {/* Diploma */}
             <div className="absolute -top-3 -right-4 animate-scale-in" style={{ animationDelay: '0.3s' }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-border" style={{ background: tint(accentAlt) }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-border" style={{ background: tint(accentAlt) }}>
                 <span className="text-xl">🎓</span>
               </div>
             </div>
             {/* Book */}
             <div className="absolute -bottom-3 -left-4 animate-scale-in" style={{ animationDelay: '0.5s' }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-border" style={{ background: tint(accent) }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-border" style={{ background: tint(accent) }}>
                 <span className="text-xl">📚</span>
               </div>
             </div>
@@ -176,7 +177,7 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
               </div>
             ))}
           </div>
-          <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-xl flex items-center justify-center animate-scale-in border-2 border-border" style={{ background: tint(accentAlt), animationDelay: '0.6s' }}>
+          <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full flex items-center justify-center animate-scale-in border-2 border-border" style={{ background: tint(accentAlt), animationDelay: '0.6s' }}>
             <span className="text-lg">🛡️</span>
           </div>
         </div>
@@ -195,7 +196,7 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
               className={`p-3 flex items-center gap-3 animate-slide-up ${miniCard}`}
               style={{ animationDelay: `${i * 0.15}s` }}
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: tint(accent) }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: tint(accent) }}>
                 <span className="text-xl">{item.icon}</span>
               </div>
               <div className="flex-1 min-w-0">
@@ -281,7 +282,7 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
           ].map((subj, i) => (
             <div
               key={subj.name}
-              className={`p-2 flex flex-col items-center gap-1.5 animate-scale-in ${miniCard} rounded-xl`}
+              className={`p-2 flex flex-col items-center gap-1.5 animate-scale-in ${miniCardSm}`}
               style={{ animationDelay: `${i * 0.06}s` }}
             >
               <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: tint(accent) }}>
@@ -355,7 +356,7 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             ].map((cls, i) => (
               <div
                 key={cls.name}
-                className={`p-2 flex items-center gap-2.5 animate-slide-up ${miniCard} rounded-xl`}
+                className={`p-2 flex items-center gap-2.5 animate-slide-up ${miniCardSm}`}
                 style={{ animationDelay: `${i * 0.12}s` }}
               >
                 <span className="text-base">{cls.emoji}</span>
@@ -397,7 +398,7 @@ function Illustration({ type, accent, accentAlt }: { type: string; accent: strin
             ].map((subj, i) => (
               <div
                 key={subj.name}
-                className={`p-2 flex items-center gap-2.5 animate-slide-up ${miniCard} rounded-xl`}
+                className={`p-2 flex items-center gap-2.5 animate-slide-up ${miniCardSm}`}
                 style={{ animationDelay: `${i * 0.12}s` }}
               >
                 <span className="text-base">{subj.emoji}</span>
@@ -642,7 +643,7 @@ export function SiteTour({ onClose }: { onClose: () => void }) {
               <button
                 key={i}
                 onClick={() => goTo(i)}
-                className="h-11 flex items-center"
+                className="h-11 px-1 flex items-center"
                 aria-label={`${i + 1}/${slides.length}`}
               >
                 <span

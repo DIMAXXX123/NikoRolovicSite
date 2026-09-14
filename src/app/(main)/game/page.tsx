@@ -491,12 +491,12 @@ export default function BlockBlastPage() {
         }
         .cell-clearing { animation: clearFlash 0.3s ease-out forwards; }
 
-        @keyframes scaleIn {
+        @keyframes gameScaleIn {
           0% { transform: scale(0.5); opacity: 0; }
           60% { transform: scale(1.05); }
           100% { transform: scale(1); opacity: 1; }
         }
-        .shape-appear { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .shape-appear { animation: gameScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
         @keyframes cellPlace {
           0% { transform: scale(0.6); opacity: 0.7; }
@@ -505,11 +505,11 @@ export default function BlockBlastPage() {
         }
         .cell-placed { animation: cellPlace 0.15s ease-out; }
 
-        @keyframes fadeInUp {
+        @keyframes gameFadeInUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .fade-in-up { animation: gameFadeInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
         @keyframes ghostPulse {
           0%, 100% { opacity: 0.35; }

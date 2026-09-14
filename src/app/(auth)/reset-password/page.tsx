@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Mail, CheckCircle2, Lock, KeyRound, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Eye, EyeOff } from 'lucide-react'
 
 type Step = 'email' | 'code' | 'newPassword' | 'done'
 
@@ -167,9 +167,9 @@ export default function ResetPasswordPage() {
           <p className="text-[13px] font-bold text-muted-foreground">
             Sada se možeš prijaviti sa novom lozinkom.
           </p>
-          <Link href="/login">
+          <Link href="/login" className="block">
             <Button className="mt-4 w-full gap-2">
-              <ArrowLeft className="w-4 h-4" /> Prijavi se
+              <ArrowLeft className="w-5 h-5" strokeWidth={2.6} /> Prijavi se
             </Button>
           </Link>
         </CardContent>
@@ -182,8 +182,8 @@ export default function ResetPasswordPage() {
     return (
       <Card className="animate-fade-in">
         <CardHeader className="text-center space-y-2 pb-2">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-secondary-light border-2 border-secondary-light-border flex items-center justify-center mb-2">
-            <Lock className="w-7 h-7 text-secondary" strokeWidth={2.4} />
+          <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)]">
+            <span className="text-2xl font-black text-primary-foreground">NR</span>
           </div>
           <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Nova lozinka</h1>
           <p className="text-[13px] font-bold text-muted-foreground">Unesite novu lozinku za vaš nalog</p>
@@ -257,8 +257,8 @@ export default function ResetPasswordPage() {
     return (
       <Card className="animate-fade-in">
         <CardHeader className="text-center space-y-2 pb-2">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-secondary-light border-2 border-secondary-light-border flex items-center justify-center mb-2">
-            <KeyRound className="w-7 h-7 text-secondary" strokeWidth={2.4} />
+          <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)]">
+            <span className="text-2xl font-black text-primary-foreground">NR</span>
           </div>
           <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Unesi kod</h1>
           <p className="text-[13px] font-bold text-muted-foreground">
@@ -269,7 +269,7 @@ export default function ResetPasswordPage() {
         <CardContent>
           <form onSubmit={handleVerifyCode} className="space-y-5">
             {/* 6-digit code input */}
-            <div className="flex justify-center gap-2.5">
+            <div className="flex justify-center gap-2">
               {code.map((digit, i) => (
                 <input
                   key={i}
@@ -281,7 +281,7 @@ export default function ResetPasswordPage() {
                   onChange={(e) => handleCodeChange(i, e.target.value)}
                   onKeyDown={(e) => handleCodeKeyDown(i, e)}
                   onFocus={(e) => e.target.select()}
-                  className={`w-12 h-14 text-center text-xl font-extrabold rounded-2xl border-2 outline-none transition-colors ${
+                  className={`h-14 w-full min-w-0 max-w-12 flex-1 text-center text-xl font-extrabold rounded-2xl border-2 outline-none transition-colors ${
                     digit
                       ? 'border-secondary bg-background text-foreground'
                       : 'border-border bg-muted text-muted-foreground'
@@ -339,9 +339,9 @@ export default function ResetPasswordPage() {
   return (
     <Card className="animate-fade-in">
       <CardHeader className="text-center space-y-2 pb-2">
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-secondary-light border-2 border-secondary-light-border flex items-center justify-center mb-2">
-          <Mail className="w-7 h-7 text-secondary" strokeWidth={2.4} />
-        </div>
+        <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)]">
+            <span className="text-2xl font-black text-primary-foreground">NR</span>
+          </div>
         <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">Resetuj lozinku</h1>
         <p className="text-[13px] font-bold text-muted-foreground">Unesite email i poslaćemo vam kod za resetovanje</p>
       </CardHeader>

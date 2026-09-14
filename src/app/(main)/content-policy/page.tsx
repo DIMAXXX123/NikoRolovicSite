@@ -1,5 +1,9 @@
 import { Card } from '@/components/ui/card';
 
+// §4.8 chip, 44px tall so the footer links are real tap targets.
+const SEE_ALSO_CHIP =
+  'inline-flex h-11 items-center rounded-xl border-2 border-border bg-background px-3.5 text-[12px] font-extrabold uppercase tracking-[0.04em] text-secondary shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow] duration-[80ms] hover:bg-muted active:translate-y-[2px] active:shadow-none';
+
 export const metadata = {
   title: 'Content Moderation Policy — Gimnazija Niko Rolović',
   description: 'Content moderation guidelines for the Gimnazija Niko Rolović student portal.',
@@ -27,7 +31,7 @@ export default function ContentPolicyPage() {
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             The following types of content are strictly prohibited:
           </p>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li><strong className="font-extrabold text-heading">Violence &amp; threats:</strong> Content depicting or promoting violence, threats, or physical harm against any person.</li>
             <li><strong className="font-extrabold text-heading">Hate speech:</strong> Content that attacks, demeans, or discriminates against individuals or groups based on race, ethnicity, nationality, religion, gender, sexual orientation, disability, or any other protected characteristic.</li>
             <li><strong className="font-extrabold text-heading">Bullying &amp; harassment:</strong> Content intended to bully, harass, intimidate, or humiliate any individual.</li>
@@ -45,7 +49,7 @@ export default function ContentPolicyPage() {
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             We use a multi-layered approach to content moderation:
           </p>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li><strong className="font-extrabold text-heading">Pre-publication review:</strong> All photos uploaded to the gallery are reviewed by school administrators before being made visible to other users.</li>
             <li><strong className="font-extrabold text-heading">User reporting:</strong> Every piece of user-generated content includes a report button (flag icon) that allows any user to flag content for administrator review.</li>
             <li><strong className="font-extrabold text-heading">Administrator review:</strong> Reported content is reviewed by school administrators via a dedicated moderation system. Decisions are made within 24 hours of a report.</li>
@@ -81,7 +85,7 @@ export default function ContentPolicyPage() {
           <p className="text-[15px] leading-[1.5] font-bold text-foreground">
             Depending on the severity and frequency of violations, we may take the following actions:
           </p>
-          <ul className="list-disc list-inside text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
+          <ul className="list-disc pl-5 marker:text-muted-foreground text-[15px] leading-[1.5] font-bold text-foreground space-y-1.5">
             <li><strong className="font-extrabold text-heading">Content removal:</strong> The offending content is removed from the App.</li>
             <li><strong className="font-extrabold text-heading">Warning:</strong> The user receives a warning about the violation.</li>
             <li><strong className="font-extrabold text-heading">Temporary suspension:</strong> The user&apos;s ability to upload content is temporarily restricted.</li>
@@ -149,13 +153,12 @@ export default function ContentPolicyPage() {
           </p>
         </Card>
 
-        <div className="mt-6 pt-6 border-t-2 border-border">
-          <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground">
-            See also:{' '}
-            <a href="/privacy" className="font-extrabold text-secondary underline underline-offset-4">Privacy Policy</a>
-            {' · '}
-            <a href="/terms" className="font-extrabold text-secondary underline underline-offset-4">Terms of Use</a>
-          </p>
+        <div className="mt-6 pt-6 border-t-2 border-border space-y-2.5">
+          <p className="text-[12px] leading-none font-extrabold uppercase tracking-[0.04em] text-muted-foreground px-1">See also</p>
+          <div className="flex flex-wrap gap-2">
+            <a href="/privacy" className={SEE_ALSO_CHIP}>Privacy Policy</a>
+            <a href="/terms" className={SEE_ALSO_CHIP}>Terms of Use</a>
+          </div>
         </div>
       </div>
     </div>

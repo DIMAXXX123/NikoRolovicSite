@@ -102,7 +102,7 @@ export function ThemeSwitcher() {
       <button
         type="button"
         onClick={cycleTheme}
-        className="theme-btn w-10 h-10 rounded-xl flex items-center justify-center bg-card border-2 border-border shadow-[0_3px_0_#E5E5E5] select-none"
+        className="theme-btn relative w-10 h-10 rounded-xl flex items-center justify-center bg-card border-2 border-border shadow-[0_3px_0_#E5E5E5] select-none before:absolute before:-inset-0.5 before:content-['']"
         style={{ color: themes[currentIndex].color }}
         title={themes[currentIndex].name}
         aria-label={themes[currentIndex].name}
