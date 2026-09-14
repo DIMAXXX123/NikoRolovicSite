@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { BetaDisclaimer } from '@/components/beta-disclaimer'
 import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
 import { SubjectGrid } from './subject-grid'
@@ -19,7 +18,6 @@ export default async function LecturesPage() {
 
   return (
     <div className="space-y-5 animate-fade-in pb-4">
-      <BetaDisclaimer />
 
       <div className="pt-1">
         <h1 className="text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading">

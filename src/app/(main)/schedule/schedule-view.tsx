@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Clock, Edit3, Check, X } from 'lucide-react'
-import { BetaDisclaimer } from '@/components/beta-disclaimer'
 import {
   DAYS,
   DAY_SHORT,
@@ -128,7 +127,6 @@ export function ScheduleView({ initialClassNum, initialSectionNum }: ScheduleVie
 
   return (
     <div className="space-y-5 animate-fade-in pb-8">
-      <BetaDisclaimer />
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3 pt-1" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '0ms', opacity: 0 }}>

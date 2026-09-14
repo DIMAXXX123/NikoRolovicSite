@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { fetchNewsPage, NEWS_PAGE_SIZE } from '@/lib/news-data'
-import { BetaDisclaimer } from '@/components/beta-disclaimer'
 import { NewsFeed } from './news-feed'
 
 // News changes often and depends on the signed-in reader's likes.
@@ -13,7 +12,6 @@ export default async function NewsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-4 relative">
-      <BetaDisclaimer />
 
       {/* Page header */}
       <div className="pt-1 pb-1">

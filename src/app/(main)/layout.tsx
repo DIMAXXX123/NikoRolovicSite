@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { BottomNav } from '@/components/bottom-nav'
 import { ProfileGuard } from '@/components/profile-guard'
 import { ThemeSwitcher } from '@/components/theme-switcher'
-import { Badge } from '@/components/ui/badge'
 import { getNavConfig, ALL_NAV_ITEMS } from '@/lib/nav-config'
 
 const HEADER_ICON_BUTTON =
@@ -50,9 +49,6 @@ export default function MainLayout({
             </div>
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="font-extrabold text-[15px] text-foreground whitespace-nowrap truncate">Niko Rolović</span>
-              <Badge variant="outline" className="text-[9px] h-5 px-1.5 shrink-0">
-                Beta
-              </Badge>
             </div>
           </button>
           <div className="flex items-center gap-1.5 shrink-0">

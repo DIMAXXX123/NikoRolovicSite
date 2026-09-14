@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react'
 import { Card } from '@/components/ui/card'
 import { MapPin, Clock, GraduationCap, BookOpen, Users, Building2, Globe } from 'lucide-react'
-import { BetaDisclaimer } from '@/components/beta-disclaimer'
 
 const H2_CLASS = 'text-[20px] leading-[1.25] font-extrabold text-heading'
 const BODY_CLASS = 'text-[15px] leading-[1.5] font-bold text-foreground'
@@ -34,7 +33,6 @@ export default function AboutPage() {
 
   return (
     <div className="space-y-4 animate-fade-in pb-8">
-      <BetaDisclaimer />
       {/* Hero */}
       <Card className="items-center text-center p-6 gap-3">
         <div className="w-16 h-16 rounded-2xl bg-primary shadow-[0_4px_0_var(--color-primary-dark)] flex items-center justify-center">

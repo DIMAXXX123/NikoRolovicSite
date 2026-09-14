@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { BetaDisclaimer } from '@/components/beta-disclaimer'
 import { EVENTS_PAGE_SIZE, monthRange, todayISO } from './event-config'
 import { EventsView } from './events-view'
 import type { Event, Profile } from '@/lib/types'
@@ -40,7 +39,6 @@ export default async function EventsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <BetaDisclaimer />
       <EventsView
         profile={profile}
         initialUpcoming={hasMore ? upcomingRows.slice(0, EVENTS_PAGE_SIZE) : upcomingRows}
