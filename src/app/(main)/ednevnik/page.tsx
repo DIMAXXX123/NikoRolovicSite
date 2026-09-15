@@ -3,13 +3,13 @@
 import { useEffect, useState, useCallback } from 'react'
 import { track } from '@/lib/analytics'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronDown, LogOut, ClipboardCopy, ExternalLink, Loader2, BookOpen, AlertCircle, Smartphone, Monitor, Check } from 'lucide-react'
+import { ChevronDown, ClipboardCopy, ExternalLink, Loader2, BookOpen, AlertCircle, Smartphone, Monitor, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { GoalCard, makeDemoData } from './cilj'
+import { makeDemoData } from './cilj'
+import { DnevnikView, type DnevnikAbsence } from './dnevnik-view'
 
 const SUPABASE_URL = 'https://ydcbxqrnmnbceyzqgbui.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkY2J4cXJubW5iY2V5enFnYnVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3Mzg0NjYsImV4cCI6MjA4OTMxNDQ2Nn0.y-lauFU8c9eTP0RJL_zveEF4JE96KiTvJ46FrvYZmfY'
@@ -18,34 +18,6 @@ const STORAGE_KEY = 'ednevnik_data'
 const TOKEN_KEY = 'ednevnik_token'
 const DEMO_TOKEN = 'demo'
 
-// Palette §2: 5 green, 4 blue, 3 gold, 2 orange, 1 red.
-const GRADE_COLORS: Record<number, string> = {
-  5: '#58CC02',
-  4: '#1CB0F6',
-  3: '#FFC800',
-  2: '#FF9600',
-  1: '#FF4B4B',
-}
-
-// Solid grade circle (white text allowed on a solid coloured fill).
-const GRADE_SOLID: Record<number, string> = {
-  5: 'bg-primary text-primary-foreground shadow-[0_2px_0_var(--color-primary-dark)]',
-  4: 'bg-secondary text-[#FFFFFF] shadow-[0_2px_0_var(--color-secondary-dark)]',
-  3: 'bg-gold text-[#4B4B4B] shadow-[0_2px_0_var(--color-gold-dark)]',
-  2: 'bg-orange text-[#FFFFFF] shadow-[0_2px_0_color-mix(in_srgb,#FF9600_80%,black)]',
-  1: 'bg-destructive text-destructive-foreground shadow-[0_2px_0_var(--color-destructive-dark)]',
-}
-
-// Tinted grade badges (§4.3 tints).
-const GRADE_BG: Record<number, string> = {
-  5: 'bg-primary-light text-primary-text border-primary-light-border',
-  4: 'bg-secondary-light text-secondary border-secondary-light-border',
-  3: 'bg-[#FFF4C4] text-[#C79000] border-[#FFE28A]',
-  2: 'bg-[color-mix(in_srgb,#FF9600_18%,white)] text-[color-mix(in_srgb,#FF9600_80%,black)] border-[color-mix(in_srgb,#FF9600_45%,white)]',
-  1: 'bg-[#FFDFE0] text-[#EA2B2B] border-[#FFB3B5]',
-}
-
-const SECTION_LABEL = 'text-[12px] font-extrabold uppercase tracking-[0.04em] text-muted-foreground'
 const H1 = 'text-[26px] font-extrabold leading-[1.2] tracking-[-0.01em] text-heading'
 
 interface EDnevnikGrade {
@@ -64,6 +36,7 @@ interface EDnevnikSubject {
 interface EDnevnikData {
   user: { name: string; class: string } | null
   subjects: EDnevnikSubject[]
+  absences?: DnevnikAbsence[]
   fetchedAt: string
   demo?: boolean
 }
@@ -82,7 +55,6 @@ export default function EDnevnikPage() {
   const [showInstructions, setShowInstructions] = useState(false)
   const [guide, setGuide] = useState<'phone' | 'desktop'>('phone')
   const [copied, setCopied] = useState<'bookmarklet' | 'console' | null>(null)
-  const [expandedSubject, setExpandedSubject] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -159,9 +131,23 @@ export default function EDnevnikPage() {
         }
       }
 
+      // Absences, when the dnevnik returns them (field names vary — be lenient).
+      const rawAbs = (result.absences ?? result.izostanci ?? []) as Array<Record<string, unknown>>
+      const absences: DnevnikAbsence[] = Array.isArray(rawAbs)
+        ? rawAbs.slice(0, 500).map((a) => {
+            const status = String(a.status ?? a.opravdano ?? '')
+            return {
+              date: String(a.date ?? a.datum ?? ''),
+              hours: Math.min(8, Math.max(1, Number(a.hours ?? a.casovi ?? a.sati ?? 1) || 1)),
+              justified: typeof a.justified === 'boolean' ? a.justified : /^(da|opravdan)/i.test(status) ? true : /^(ne|neopravdan)/i.test(status) ? false : null,
+            }
+          }).filter((a) => a.date)
+        : []
+
       const edData: EDnevnikData = {
         user: result.user ? { name: result.user.name || result.user.ime || '', class: result.user.class || result.user.razred || '' } : null,
         subjects,
+        absences,
         fetchedAt: new Date().toISOString(),
       }
 
@@ -175,17 +161,6 @@ export default function EDnevnikPage() {
         // Škola panel: the pupil's own marks (and absences, when the dnevnik
         // returns them) go to school_grades under their profile — aggregated
         // with k-anonymity, never shown per pupil. Failure here is silent.
-        const rawAbs = (result.absences ?? result.izostanci ?? []) as Array<Record<string, unknown>>
-        const absences = Array.isArray(rawAbs)
-          ? rawAbs.slice(0, 500).map((a) => {
-              const status = String(a.status ?? a.opravdano ?? '')
-              return {
-                date: String(a.date ?? a.datum ?? ''),
-                hours: Math.min(8, Math.max(1, Number(a.hours ?? a.casovi ?? a.sati ?? 1) || 1)),
-                justified: typeof a.justified === 'boolean' ? a.justified : /^(da|opravdan)/i.test(status) ? true : /^(ne|neopravdan)/i.test(status) ? false : null,
-              }
-            }).filter((a) => a.date)
-          : []
         void fetch('/api/skola/sync', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -278,194 +253,9 @@ export default function EDnevnikPage() {
   }
 
   // Calculate overall average — use finalGrade when available, fall back to average
-  const overallAvg = data?.subjects
-    ? (() => {
-        const values = data.subjects
-          .map(s => (s.finalGrade && s.finalGrade > 0) ? s.finalGrade : (s.average && s.average > 0) ? s.average : null)
-          .filter((v): v is number => v !== null)
-        if (values.length === 0) return null
-        return values.reduce((a, b) => a + b, 0) / values.length
-      })()
-    : null
-
-  function avgLabel(avg: number): string {
-    if (avg >= 4.5) return 'Odličan'
-    if (avg >= 3.5) return 'Vrlo dobar'
-    if (avg >= 2.5) return 'Dobar'
-    if (avg >= 1.5) return 'Dovoljan'
-    return 'Nedovoljan'
-  }
-
-  const avgPercent = overallAvg ? (overallAvg / 5) * 100 : 0
-  const gradedCount = data?.subjects.filter(s => (s.finalGrade && s.finalGrade > 0) || (s.average && s.average > 0)).length ?? 0
-
-  // ========== CONNECTED: SHOW GRADES ==========
+  // ========== CONNECTED ==========
   if (connected && data) {
-    return (
-      <div className="space-y-5 animate-fade-in pb-8">
-        <div className="flex items-center justify-between gap-2 pt-1">
-          <h1 className={H1}>eDnevnik</h1>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={loading}
-              className="h-11 px-3"
-            >
-              {loading ? <Loader2 className="animate-spin" /> : 'Osveži'}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="h-11 px-3 text-destructive hover:text-destructive"
-            >
-              <LogOut strokeWidth={2.6} /> Odjavi
-            </Button>
-          </div>
-        </div>
-
-        {data.user && (
-          <p className="-mt-3 flex items-center gap-2 text-[13px] font-bold text-muted-foreground">
-            <span>{data.user.name} · {data.user.class}</span>
-            {data.demo && <Badge variant="gold">Demo ocjene</Badge>}
-          </p>
-        )}
-
-        {/* Overall average card (§4.2 + big number + §4.9 progress) */}
-        {overallAvg !== null && (
-          <Card className="gap-3">
-            <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0 space-y-1">
-                <p className={SECTION_LABEL}>Ukupan prosjek</p>
-                <p className="text-[17px] font-extrabold leading-[1.3] text-heading">{avgLabel(overallAvg)}</p>
-                <p className="text-[13px] font-bold text-muted-foreground">{gradedCount}/{data.subjects.length} predmeta</p>
-              </div>
-              <span className="shrink-0 text-[36px] font-black leading-none tabular-nums text-heading">
-                {overallAvg.toFixed(2)}
-              </span>
-            </div>
-            <div className="h-4 w-full overflow-hidden rounded-full bg-border">
-              <div
-                className="h-full rounded-full bg-primary shadow-[inset_0_4px_0_rgba(255,255,255,0.3)] transition-[width] duration-700"
-                style={{ width: `${avgPercent}%` }}
-              />
-            </div>
-          </Card>
-        )}
-
-        <GoalCard subjects={data.subjects} />
-
-        {/* Subject accordion rows (§4.10) */}
-        <div className="space-y-2.5">
-          {data.subjects.map((subject) => {
-            const isExpanded = expandedSubject === subject.name
-
-            return (
-              <div
-                key={subject.name}
-                className={`overflow-hidden rounded-2xl border-2 bg-card transition-colors duration-200 ${
-                  isExpanded
-                    ? 'border-primary-light-border shadow-[0_2px_0_var(--color-primary-light-border)]'
-                    : 'border-border shadow-[0_2px_0_var(--color-border)]'
-                }`}
-              >
-                <button
-                  onClick={() => setExpandedSubject(isExpanded ? null : subject.name)}
-                  className="flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted active:bg-muted"
-                >
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-[17px] font-extrabold leading-[1.3] text-heading">{subject.name}</h3>
-                    {!isExpanded && subject.grades.length > 0 && (
-                      <p className="mt-0.5 text-[13px] font-bold text-muted-foreground">
-                        {subject.grades.length} ocjena{subject.average ? ` · prosjek ${subject.average.toFixed(2)}` : ''}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {/* Final grade circle */}
-                    {subject.finalGrade ? (
-                      <div
-                        className={`flex size-11 items-center justify-center rounded-full text-[17px] font-black tabular-nums ${GRADE_SOLID[subject.finalGrade] || 'bg-muted text-muted-foreground'}`}
-                      >
-                        {subject.finalGrade}
-                      </div>
-                    ) : (
-                      <div className="flex size-11 items-center justify-center rounded-full border-2 border-dashed border-border bg-muted">
-                        <span className="text-[15px] font-extrabold text-disabled">—</span>
-                      </div>
-                    )}
-                    <ChevronDown
-                      strokeWidth={2.6}
-                      className={`size-5 text-disabled transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-                    />
-                  </div>
-                </button>
-
-                {isExpanded && (
-                  <div className="space-y-3 border-t-2 border-border px-4 pb-5 animate-fade-in">
-                    {/* Average bar (§4.9) */}
-                    {subject.average !== null && (
-                      <div className="mt-3">
-                        <div className="mb-1.5 flex items-center justify-between">
-                          <span className={SECTION_LABEL}>Prosjek</span>
-                          <span className="text-[15px] font-extrabold tabular-nums text-heading">
-                            {subject.average.toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="h-4 w-full overflow-hidden rounded-full bg-border">
-                          <div
-                            className="h-full rounded-full shadow-[inset_0_4px_0_rgba(255,255,255,0.3)] transition-[width] duration-700"
-                            style={{
-                              width: `${(subject.average / 5) * 100}%`,
-                              backgroundColor: GRADE_COLORS[Math.round(subject.average)] || '#AFAFAF',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Individual grades */}
-                    {subject.grades.length > 0 && (
-                      <div className="mt-2">
-                        <p className={`${SECTION_LABEL} mb-2.5`}>Ocjene</p>
-                        <div className="flex flex-wrap gap-2">
-                          {subject.grades.map((g, idx) => (
-                            <div
-                              key={idx}
-                              className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border-2 px-3 py-1 text-[13px] font-extrabold ${GRADE_BG[g.grade] || 'border-border bg-background text-muted-foreground'}`}
-                            >
-                              <span className="text-[15px] font-black tabular-nums">{g.grade}</span>
-                              {g.type && (
-                                <span className="text-[11px] font-bold uppercase tracking-[0.04em]">{g.type}</span>
-                              )}
-                              {g.date && (
-                                <span className="text-[11px] font-bold">{g.date}</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {subject.grades.length === 0 && (
-                      <p className="mt-3 text-[13px] font-bold text-muted-foreground">Nema unesenih ocjena</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-
-        {data.fetchedAt && (
-          <p className="text-center text-[13px] font-bold text-muted-foreground">
-            Podatci preuzeti: {new Date(data.fetchedAt).toLocaleString('sr-Latn')}
-          </p>
-        )}
-      </div>
-    )
+    return <DnevnikView data={data} loading={loading} onRefresh={handleRefresh} onLogout={handleLogout} />
   }
 
   // ========== NOT CONNECTED: SETUP FLOW ==========
@@ -483,14 +273,17 @@ export default function EDnevnikPage() {
         <div className="flex size-16 items-center justify-center rounded-full border-2 border-primary-light-border bg-primary-light">
           <BookOpen className="size-8 text-primary-text" strokeWidth={2.4} />
         </div>
-        <h2 className="text-[20px] font-extrabold leading-[1.25] text-heading">Poveži eDnevnik</h2>
-        <p className="text-[13px] font-bold text-muted-foreground">
-          Pregledaj svoje ocjene iz eDnevnika direktno u aplikaciji
-        </p>
+        <h2 className="text-[20px] font-extrabold leading-[1.25] text-heading">Tvoje ocjene, na jednom mjestu</h2>
+        <ul className="w-full text-left space-y-1.5 text-[13px] font-bold text-foreground">
+          <li className="flex items-start gap-2"><Check className="w-4 h-4 text-[#58A700] flex-shrink-0 mt-0.5" strokeWidth={3} /><span>Opšti uspjeh i koliko fali do sljedećeg</span></li>
+          <li className="flex items-start gap-2"><Check className="w-4 h-4 text-[#58A700] flex-shrink-0 mt-0.5" strokeWidth={3} /><span>Cilj: koje predmete podići i koliko petica treba</span></li>
+          <li className="flex items-start gap-2"><Check className="w-4 h-4 text-[#58A700] flex-shrink-0 mt-0.5" strokeWidth={3} /><span>Upozorenje kad ti zaključna visi o jednoj ocjeni</span></li>
+          <li className="flex items-start gap-2"><Check className="w-4 h-4 text-[#58A700] flex-shrink-0 mt-0.5" strokeWidth={3} /><span>Izostanci: opravdani, neopravdani, rok za opravdanje</span></li>
+        </ul>
         <Button className="w-full h-14 mt-1" onClick={handleDemoConnect}>
           <BookOpen strokeWidth={2.6} /> Poveži eDnevnik
         </Button>
-        <p className="text-[12px] font-bold text-muted-foreground">Odmah pokazuje ocjene, prosjek i cilj. Pravi nalog povezuješ tokenom ispod.</p>
+        <p className="text-[12px] font-bold text-muted-foreground">Otvara se odmah. Pravi nalog sa dnevnik.edu.me povezuješ tokenom — ispod.</p>
       </Card>
 
       {/* Instructions toggle */}
@@ -499,11 +292,12 @@ export default function EDnevnikPage() {
         onClick={() => setShowInstructions(!showInstructions)}
         className="w-full"
       >
-        <span>Kako da dobijem token?</span>
+        <span>Imam nalog na dnevnik.edu.me (token)</span>
         <ChevronDown strokeWidth={2.6} className={`transition-transform duration-300 ${showInstructions ? 'rotate-180' : ''}`} />
       </Button>
 
       {showInstructions && (
+        <>
         <Card className="animate-fade-in space-y-4">
           <div className="grid grid-cols-2 gap-2">
             <button type="button" onClick={() => setGuide('phone')} className={`h-11 rounded-xl border-2 text-[12px] font-extrabold uppercase tracking-[0.04em] flex items-center justify-center gap-2 transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none ${guide === 'phone' ? 'border-secondary-light-border bg-secondary-light text-secondary shadow-[0_2px_0_var(--color-secondary-light-border)]' : 'border-border bg-card text-muted-foreground shadow-[0_2px_0_var(--color-border)]'}`}>
@@ -597,8 +391,6 @@ export default function EDnevnikPage() {
             </div>
           )}
         </Card>
-      )}
-
       {/* Token input */}
       <Card>
         <div>
@@ -637,6 +429,9 @@ export default function EDnevnikPage() {
           )}
         </Button>
       </Card>
+        </>
+      )}
+
     </div>
   )
 }

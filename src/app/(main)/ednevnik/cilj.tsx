@@ -46,7 +46,7 @@ function rng(seed: string) {
 }
 
 /** Invented but believable marks for the demo connection. */
-export function makeDemoData(seed: string): { user: { name: string; class: string }; subjects: GoalSubject[]; fetchedAt: string } {
+export function makeDemoData(seed: string): { user: { name: string; class: string }; subjects: GoalSubject[]; absences: { date: string; hours: number; justified: boolean | null }[]; fetchedAt: string } {
   const r = rng(seed)
   const ability = 3.5 + (r() - 0.3) * 0.9
   const subjects: GoalSubject[] = SUBJECTS.map((name, i) => {
@@ -61,7 +61,13 @@ export function makeDemoData(seed: string): { user: { name: string; class: strin
     const average = grades.reduce((s, g) => s + g.grade, 0) / grades.length
     return { name, grades, finalGrade: Math.min(5, Math.max(1, Math.floor(average + 0.5))), average }
   })
-  return { user: { name: 'Demo učenik', class: '2-3' }, subjects, fetchedAt: new Date().toISOString() }
+  // A few absences this month: mostly justified, one or two not, one still pending.
+  const absences = Array.from({ length: 2 + Math.floor(r() * 4) }, (_, i) => ({
+    date: `${String(3 + Math.floor(r() * 12)).padStart(2, '0')}.09.2026.`,
+    hours: 1 + Math.floor(r() * 4),
+    justified: i === 0 ? null : r() < 0.7,
+  }))
+  return { user: { name: 'Demo učenik', class: '2-3' }, subjects, absences, fetchedAt: new Date().toISOString() }
 }
 
 function finalOf(s: GoalSubject): number | null {
