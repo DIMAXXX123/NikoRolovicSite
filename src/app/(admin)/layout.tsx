@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isSubPage = pathname !== '/admin'
   // /direktor and /nastavnik live in this route group but have their own
   // server-side role gate and chrome (src/app/(admin)/direktor/layout.tsx).
-  const isPanel = pathname.startsWith('/direktor') || pathname.startsWith('/nastavnik')
+  const isPanel = pathname.startsWith('/direktor') || pathname.startsWith('/nastavnik') || pathname.startsWith('/skola') || pathname.startsWith('/aplikacija')
 
   async function checkAuth() {
     const { data: { user } } = await supabase.auth.getUser()

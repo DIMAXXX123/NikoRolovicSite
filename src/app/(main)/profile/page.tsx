@@ -60,38 +60,52 @@ const QUICK_ACCESS_PAGES = [
   { id: 'ednevnik', href: '/ednevnik', label: 'eDnevnik', icon: ClipboardList, color: '#CE82FF' },
 ]
 
-const DIREKTOR_PANEL_ROLES = ['direktor', 'admin', 'creator', 'pedagog']
+const SKOLA_PANEL_ROLES = ['direktor', 'pedagog', 'razredni', 'admin', 'creator']
+const APLIKACIJA_PANEL_ROLES = ['direktor', 'admin', 'creator']
 const NASTAVNIK_PANEL_ROLES = ['teacher', 'razredni', 'pedagog', 'direktor', 'admin', 'creator']
 
-/** Prominent entry points to the Direktor / Profesor panels, gated by role. */
+/** Prominent entry points to the Škola / Aplikacija / Profesor panels, gated by role. */
 function PanelRows({ role }: { role: string }) {
-  const showDirektor = DIREKTOR_PANEL_ROLES.includes(role)
+  const showSkola = SKOLA_PANEL_ROLES.includes(role)
+  const showApp = APLIKACIJA_PANEL_ROLES.includes(role)
   const showNastavnik = NASTAVNIK_PANEL_ROLES.includes(role)
-  if (!showDirektor && !showNastavnik) return null
+  if (!showSkola && !showApp && !showNastavnik) return null
   return (
     <div className="space-y-2.5" style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '240ms', opacity: 0 }}>
-      {showDirektor && (
-        <Link href="/direktor" className={`${ROW_CLASS} border-[#FFB3B5] bg-[#FFF3F3] shadow-[0_2px_0_#FFB3B5]`}>
-          <div className={ROW_ICON_CLASS} style={tint('#FF4B4B')}>
+      {showSkola && (
+        <Link href="/skola" className={`${ROW_CLASS} border-[#B8F28B] bg-[#F1FBE8] shadow-[0_2px_0_#B8F28B]`}>
+          <div className={ROW_ICON_CLASS} style={tint('#58CC02')}>
+            <School className="w-5 h-5" strokeWidth={2.4} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={ROW_TITLE_CLASS}>Škola</p>
+            <p className={ROW_SUB_CLASS}>Ocjene, izostanci, odjeljenja, ponašanje</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-[#58A700] flex-shrink-0" strokeWidth={2.6} />
+        </Link>
+      )}
+      {showApp && (
+        <Link href="/aplikacija" className={`${ROW_CLASS} border-[#84D8FF] bg-[#EEF9FF] shadow-[0_2px_0_#84D8FF]`}>
+          <div className={ROW_ICON_CLASS} style={tint('#1CB0F6')}>
             <BarChart3 className="w-5 h-5" strokeWidth={2.4} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className={ROW_TITLE_CLASS}>Panel direktora</p>
-            <p className={ROW_SUB_CLASS}>Zdravlje škole, razredi, AI analiza, izvještaj</p>
+            <p className={ROW_TITLE_CLASS}>Aplikacija</p>
+            <p className={ROW_SUB_CLASS}>Ko i kako koristi aplikaciju</p>
           </div>
-          <ChevronRight className="w-5 h-5 text-[#FF4B4B] flex-shrink-0" strokeWidth={2.6} />
+          <ChevronRight className="w-5 h-5 text-secondary flex-shrink-0" strokeWidth={2.6} />
         </Link>
       )}
       {showNastavnik && (
-        <Link href="/nastavnik" className={`${ROW_CLASS} border-[#84D8FF] bg-[#EEF9FF] shadow-[0_2px_0_#84D8FF]`}>
-          <div className={ROW_ICON_CLASS} style={tint('#1CB0F6')}>
+        <Link href="/nastavnik" className={`${ROW_CLASS} border-[#E1BDFF] bg-[#F9F3FF] shadow-[0_2px_0_#E1BDFF]`}>
+          <div className={ROW_ICON_CLASS} style={tint('#CE82FF')}>
             <BookOpenCheck className="w-5 h-5" strokeWidth={2.4} />
           </div>
           <div className="flex-1 min-w-0">
             <p className={ROW_TITLE_CLASS}>Panel profesora</p>
             <p className={ROW_SUB_CLASS}>Moje lekcije, razredi, domaći</p>
           </div>
-          <ChevronRight className="w-5 h-5 text-secondary flex-shrink-0" strokeWidth={2.6} />
+          <ChevronRight className="w-5 h-5 text-accent-dark flex-shrink-0" strokeWidth={2.6} />
         </Link>
       )}
     </div>

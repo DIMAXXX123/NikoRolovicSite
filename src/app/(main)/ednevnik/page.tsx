@@ -168,6 +168,26 @@ export default function EDnevnikPage() {
       // Sync to the account so the phone/computer pick it up without re-connecting.
       if (session?.user) {
         await supabase.from('ednevnik_tokens').upsert({ user_id: session.user.id, token, updated_at: new Date().toISOString() })
+        // Škola panel: the pupil's own marks (and absences, when the dnevnik
+        // returns them) go to school_grades under their profile — aggregated
+        // with k-anonymity, never shown per pupil. Failure here is silent.
+        const rawAbs = (result.absences ?? result.izostanci ?? []) as Array<Record<string, unknown>>
+        const absences = Array.isArray(rawAbs)
+          ? rawAbs.slice(0, 500).map((a) => {
+              const status = String(a.status ?? a.opravdano ?? '')
+              return {
+                date: String(a.date ?? a.datum ?? ''),
+                hours: Math.min(8, Math.max(1, Number(a.hours ?? a.casovi ?? a.sati ?? 1) || 1)),
+                justified: typeof a.justified === 'boolean' ? a.justified : /^(da|opravdan)/i.test(status) ? true : /^(ne|neopravdan)/i.test(status) ? false : null,
+              }
+            }).filter((a) => a.date)
+          : []
+        void fetch('/api/skola/sync', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ subjects: subjects.map((s) => ({ name: s.name, grades: s.grades.map((g) => ({ grade: g.grade, type: g.type, date: g.date })) })), absences }),
+        }).catch(() => undefined)
       }
     } catch (err) {
       setError((err as { message?: string }).message || 'Greška pri povezivanju sa eDnevnikom')

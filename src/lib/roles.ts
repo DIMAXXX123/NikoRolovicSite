@@ -31,3 +31,12 @@ export const NASTAVNIK_ROLES: AppRole[] = ['teacher', 'razredni', 'pedagog', 'di
 
 /** Roles that may pick another teacher's author in the Profesor panel. */
 export const NASTAVNIK_PICKER_ROLES: AppRole[] = ['pedagog', 'direktor', 'admin', 'creator']
+
+/** Roles allowed into the Škola panel (/skola, /api/skola/stats). */
+export const SKOLA_ROLES: AppRole[] = ['direktor', 'pedagog', 'razredni', 'admin', 'creator']
+
+/** Roles that may add behaviour notes and import grades/absences. */
+export const SKOLA_WRITE_ROLES: AppRole[] = ['direktor', 'pedagog', 'razredni', 'teacher', 'admin', 'creator']
+
+/** Roles allowed into the Aplikacija panel (/aplikacija). */
+export const APLIKACIJA_ROLES: AppRole[] = ['direktor', 'admin', 'creator']

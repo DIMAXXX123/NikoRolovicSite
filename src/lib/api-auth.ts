@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import type { AppRole } from '@/lib/roles'
 
 export type { AppRole }
-export { STAFF_ROLES, ADMIN_ROLES, DIREKTOR_ROLES, STUDENT_LIST_ROLES, NASTAVNIK_ROLES, NASTAVNIK_PICKER_ROLES } from '@/lib/roles'
+export { STAFF_ROLES, ADMIN_ROLES, DIREKTOR_ROLES, STUDENT_LIST_ROLES, NASTAVNIK_ROLES, NASTAVNIK_PICKER_ROLES, SKOLA_ROLES, SKOLA_WRITE_ROLES, APLIKACIJA_ROLES } from '@/lib/roles'
 
 export interface CallerProfile {
   id: string
