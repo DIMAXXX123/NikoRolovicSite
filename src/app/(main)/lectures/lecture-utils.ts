@@ -216,12 +216,41 @@ export function parseQuizData(
   return null
 }
 
+export interface Exercise {
+  task: string
+  hint: string
+  solution: string
+}
+
+/** Reads the `EXERCISES:<json>:EXERCISES` block (practice tasks with solutions); malformed → []. */
+export function parseExercises(content: string): Exercise[] {
+  if (!content) return []
+  const match = content.match(/EXERCISES:([\s\S]*?):EXERCISES/)
+  if (!match) return []
+  try {
+    const raw: unknown = JSON.parse(match[1])
+    if (!Array.isArray(raw)) return []
+    return raw
+      .map((e: unknown) => {
+        if (typeof e !== 'object' || e === null) return null
+        const x = e as { task?: unknown; hint?: unknown; solution?: unknown }
+        const item = { task: str(x.task), hint: str(x.hint), solution: str(x.solution) }
+        return item.task && item.solution ? item : null
+      })
+      .filter((e): e is Exercise => e !== null)
+      .slice(0, 8)
+  } catch {
+    return []
+  }
+}
+
 export function stripMetadata(html: string): string {
   let result = html
   result = result.replace(/\n*(?:<!--\s*)?QUIZ_DATA:[\s\S]*?:QUIZ_DATA(?:\s*-->)?\n*/g, '')
   result = result.replace(/\n*KEY_TERMS:[\s\S]*?:KEY_TERMS\n*/g, '')
   result = result.replace(/\n*SUMMARY:[\s\S]*?:SUMMARY\n*/g, '')
   result = result.replace(/\n*HOMEWORK:[\s\S]*?:HOMEWORK\n*/g, '')
+  result = result.replace(/\n*EXERCISES:[\s\S]*?:EXERCISES\n*/g, '')
   result = result.replace(/\n*LECTURE_DATE:[\s\S]*?:LECTURE_DATE\n*/g, '')
   result = result.replace('<!-- CURRENT -->', '')
   // Fallback cleanup

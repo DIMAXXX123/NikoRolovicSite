@@ -12,6 +12,10 @@
  * Ako zadatak ima domaći (homework_photo_paths / homework_note), fotografije zadataka idu u
  * javni bucket `lecture-images/<lectureId>/domaci-N.jpg`, a u sadržaj lekcije se upisuje blok
  * HOMEWORK:{"text","tasks":[{"label","what","how"}],"images":[url],"due"}:HOMEWORK (poslije SUMMARY, prije QUIZ_DATA).
+ * Svaka lekcija ima i EXERCISES:[{"task","hint","solution"}]:EXERCISES — zadaci za vježbu sa rješenjem
+ * (prije HOMEWORK). Uz istraživanje (WEB_RESEARCH) model predlaže YouTube snimke na našem jeziku;
+ * worker ih PROVJERAVA (oEmbed + jezik naslova/opisa + potvrda modela da je o toj temi) i upisuje
+ * lectures.video_url samo kad prođe provjera.
  *
  * Isti proces obrađuje i red `analysis_jobs` (AI analiza za panel direktora): kad nema lekcija
  * na čekanju, uzima analizu, dobija snimak agregata iz SQL funkcije build_analysis_snapshot(scope)
@@ -171,6 +175,16 @@ ${CONFIG.WEB_RESEARCH ? `ISTRAŽIVANJE PRIJE PISANJA (obavezno, 2–4 pretrage, 
 - Ključni pojmovi: 3–6, samo oni koji se pojavljuju u lekciji.
 - Naslov: kratak, bez broja lekcije i bez naziva predmeta.
 
+ZADACI ZA VJEŽBU (obavezno, "exercises": 3–6 stavki)
+- Zadaci koje učenik rješava sam odmah poslije čitanja, SAMO iz gradiva ove lekcije, od lakšeg ka težem.
+- Prirodne nauke i matematika: računski ili primijenjeni zadaci sa konkretnim brojevima; jezici: primjeri za analizu/prevod; društvene nauke: pitanja za objašnjenje i poređenje.
+- "task" = tekst zadatka (1–3 rečenice), "hint" = kratak nagovještaj kako krenuti, "solution" = potpuno rješenje sa postupkom i krajnjim rezultatom (3–6 rečenica ili koraka).
+${CONFIG.WEB_RESEARCH ? `
+VIDEO SNIMAK (obavezno pokušaj, "videoCandidates")
+- Poslije pisanja pretraži YouTube (2–4 pretrage) za snimak na crnogorskom/srpskom/bosanskom/hrvatskom koji objašnjava BAŠ OVU temu, npr. "${job.topic || job.subject} lekcija youtube", "${job.topic || job.subject} objašnjenje", "${job.topic || job.subject} za gimnaziju".
+- Otvori (WebFetch) 1–3 najbolja kandidata i provjeri po naslovu i opisu da je (a) jezik naš, ne engleski/ruski, i (b) tema ista kao lekcija, ne šira ili susjedna.
+- Vrati do 3 kandidata, najbolji prvi. Koristi ISKLJUČIVO URL-ove koje si vidio u rezultatima pretrage ili na otvorenoj stranici — nikad ne izmišljaj ID snimka. Ako ništa odgovarajuće ne nađeš, vrati prazan niz.
+` : ''}
 ODGOVORI ISKLJUČIVO JEDNIM JSON OBJEKTOM (bez teksta prije i poslije, bez markdown ograda):
 {
   "title": "naslov lekcije",
@@ -179,6 +193,8 @@ ODGOVORI ISKLJUČIVO JEDNIM JSON OBJEKTOM (bez teksta prije i poslije, bez markd
   "summary": "sažetak u 2–3 rečenice",
   "quiz": [{"question": "pitanje", "options": ["A","B","C","D"], "correct": 0, "explanation": "zašto"}],
   "flashcards": [{"front": "pojam", "back": "objašnjenje"}],
+  "exercises": [{"task": "zadatak", "hint": "nagovještaj", "solution": "potpuno rješenje"}],
+  "videoCandidates": [{"url": "https://www.youtube.com/watch?v=...", "title": "naslov snimka", "why": "zašto odgovara"}],
   "homework": ${hasHomework ? '{"text": "šta uraditi i kako, 1–3 rečenice", "tasks": [{"label": "Zadatak 3", "what": "šta se traži", "how": "kratak nagovještaj metode"}], "due": "YYYY-MM-DD" ili null}' : 'null'}
 }`
 }
@@ -297,7 +313,7 @@ function extractJson(text) {
   return JSON.parse(text.slice(start, end + 1))
 }
 
-const safeText = (s) => String(s ?? '').replace(/<[^>]*>/g, '').replace(/</g, '‹').replace(/:SUMMARY|:KEY_TERMS|:QUIZ_DATA|:LECTURE_DATE|:HOMEWORK/g, (m) => m.replace(':', ': ')).trim()
+const safeText = (s) => String(s ?? '').replace(/<[^>]*>/g, '').replace(/</g, '‹').replace(/:SUMMARY|:KEY_TERMS|:QUIZ_DATA|:LECTURE_DATE|:HOMEWORK|:EXERCISES/g, (m) => m.replace(':', ': ')).trim()
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 const dueFromNote = (note) => {
@@ -333,6 +349,12 @@ function buildLectureContent(r, homework = null) {
   const keyTerms = (r.keyTerms || []).map((k) => ({ term: safeText(k.term), definition: safeText(k.definition) })).filter((k) => k.term)
   if (keyTerms.length) content += `KEY_TERMS:${JSON.stringify(keyTerms)}:KEY_TERMS\n\n`
   if (r.summary) content += `SUMMARY:${safeText(r.summary)}:SUMMARY\n\n`
+  const exercises = (Array.isArray(r.exercises) ? r.exercises : [])
+    .filter((e) => e && typeof e === 'object' && e.task)
+    .map((e) => ({ task: safeText(e.task), hint: safeText(e.hint), solution: safeText(e.solution) }))
+    .filter((e) => e.task && e.solution)
+    .slice(0, 8)
+  if (exercises.length) content += `EXERCISES:${JSON.stringify(exercises)}:EXERCISES\n\n`
   if (homework) {
     const hw = {
       text: safeText(homework.text),
@@ -353,6 +375,97 @@ function buildLectureContent(r, homework = null) {
   const flashcards = (r.flashcards || []).filter((f) => f && f.front && f.back).map((f) => ({ question: safeText(f.front), answer: safeText(f.back) }))
   content += `QUIZ_DATA:${JSON.stringify({ questions, flashcards })}:QUIZ_DATA`
   return content
+}
+
+// ───── Video: verify the model's YouTube candidates ───────────────────────────
+const YT_ID = /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|v\/))([A-Za-z0-9_-]{11})/
+const BCS_WORDS = ['lekcija', 'objašnjenje', 'objasnjenje', 'razred', 'gimnazija', 'zadaci', 'zadatak', 'primjer', 'primer', 'učenici', 'ucenici', 'nastava', 'predavanje', 'čas', 'vježba', 'vezba', 'škola', 'skola', 'matematika', 'fizika', 'hemija', 'biologija', 'istorija', 'geografija', 'jezik', 'kako', 'šta', 'sta', 'što', 'sto', 'zašto', 'koji', 'koja', 'koje', 'ovo', 'ove', 'ovaj', 'jedna', 'jedan', 'između', 'izmedju', 'sa', 'za', 'od', 'do', 'na', 'u', 'i', 'je', 'su', 'se', 'da', 'ne', 'ili']
+const EN_WORDS = ['the', 'and', 'with', 'for', 'how', 'what', 'lesson', 'tutorial', 'explained', 'introduction', 'class', 'grade', 'you', 'your', 'this', 'that', 'lecture']
+const RU_WORDS = ['урок', 'объяснение', 'класс', 'задачи', 'как', 'что', 'это', 'для', 'русский', 'математика']
+
+/** Heuristic: does this title/description read as Montenegrin/Serbian/Bosnian/Croatian? */
+function looksBcs(text) {
+  const t = String(text || '').toLowerCase()
+  if (!t.trim()) return { ok: false, score: 0 }
+  if (/[ыъэё]/.test(t)) return { ok: false, score: -5 } // Russian-only letters
+  const words = t.replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(Boolean)
+  const bcs = words.filter((w) => BCS_WORDS.includes(w)).length + (t.match(/[čćžšđ]/g) || []).length * 2 + (t.match(/[ђћџљњ]/g) || []).length * 3
+  const en = words.filter((w) => EN_WORDS.includes(w)).length
+  const ru = words.filter((w) => RU_WORDS.includes(w)).length
+  const score = bcs - en * 2 - ru * 3
+  return { ok: score >= 2 && bcs > en, score }
+}
+
+async function fetchYouTubeMeta(id) {
+  const meta = { id, url: `https://www.youtube.com/watch?v=${id}`, title: '', author: '', description: '', lang: null }
+  const oe = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(meta.url)}&format=json`)
+  if (!oe.ok) throw new Error(`snimak nedostupan (oEmbed ${oe.status})`)
+  const j = await oe.json()
+  meta.title = String(j.title || '')
+  meta.author = String(j.author_name || '')
+  try {
+    const page = await fetch(meta.url, { headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36', 'accept-language': 'sr,hr,bs,en' } })
+    const html = await page.text()
+    const d = html.match(/"shortDescription":"((?:[^"\\]|\\.)*)"/)
+    if (d) meta.description = d[1].replace(/\\n/g, ' ').replace(/\\"/g, '"').replace(/\\u0026/g, '&').slice(0, 600)
+    const l = html.match(/"defaultAudioLanguage":"([a-zA-Z-]+)"/)
+    if (l) meta.lang = l[1].toLowerCase()
+  } catch { /* description is optional */ }
+  return meta
+}
+
+/**
+ * Picks the first candidate that (1) exists on YouTube, (2) reads as our language by
+ * heuristic (defaultAudioLanguage when present, else title+description), and (3) the
+ * model confirms is about this lecture in our language. Returns { url, title } or null.
+ */
+async function pickVerifiedVideo(candidates, lecture) {
+  const list = (Array.isArray(candidates) ? candidates : []).map((c) => (typeof c === 'string' ? { url: c } : c)).filter((c) => c && c.url)
+  for (const c of list.slice(0, 4)) {
+    const m = String(c.url).match(YT_ID)
+    if (!m) { log(`  · video odbijen (nije YouTube URL): ${String(c.url).slice(0, 80)}`); continue }
+    let meta
+    try { meta = await fetchYouTubeMeta(m[1]) } catch (e) { log(`  · video odbijen: ${e.message}`); continue }
+    if (meta.lang && !/^(sr|hr|bs|cnr|me|sh)/.test(meta.lang)) { log(`  · video odbijen (jezik zvuka ${meta.lang}): ${meta.title}`); continue }
+    const lang = looksBcs(meta.title + ' ' + meta.description)
+    if (!meta.lang && !lang.ok) { log(`  · video odbijen (naslov/opis nije na našem jeziku, ${lang.score}): ${meta.title}`); continue }
+    // Ask the model, without tools, whether this video is about this lecture, in our language.
+    const q = `Lekcija: "${lecture.title}" (${lecture.subject}, ${lecture.class_number}. razred gimnazije).
+Sažetak lekcije: ${lecture.summary}
+Ključni pojmovi: ${lecture.keyTerms.join(', ')}
+
+YouTube snimak — naslov: "${meta.title}"; kanal: "${meta.author}"; opis: "${meta.description || '(nema opisa)'}".
+
+Odgovori ISKLJUČIVO JSON objektom: {"language": "bcs" ako je naslov/opis na crnogorskom, srpskom, bosanskom ili hrvatskom, inače "other"; "relevant": true samo ako snimak objašnjava BAŠ tu temu (ne susjednu i ne cijeli predmet); "confidence": 0–1; "reason": "jedna rečenica"}`
+    let verdict = null
+    try {
+      const g = CONFIG.ANTHROPIC_API_KEY ? await generateViaApi(q, [], [], { research: false }) : await generateViaCli(q, [], [], { research: false, maxTurns: 2 })
+      verdict = extractJson(g.text)
+    } catch (e) { log(`  · provjera snimka nije uspjela: ${e.message.slice(0, 120)}`); continue }
+    if (verdict && verdict.language === 'bcs' && verdict.relevant === true && Number(verdict.confidence ?? 1) >= 0.6) {
+      log(`  · video prihvaćen: "${meta.title}" (${meta.author}) — ${verdict.reason || ''}`)
+      return { url: meta.url, title: meta.title, author: meta.author }
+    }
+    log(`  · video odbijen (model: ${verdict ? `${verdict.language}, relevant=${verdict.relevant}, ${verdict.confidence}` : 'nema presude'}): ${meta.title}`)
+  }
+  return null
+}
+
+/** Dedicated search when the main answer brought no usable candidate (research mode only). */
+async function searchVideoCandidates(lecture) {
+  if (!CONFIG.WEB_RESEARCH || CONFIG.ANTHROPIC_API_KEY) return []
+  const q = `Nađi na YouTube-u snimak na crnogorskom, srpskom, bosanskom ili hrvatskom jeziku koji objašnjava temu "${lecture.title}" iz predmeta ${lecture.subject} (${lecture.class_number}. razred gimnazije).
+Sažetak teme: ${lecture.summary}
+Uradi 2–4 WebSearch pretrage (npr. "${lecture.title} lekcija", "${lecture.title} objašnjenje youtube", "${lecture.title} za gimnaziju") i po potrebi otvori stranice snimaka. Biraj samo snimke čiji su naslov i opis na našem jeziku i koji su o BAŠ toj temi. Nikad ne izmišljaj ID snimka — samo URL-ovi koje si vidio.
+ODGOVORI ISKLJUČIVO JSON objektom: {"videoCandidates": [{"url": "https://www.youtube.com/watch?v=...", "title": "naslov", "why": "zašto"}]} (najviše 3, najbolji prvi; prazan niz ako nema).`
+  try {
+    const g = await generateViaCli(q, [], [], { research: true })
+    const r = extractJson(g.text)
+    return Array.isArray(r.videoCandidates) ? r.videoCandidates : []
+  } catch (e) {
+    log(`  · pretraga snimka nije uspjela: ${e.message.slice(0, 120)}`)
+    return []
+  }
 }
 
 // ───── One job ───────────────────────────────────────────────────────────────
@@ -382,6 +495,7 @@ async function processJob(job) {
     { Prefer: 'return=representation' }
   )
   const lectureId = lecture[0].id
+  log(`  · zadaci za vježbu: ${Array.isArray(result.exercises) ? result.exercises.length : 0}`)
 
   // Homework: publish photos to the public bucket, then patch the HOMEWORK block into the stored content.
   if (hasHomework) {
@@ -396,6 +510,25 @@ async function processJob(job) {
       log(`  · domaći objavljen: ${homework.tasks.length} zadataka, ${homework.images.length} slika${homework.due ? ', rok ' + homework.due : ''}${result.homework ? '' : ' (model nije vratio homework — tekst iz uputstva)'}`)
     } else {
       log('  · domaći preskočen: nema teksta, zadataka ni slika')
+    }
+  }
+
+  // Video: model candidates → independent verification → lectures.video_url.
+  if (CONFIG.WEB_RESEARCH) {
+    await setProgress(job.id, 'Tražim video na našem jeziku…')
+    const lectureMeta = {
+      title: safeText(result.title), subject: job.subject, class_number: job.class_number,
+      summary: safeText(result.summary), keyTerms: (result.keyTerms || []).map((k) => safeText(k.term)).filter(Boolean),
+    }
+    let video = null
+    try {
+      video = await pickVerifiedVideo(result.videoCandidates, lectureMeta)
+      if (!video) video = await pickVerifiedVideo(await searchVideoCandidates(lectureMeta), lectureMeta)
+    } catch (e) { log(`  · video: ${e.message.slice(0, 160)}`) }
+    if (video) {
+      await rest('PATCH', `lectures?id=eq.${lectureId}`, { video_url: video.url })
+    } else {
+      log('  · video: nije nađen provjeren snimak na našem jeziku — lekcija bez videa')
     }
   }
 

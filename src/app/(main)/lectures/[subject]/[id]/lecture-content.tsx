@@ -2,6 +2,7 @@ import { CheckCircle2, ImageIcon } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import {
   formatMath,
+  parseExercises,
   parseHomework,
   parseKeyTerms,
   parseSections,
@@ -11,6 +12,7 @@ import {
 } from '../../lecture-utils'
 import { KeyTermsChips } from './lecture-tabs'
 import { HomeworkCard } from './homework-card'
+import { ExercisesCard } from './exercises-card'
 
 // ---------------------------------------------------------------------------
 // Pure helpers shared with the page (server) and the preview page (client).
@@ -179,6 +181,7 @@ export function LectureContent({ content, lectureId }: { content: string; lectur
   const keyTerms = parseKeyTerms(content)
   const summary = parseSummary(content)
   const homework = parseHomework(content)
+  const exercises = parseExercises(content)
   const sections = parseSections(cleanContent)
   const hasSections = sections.some((s) => s.heading)
 
@@ -212,6 +215,8 @@ export function LectureContent({ content, lectureId }: { content: string; lectur
           <SectionBody text={cleanContent} />
         </Card>
       )}
+
+      {exercises.length > 0 && <ExercisesCard lectureId={lectureId} exercises={exercises} />}
 
       {keyTerms.length > 0 && <KeyTermsChips terms={keyTerms} />}
 
