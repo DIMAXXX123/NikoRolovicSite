@@ -8,12 +8,15 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { GoalCard, makeDemoData } from './cilj'
 
 const SUPABASE_URL = 'https://ydcbxqrnmnbceyzqgbui.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkY2J4cXJubW5iY2V5enFnYnVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3Mzg0NjYsImV4cCI6MjA4OTMxNDQ2Nn0.y-lauFU8c9eTP0RJL_zveEF4JE96KiTvJ46FrvYZmfY'
 
 const STORAGE_KEY = 'ednevnik_data'
 const TOKEN_KEY = 'ednevnik_token'
+const DEMO_TOKEN = 'demo'
 
 // Palette §2: 5 green, 4 blue, 3 gold, 2 orange, 1 red.
 const GRADE_COLORS: Record<number, string> = {
@@ -62,6 +65,7 @@ interface EDnevnikData {
   user: { name: string; class: string } | null
   subjects: EDnevnikSubject[]
   fetchedAt: string
+  demo?: boolean
 }
 
 function parseGrade(val: unknown): number {
@@ -196,6 +200,19 @@ export default function EDnevnikPage() {
     }
   }, [supabase])
 
+  /** Demo connection: invented marks, instantly — no MEIS account needed. */
+  async function handleDemoConnect() {
+    track('ednevnik_connect', { meta: { demo: true } })
+    const { data: { user } } = await supabase.auth.getUser()
+    const demo = makeDemoData(user?.id ?? 'demo')
+    const edData: EDnevnikData = { ...demo, demo: true }
+    setData(edData)
+    setConnected(true)
+    setError(null)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(edData))
+    localStorage.setItem(TOKEN_KEY, DEMO_TOKEN)
+  }
+
   function handleConnect() {
     const token = tokenInput.trim()
     if (!token) {
@@ -218,6 +235,7 @@ export default function EDnevnikPage() {
 
   function handleRefresh() {
     const token = localStorage.getItem(TOKEN_KEY)
+    if (token === DEMO_TOKEN) return void handleDemoConnect()
     if (token) fetchEDnevnik(token)
   }
 
@@ -230,7 +248,7 @@ export default function EDnevnikPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || cancelled) return
       const { data } = await supabase.from('ednevnik_tokens').select('token').eq('user_id', user.id).maybeSingle()
-      if (data?.token && !cancelled) fetchEDnevnik(data.token)
+      if (data?.token && data.token !== DEMO_TOKEN && !cancelled) fetchEDnevnik(data.token)
     })()
     return () => { cancelled = true }
   }, [supabase, fetchEDnevnik])
@@ -309,8 +327,9 @@ export default function EDnevnikPage() {
         </div>
 
         {data.user && (
-          <p className="-mt-3 text-[13px] font-bold text-muted-foreground">
-            {data.user.name} · {data.user.class}
+          <p className="-mt-3 flex items-center gap-2 text-[13px] font-bold text-muted-foreground">
+            <span>{data.user.name} · {data.user.class}</span>
+            {data.demo && <Badge variant="gold">Demo ocjene</Badge>}
           </p>
         )}
 
@@ -335,6 +354,8 @@ export default function EDnevnikPage() {
             </div>
           </Card>
         )}
+
+        <GoalCard subjects={data.subjects} />
 
         {/* Subject accordion rows (§4.10) */}
         <div className="space-y-2.5">
@@ -466,6 +487,10 @@ export default function EDnevnikPage() {
         <p className="text-[13px] font-bold text-muted-foreground">
           Pregledaj svoje ocjene iz eDnevnika direktno u aplikaciji
         </p>
+        <Button className="w-full h-14 mt-1" onClick={handleDemoConnect}>
+          <BookOpen strokeWidth={2.6} /> Poveži eDnevnik
+        </Button>
+        <p className="text-[12px] font-bold text-muted-foreground">Odmah pokazuje ocjene, prosjek i cilj. Pravi nalog povezuješ tokenom ispod.</p>
       </Card>
 
       {/* Instructions toggle */}
