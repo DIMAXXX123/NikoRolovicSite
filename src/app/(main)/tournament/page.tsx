@@ -237,17 +237,18 @@ export default function TournamentPage() {
 
       {/* ══════ GRID/SETKA TAB ══════ */}
       {activeTab === 'grid' && (
-        <div className="animate-fade-in overflow-x-auto -mx-4 px-4 pb-4">
+        <div className="animate-fade-in pb-4">
           {/* Column headers */}
-          <div className="min-w-[620px] flex gap-4 mb-3 px-1">
-            <div className="w-[135px] shrink-0 text-center text-[12px] font-extrabold tracking-[0.04em] text-muted-foreground uppercase">1/8 Finala</div>
-            <div className="w-[135px] shrink-0 text-center text-[12px] font-extrabold tracking-[0.04em] text-muted-foreground uppercase">Četvrtfinale</div>
-            <div className="w-[135px] shrink-0 text-center text-[12px] font-extrabold tracking-[0.04em] text-muted-foreground uppercase">Polufinale</div>
-            <div className="w-[135px] shrink-0 text-center text-[12px] font-extrabold tracking-[0.04em] text-[#C79000] uppercase">🏆 Finale</div>
+          {/* Fits a 390px screen: four equal columns, no horizontal scroll */}
+          <div className="grid grid-cols-4 gap-1.5 mb-2">
+            <div className="text-center text-[10px] font-extrabold tracking-[0.04em] text-muted-foreground uppercase">Osmina</div>
+            <div className="text-center text-[10px] font-extrabold tracking-[0.04em] text-muted-foreground uppercase">Četvrt</div>
+            <div className="text-center text-[10px] font-extrabold tracking-[0.04em] text-muted-foreground uppercase">Polu</div>
+            <div className="text-center text-[10px] font-extrabold tracking-[0.04em] text-[#C79000] uppercase">🏆 Finale</div>
           </div>
-          <div className="min-w-[620px] flex gap-4 items-stretch px-1">
+          <div className="grid grid-cols-4 gap-1.5 items-stretch">
             {/* Round 1 - 1/8 Finals (8 matches) */}
-            <div className="flex flex-col gap-2 w-[135px] shrink-0">
+            <div className="flex flex-col gap-1.5 min-w-0">
               <BracketMatch teamA="IV6" teamB="II1" scoreA={48} scoreB={32} />
               <BracketMatch teamA="I3" teamB="—" isBye />
               <BracketMatch teamA="IV3" teamB="I6" scoreA={20} scoreB={0} tech />
@@ -259,7 +260,7 @@ export default function TournamentPage() {
             </div>
 
             {/* Quarter Finals (4 matches, vertically centered between pairs) */}
-            <div className="flex flex-col justify-around w-[135px] shrink-0" style={{ gap: '28px', paddingTop: '18px', paddingBottom: '18px' }}>
+            <div className="flex flex-col justify-around min-w-0" style={{ paddingTop: '22px', paddingBottom: '22px' }}>
               <BracketMatch teamA="IV6" teamB="I3" scoreA={62} scoreB={46} />
               <BracketMatch teamA="IV3" teamB="II3" winner="II3" />
               <BracketMatch teamA="III5" teamB="II4" winner="III5" />
@@ -267,14 +268,14 @@ export default function TournamentPage() {
             </div>
 
             {/* Semi Finals (2 matches) */}
-            <div className="flex flex-col justify-around w-[135px] shrink-0" style={{ paddingTop: '50px', paddingBottom: '50px' }}>
+            <div className="flex flex-col justify-around min-w-0" style={{ paddingTop: '70px', paddingBottom: '70px' }}>
               <BracketMatch teamA="IV6" teamB="II3" winner="II3" />
               <div style={{ height: '40px' }} />
               <BracketMatch teamA="III5" teamB="III2" winner="III5" />
             </div>
 
             {/* Final (1 match) */}
-            <div className="flex flex-col justify-center w-[135px] shrink-0">
+            <div className="flex flex-col justify-center min-w-0">
               <BracketMatch teamA="II3" teamB="III5" isFinal />
             </div>
           </div>
@@ -375,17 +376,17 @@ function BracketMatch({ teamA, teamB, scoreA, scoreB, date, tech, isBye, isFinal
   const bWon = winner ? winner === teamB : (scoreA !== undefined && scoreB !== undefined && scoreB! > scoreA!)
   return (
     <div className={`rounded-xl overflow-hidden border-2 ${isFinal ? 'border-[#FFE28A] bg-[#FFF9E0] shadow-[0_2px_0_#FFE28A]' : 'border-border bg-background shadow-[0_2px_0_var(--color-border)]'}`}>
-      <div className={`flex items-center justify-between px-2.5 py-1.5 border-b-2 border-border ${aWon ? 'bg-primary-light' : ''}`}>
-        <span className={`text-[12px] font-extrabold ${isBye && teamA === '—' ? 'text-disabled' : aWon ? 'text-primary-text' : 'text-foreground'}`}>{teamA}</span>
-        {scoreA !== undefined && <span className={`text-[12px] font-extrabold tabular-nums ${aWon ? 'text-primary-text' : 'text-muted-foreground'}`}>{scoreA}</span>}
+      <div className={`flex items-center justify-between gap-1 px-1.5 py-1 border-b-2 border-border ${aWon ? 'bg-primary-light' : ''}`}>
+        <span className={`text-[11px] font-extrabold truncate ${isBye && teamA === '—' ? 'text-disabled' : aWon ? 'text-primary-text' : 'text-foreground'}`}>{teamA}</span>
+        {scoreA !== undefined && <span className={`text-[11px] font-extrabold tabular-nums ${aWon ? 'text-primary-text' : 'text-muted-foreground'}`}>{scoreA}</span>}
         {winner && scoreA === undefined && aWon && <span className="text-[12px] font-extrabold text-primary-text">✓</span>}
       </div>
-      <div className={`flex items-center justify-between px-2.5 py-1.5 ${bWon ? 'bg-primary-light' : ''}`}>
-        <span className={`text-[12px] font-extrabold ${bWon ? 'text-primary-text' : teamB === '?' ? 'text-disabled' : 'text-foreground'}`}>{teamB}</span>
-        {scoreB !== undefined && <span className={`text-[12px] font-extrabold tabular-nums ${bWon ? 'text-primary-text' : 'text-muted-foreground'}`}>{scoreB}</span>}
+      <div className={`flex items-center justify-between gap-1 px-1.5 py-1 ${bWon ? 'bg-primary-light' : ''}`}>
+        <span className={`text-[11px] font-extrabold truncate ${bWon ? 'text-primary-text' : teamB === '?' ? 'text-disabled' : 'text-foreground'}`}>{teamB}</span>
+        {scoreB !== undefined && <span className={`text-[11px] font-extrabold tabular-nums ${bWon ? 'text-primary-text' : 'text-muted-foreground'}`}>{scoreB}</span>}
         {winner && scoreB === undefined && bWon && <span className="text-[12px] font-extrabold text-primary-text">✓</span>}
         {!played && date && <span className="text-[11px] font-bold text-disabled">{date}</span>}
-        {tech && <span className="text-[10px] font-extrabold uppercase text-destructive">TEH</span>}
+        {tech && <span className="text-[9px] font-extrabold uppercase text-destructive">TEH</span>}
       </div>
     </div>
   )

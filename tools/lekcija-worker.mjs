@@ -641,6 +641,7 @@ async function refreshStatsCache() {
   const t0 = Date.now()
   try {
     await rest('POST', 'rpc/refresh_direktor_stats', {})
+    await rest('POST', 'rpc/refresh_skola_stats', {})
     log(`↻ Keš statistike osvježen (${Math.round((Date.now() - t0) / 1000)} s)`)
   } catch (err) {
     log(`✖ Keš statistike: ${err instanceof Error ? err.message : err}`)

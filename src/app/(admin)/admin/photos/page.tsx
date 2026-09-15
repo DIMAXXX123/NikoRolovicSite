@@ -55,10 +55,14 @@ export default function AdminPhotosPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    await supabase
+    const { error } = await supabase
       .from('photos')
       .update({ status, moderator_id: user.id })
       .eq('id', photoId)
+    if (error) {
+      alert('Nije uspjelo: ' + error.message)
+      return
+    }
 
     setPendingPhotos((prev) => prev.filter((p) => p.id !== photoId))
     if (status === 'approved') loadApproved()

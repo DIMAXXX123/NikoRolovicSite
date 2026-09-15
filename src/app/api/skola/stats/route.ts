@@ -77,7 +77,7 @@ export async function GET(request: Request) {
 
   try {
     const [raw, app] = await Promise.all([
-      rpcJson<Raw>('skola_stats', { p_period: q.period, p_class: q.class, p_section: q.section, p_subject: q.subject }),
+      rpcJson<Raw>('skola_stats_cached', { p_period: q.period, p_class: q.class, p_section: q.section, p_subject: q.subject }),
       rpcJson<DirektorStats>('direktor_stats_cached', { period: appPeriod(q.period), class_number: q.class, section_number: q.section, subject: q.subject }).catch((e) => {
         console.error('skola/stats: app stats unavailable', e)
         return null

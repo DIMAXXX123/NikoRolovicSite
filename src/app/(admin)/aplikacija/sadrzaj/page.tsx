@@ -117,7 +117,7 @@ export default function AplikacijaSadrzaj() {
                 )}
                 <div className="flex gap-4">
                   <Link href="/gallery" className="inline-flex items-center gap-1 min-h-11 text-[12px] font-extrabold uppercase tracking-[0.04em] text-secondary"><Images className="w-4 h-4" strokeWidth={2.6} /> Galerija</Link>
-                  <Link href="/admin/moderation" className="inline-flex items-center gap-1 min-h-11 text-[12px] font-extrabold uppercase tracking-[0.04em] text-secondary">Moderacija</Link>
+                  <Link href="/admin/photos" className="inline-flex items-center gap-1 min-h-11 text-[12px] font-extrabold uppercase tracking-[0.04em] text-secondary">Moderacija</Link>
                 </div>
               </Card>
             </section>

@@ -8,14 +8,19 @@ import { ArrowLeft, ShieldCheck } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { DEMO_AUTO_ADMIN } from '@/components/auto-login'
 
+const ADMIN_AREA_ROLES = ['admin', 'moderator', 'creator', 'direktor']
+const MODERATION_ROLES = ['admin', 'moderator', 'creator', 'direktor', 'pedagog', 'razredni', 'teacher']
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [authorized, setAuthorized] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [role, setRole] = useState('')
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
 
   const isSubPage = pathname !== '/admin'
+  const isModerationPage = pathname.startsWith('/admin/photos') || pathname.startsWith('/admin/lectures')
   // /direktor and /nastavnik live in this route group but have their own
   // server-side role gate and chrome (src/app/(admin)/direktor/layout.tsx).
   const isPanel = pathname.startsWith('/direktor') || pathname.startsWith('/nastavnik') || pathname.startsWith('/skola') || pathname.startsWith('/aplikacija')
@@ -35,11 +40,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .eq('id', user.id)
       .single()
 
-    if (!profile || (profile.role !== 'admin' && profile.role !== 'moderator' && profile.role !== 'creator' && profile.role !== 'direktor')) {
+    // Moderation pages (photos, AI lecture drafts) are open to every staff
+    // role; the rest of the admin area stays admin/moderator/creator/direktor.
+    const allowed = isModerationPage ? MODERATION_ROLES : ADMIN_AREA_ROLES
+    if (!profile || !allowed.includes(profile.role)) {
       router.push('/news')
       return
     }
 
+    setRole(profile.role)
     setAuthorized(true)
     setLoading(false)
   }
@@ -67,13 +76,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Admin Header */}
         <div className="flex items-center justify-between mb-5">
           <Link
-            href={isSubPage ? '/admin' : '/profile'}
+            href={isSubPage && ADMIN_AREA_ROLES.includes(role) ? '/admin' : '/profile'}
             className="inline-flex items-center gap-2 min-h-[44px] text-[15px] font-extrabold text-secondary transition-colors hover:text-secondary-dark group"
           >
             <div className="w-11 h-11 rounded-xl bg-background border-2 border-border shadow-[0_2px_0_var(--color-border)] flex items-center justify-center group-active:translate-y-[2px] group-active:shadow-none transition-[transform,box-shadow] duration-[80ms]">
               <ArrowLeft className="w-5 h-5" strokeWidth={2.6} />
             </div>
-            <span>{isSubPage ? 'Admin panel' : 'Nazad'}</span>
+            <span>{isSubPage && ADMIN_AREA_ROLES.includes(role) ? 'Admin panel' : 'Nazad'}</span>
           </Link>
           <Badge variant="destructive" className="h-7 gap-1.5 px-3">
             <ShieldCheck strokeWidth={2.6} />

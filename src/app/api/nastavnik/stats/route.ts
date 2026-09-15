@@ -39,12 +39,12 @@ export async function GET(request: Request) {
   const author = canPick && parsed.data.author ? parsed.data.author : caller.id
 
   try {
-    let stats = await rpcJson<NastavnikStats>('nastavnik_stats', { author, period })
+    let stats = await rpcJson<NastavnikStats>('nastavnik_stats_cached', { author, period })
 
     const isDemoTeacher = caller.email === DEMO_ACCOUNTS.nastavnik.email
     if (isDemoTeacher && !parsed.data.author && stats.kpi.lectures_total === 0 && stats.authors.length > 0) {
       const top = stats.authors[0]
-      stats = await rpcJson<NastavnikStats>('nastavnik_stats', { author: top.id, period })
+      stats = await rpcJson<NastavnikStats>('nastavnik_stats_cached', { author: top.id, period })
       stats.meta.fallback_author = true
     }
 
