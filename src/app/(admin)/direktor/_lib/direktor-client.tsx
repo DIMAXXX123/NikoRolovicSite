@@ -67,6 +67,12 @@ interface CacheEntry {
 
 const cache = new Map<string, CacheEntry>()
 const inflight = new Map<string, Promise<unknown>>()
+// Every hook instance on the same URL learns about a fresh result (a refetch
+// after a mutation in one component updates the list rendered by another).
+const listeners = new Map<string, Set<(data: unknown) => void>>()
+function notify(url: string, data: unknown) {
+  listeners.get(url)?.forEach((fn) => fn(data))
+}
 
 export class ApiError extends Error {
   status: number
@@ -103,6 +109,7 @@ export async function apiGet<T>(url: string, force = false): Promise<T> {
     }
     if (!res.ok) throw new ApiError(res.status, errorMessage(body, res.status), body)
     cache.set(url, { data: body, ts: Date.now() })
+    notify(url, body)
     return body as T
   })()
   inflight.set(url, p)
@@ -188,6 +195,25 @@ export function useApi<T>(url: string | null): UseApiResult<T> {
   useEffect(() => {
     load(false)
   }, [url, load])
+
+  useEffect(() => {
+    if (!url) return
+    const fn = (d: unknown) => {
+      setData(d as T)
+      setError(null)
+      setLoading(false)
+    }
+    let set = listeners.get(url)
+    if (!set) {
+      set = new Set()
+      listeners.set(url, set)
+    }
+    set.add(fn)
+    return () => {
+      set!.delete(fn)
+      if (set!.size === 0) listeners.delete(url)
+    }
+  }, [url])
 
   const refetch = useCallback(() => load(true), [load])
 

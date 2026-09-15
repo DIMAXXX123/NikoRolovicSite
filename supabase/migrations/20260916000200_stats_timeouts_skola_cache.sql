@@ -38,7 +38,8 @@ grant execute on function public.skola_stats_cached(text, int, int, text, interv
 -- Drop the whole cache after any write (import / sync / notes) so the panel is never stale after entry.
 create or replace function public.skola_cache_invalidate() returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  delete from public.skola_stats_cache;
+  -- safeupdate (preloaded for the API roles) refuses DELETE without WHERE
+  delete from public.skola_stats_cache where computed_at <= now();
   return null;
 end $$;
 drop trigger if exists school_grades_cache_inv on public.school_grades;

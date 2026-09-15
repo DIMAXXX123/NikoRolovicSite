@@ -61,7 +61,7 @@ export async function POST(request: Request) {
 
   lines.forEach((line, i) => {
     const cols = splitLine(line)
-    if (i === 0 && /razred|odjeljenje|predmet|datum/i.test(line)) return // header
+    if (i === 0 && !/^[1-4]$/.test(cols[0] ?? '')) return // header line (first column is not a class number)
     const cls = Number(cols[0])
     const sec = Number(cols[1])
     if (!(cls >= 1 && cls <= 4) || !(sec >= 1 && sec <= 6)) return void errors.push({ line: i + 1, reason: 'razred/odjeljenje' })

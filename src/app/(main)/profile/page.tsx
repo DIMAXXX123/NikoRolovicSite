@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef, type CSSProperties } from 'react'
+import { useEffect, useState, useCallback, type CSSProperties } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LogOut, Shield, Settings, ChevronDown, ChevronUp, Zap, Crown, Newspaper, Calculator, Globe, Bell, Type, Trash2, Info, Navigation, Clock, GraduationCap, School, ChevronRight, Users, UserRound, Gamepad2, Trophy, ClipboardList, Palette, BarChart3, BookOpenCheck } from 'lucide-react'
-import { useThemeCycle } from '@/components/theme-switcher'
+import { LogOut, Shield, ChevronDown, ChevronUp, Crown, Newspaper, Calculator, Info, Clock, GraduationCap, School, ChevronRight, Users, UserRound, Gamepad2, Trophy, ClipboardList, BarChart3, BookOpenCheck } from 'lucide-react'
 import { RoleBadge } from '@/components/role-badge'
 import { GuestLoginButton } from '@/components/guest-login-button'
 import { RoleSwitcher } from '@/components/role-switcher'
@@ -15,7 +14,6 @@ import { AVATARS, AvatarById } from '@/components/avatars'
 import { GpaCalculator } from './calculator'
 import { NavEditor } from './nav-editor'
 import { getNavConfig } from '@/lib/nav-config'
-import { track } from '@/lib/analytics'
 import type { Profile } from '@/lib/types'
 import Link from 'next/link'
 
@@ -147,47 +145,14 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [showStats, setShowStats] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const [perfMode, setPerfMode] = useState(false)
   const [postCount, setPostCount] = useState(0)
   const [showRoleAnim, setShowRoleAnim] = useState(false)
   const [avatarId, setAvatarId] = useState<string | null>(null)
   const [showAvatarPicker, setShowAvatarPicker] = useState(false)
   const [showCalculator, setShowCalculator] = useState(false)
   const [showNavEditor, setShowNavEditor] = useState(false)
-  const [lang, setLang] = useState('sr')
-  const [notifications, setNotifications] = useState(true)
-  const [fontSize, setFontSize] = useState('normal')
-  const theme = useThemeCycle()
-  const [activeUsers, setActiveUsers] = useState<number | null>(null)
-  const [prevActiveUsers, setPrevActiveUsers] = useState<number | null>(null)
-  const [animKey, setAnimKey] = useState(0)
-  const baseCountRef = useRef<number | null>(null)
-  const activeUsersInterval = useRef<ReturnType<typeof setInterval> | null>(null)
   const router = useRouter()
   const supabase = createClient()
-
-  function updateDisplayCount() {
-    if (baseCountRef.current === null) return
-    const newCount = baseCountRef.current
-    setActiveUsers(prev => {
-      if (prev !== null && prev !== newCount) {
-        setPrevActiveUsers(prev)
-        setAnimKey(k => k + 1)
-      }
-      return newCount
-    })
-  }
-
-  async function fetchActiveUsers() {
-    const { count } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-    if (count !== null) {
-      baseCountRef.current = count
-      updateDisplayCount()
-    }
-  }
 
   async function loadProfile() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -242,41 +207,10 @@ export default function ProfilePage() {
     router.refresh()
   }
 
-  function togglePerfMode() {
-    const next = !perfMode
-    setPerfMode(next)
-    localStorage.setItem('perf_mode', String(next))
-    if (next) {
-      document.body.classList.add('perf-mode')
-    } else {
-      document.body.classList.remove('perf-mode')
-    }
-  }
-
-  function cycleAvatar() {
-    const currentIndex = avatarId ? AVATARS.findIndex(a => a.id === avatarId) : -1
-    const nextIndex = (currentIndex + 1) % AVATARS.length
-    const next = AVATARS[nextIndex].id
-    setAvatarId(next)
-    localStorage.setItem('user_avatar', next)
-  }
-
   function selectAvatar(id: string) {
     setAvatarId(id)
     localStorage.setItem('user_avatar', id)
     setShowAvatarPicker(false)
-  }
-
-  function toggleLang() {
-    const next = lang === 'sr' ? 'en' : 'sr'
-    setLang(next)
-    localStorage.setItem('app_lang', next)
-  }
-
-  function toggleNotifications() {
-    const next = !notifications
-    setNotifications(next)
-    localStorage.setItem('app_notifications', String(next))
   }
 
   function applyFontSize(size: string) {
@@ -287,47 +221,13 @@ export default function ProfilePage() {
 
   useEffect(() => {
     loadProfile()
-    fetchActiveUsers()
-    activeUsersInterval.current = setInterval(updateDisplayCount, 1000)
-    const saved = localStorage.getItem('perf_mode')
-    if (saved === 'true') {
-      setPerfMode(true)
-      document.body.classList.add('perf-mode')
-    }
+    // Preferences saved earlier (perf mode, font size) still apply; the toggles moved out of Još.
+    if (localStorage.getItem('perf_mode') === 'true') document.body.classList.add('perf-mode')
     const savedAvatar = localStorage.getItem('user_avatar')
     if (savedAvatar) setAvatarId(savedAvatar)
-    const savedLang = localStorage.getItem('app_lang')
-    if (savedLang) setLang(savedLang)
-    const savedNotif = localStorage.getItem('app_notifications')
-    if (savedNotif !== null) setNotifications(savedNotif === 'true')
-    const savedFont = localStorage.getItem('app_font_size')
-    if (savedFont) setFontSize(savedFont)
-    applyFontSize(savedFont || 'normal')
-    return () => {
-      if (activeUsersInterval.current) clearInterval(activeUsersInterval.current)
-    }
+    applyFontSize(localStorage.getItem('app_font_size') || 'normal')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  function cycleFontSize() {
-    const sizes = ['small', 'normal', 'large'] as const
-    const labels: Record<string, string> = { small: 'Malo', normal: 'Normalno', large: 'Veliko' }
-    const current = sizes.indexOf(fontSize as typeof sizes[number])
-    const next = sizes[(current + 1) % sizes.length]
-    track('font_size_changed', { meta: { size: next } })
-    setFontSize(next)
-    localStorage.setItem('app_font_size', next)
-    applyFontSize(next)
-  }
-
-  function clearCache() {
-    const keys = ['gpa_grades', 'extra_subjects', 'lecture_likes', 'user_avatar', 'app_lang', 'app_notifications', 'app_font_size', 'my_grades_data']
-    keys.forEach(k => localStorage.removeItem(k))
-    setAvatarId(null)
-    setLang('sr')
-    setNotifications(true)
-    setFontSize('normal')
-    applyFontSize('normal')
-  }
 
   const handleRoleAnimDone = useCallback(() => setShowRoleAnim(false), [])
 
@@ -350,7 +250,6 @@ export default function ProfilePage() {
   }
 
   if (!profile) {
-    const guestFontLabels: Record<string, string> = { small: 'Malo', normal: 'Normalno', large: 'Veliko' }
     return (
       <div className="space-y-4 animate-fade-in pb-6">
         <RoleSwitcher />
@@ -384,57 +283,6 @@ export default function ProfilePage() {
 
         <QuickAccessCards />
 
-        <div className="space-y-2.5">
-          <p className="text-[12px] leading-none text-muted-foreground font-extrabold uppercase tracking-[0.04em] px-1">Podešavanja</p>
-          <div className={ROW_CLASS}>
-            <div className={ROW_ICON_CLASS} style={tint('#FF9600')}>
-              <Type className="w-5 h-5" strokeWidth={2.4} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={ROW_TITLE_CLASS}>Veličina fonta</p>
-              <p className={ROW_SUB_CLASS}>Prilagodi tekst</p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={cycleFontSize}
-              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
-            >
-              {guestFontLabels[fontSize]}
-            </Button>
-          </div>
-          <div className={ROW_CLASS}>
-            <div className={ROW_ICON_CLASS} style={tint(theme.color)}>
-              <Palette className="w-5 h-5" strokeWidth={2.4} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={ROW_TITLE_CLASS}>Tema</p>
-              <p className={ROW_SUB_CLASS}>Boja aplikacije</p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={theme.cycle}
-              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
-            >
-              {theme.name}
-            </Button>
-          </div>
-          <div className={ROW_CLASS}>
-            <div className={ROW_ICON_CLASS} style={tint('#CE82FF')}>
-              <Navigation className="w-5 h-5" strokeWidth={2.4} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={ROW_TITLE_CLASS}>Navigacija</p>
-              <p className={ROW_SUB_CLASS}>Uredi donji meni</p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowNavEditor(true)}
-              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
-            >
-              Uredi
-            </Button>
-          </div>
-        </div>
 
         <div className="flex flex-wrap items-center justify-center gap-3 py-2">
           <Link href="/about" className="flex items-center gap-2 px-5 h-11 rounded-xl bg-card border-2 border-border text-secondary text-[12px] font-extrabold uppercase tracking-[0.04em] shadow-[0_2px_0_var(--color-border)] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none">
@@ -447,22 +295,13 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        <p className="text-center text-[13px] font-bold text-muted-foreground pb-4">
-          Napravio: Dmitrij Ivascenko II-1
-        </p>
       </div>
     )
   }
 
   const roleHex = roleColor[profile.role] || roleColor.student
   const isCreator = profile.role === 'creator'
-  const fontLabels: Record<string, string> = { small: 'Malo', normal: 'Normalno', large: 'Veliko' }
 
-  const switchClass = 'h-11 px-1 flex items-center justify-center flex-shrink-0 rounded-xl outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
-  const switchTrack = (on: boolean) =>
-    `relative block w-12 h-7 rounded-full border-2 transition-colors duration-200 ${on ? 'bg-primary border-primary' : 'bg-border border-border'}`
-  const switchKnob = (on: boolean) =>
-    `absolute top-[2px] left-[2px] w-5 h-5 rounded-full bg-background shadow-[0_1px_0_var(--color-border-strong)] transition-transform duration-200 ${on ? 'translate-x-5' : ''}`
 
   return (
     <div className="space-y-4 animate-fade-in pb-6">
@@ -628,165 +467,6 @@ export default function ProfilePage() {
       {/* Quick-access cards for pages not in nav */}
       <QuickAccessCards />
 
-      {/* Settings */}
-      <button
-        onClick={() => setShowSettings(!showSettings)}
-        className={ROW_CLASS}
-        style={{ animation: 'fadeInUp 0.4s ease-out forwards', animationDelay: '360ms', opacity: 0 }}
-      >
-        <div className={`${ROW_ICON_CLASS} bg-muted text-muted-foreground`}>
-          <Settings className="w-5 h-5" strokeWidth={2.4} />
-        </div>
-        <span className={ROW_TITLE_CLASS}>Podešavanja</span>
-        <ChevronDown className={`w-5 h-5 text-disabled flex-shrink-0 transition-transform duration-300 ${showSettings ? 'rotate-180' : ''}`} strokeWidth={2.6} />
-      </button>
-
-      {showSettings && (
-        <div className="animate-expand space-y-2.5">
-          {/* Performance mode */}
-          <div className={ROW_CLASS}>
-            <div className={ROW_ICON_CLASS} style={tint('#FFC800')}>
-              <Zap className="w-5 h-5" strokeWidth={2.4} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={ROW_TITLE_CLASS}>Performance Mode</p>
-              <p className={ROW_SUB_CLASS}>Isključi animacije</p>
-            </div>
-            <button
-              onClick={togglePerfMode}
-              className={switchClass}
-              aria-pressed={perfMode}
-            >
-              <span className={switchTrack(perfMode)}>
-                <span className={switchKnob(perfMode)} />
-              </span>
-            </button>
-          </div>
-
-          {/* Language */}
-          <div className={ROW_CLASS}>
-            <div className={ROW_ICON_CLASS} style={tint('#1CB0F6')}>
-              <Globe className="w-5 h-5" strokeWidth={2.4} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={ROW_TITLE_CLASS}>Jezik</p>
-              <p className={ROW_SUB_CLASS}>Language preference</p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={toggleLang}
-              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
-            >
-              {lang === 'sr' ? 'Srpski' : 'English'}
-            </Button>
-          </div>
-
-          {/* Notifications */}
-          <div className={ROW_CLASS}>
-            <div className={ROW_ICON_CLASS} style={tint('#58CC02')}>
-              <Bell className="w-5 h-5" strokeWidth={2.4} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={ROW_TITLE_CLASS}>Obavještenja</p>
-              <p className={ROW_SUB_CLASS}>Push notifikacije</p>
-            </div>
-            <button
-              onClick={toggleNotifications}
-              className={switchClass}
-              aria-pressed={notifications}
-            >
-              <span className={switchTrack(notifications)}>
-                <span className={switchKnob(notifications)} />
-              </span>
-            </button>
-          </div>
-
-          {/* Font size */}
-          <div className={ROW_CLASS}>
-            <div className={ROW_ICON_CLASS} style={tint('#FF9600')}>
-              <Type className="w-5 h-5" strokeWidth={2.4} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={ROW_TITLE_CLASS}>Veličina fonta</p>
-              <p className={ROW_SUB_CLASS}>Prilagodi tekst</p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={cycleFontSize}
-              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
-            >
-              {fontLabels[fontSize]}
-            </Button>
-          </div>
-
-          {/* Navigation editor */}
-          <div className={ROW_CLASS}>
-            <div className={ROW_ICON_CLASS} style={tint(theme.color)}>
-              <Palette className="w-5 h-5" strokeWidth={2.4} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={ROW_TITLE_CLASS}>Tema</p>
-              <p className={ROW_SUB_CLASS}>Boja aplikacije</p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={theme.cycle}
-              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
-            >
-              {theme.name}
-            </Button>
-          </div>
-          <div className={ROW_CLASS}>
-            <div className={ROW_ICON_CLASS} style={tint('#CE82FF')}>
-              <Navigation className="w-5 h-5" strokeWidth={2.4} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={ROW_TITLE_CLASS}>Navigacija</p>
-              <p className={ROW_SUB_CLASS}>Uredi donji meni</p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowNavEditor(true)}
-              className="h-11 px-4 text-[12px] shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
-            >
-              Uredi
-            </Button>
-          </div>
-
-          {/* Clear cache */}
-          <div className={ROW_CLASS}>
-            <div className={ROW_ICON_CLASS} style={tint('#FF4B4B')}>
-              <Trash2 className="w-5 h-5" strokeWidth={2.4} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={ROW_TITLE_CLASS}>Obriši keš</p>
-              <p className={ROW_SUB_CLASS}>Resetuj lokalne podatke</p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={clearCache}
-              className="h-11 px-4 text-[12px] text-destructive shadow-[0_2px_0_var(--color-border)] active:translate-y-[2px]"
-            >
-              Obriši
-            </Button>
-          </div>
-
-          {/* About */}
-          <Card className="gap-1">
-            <div className="flex items-center gap-2 mb-0.5">
-              <Info className="w-4 h-4 text-muted-foreground" strokeWidth={2.4} />
-              <p className="text-[17px] leading-[1.3] font-extrabold text-heading">O aplikaciji</p>
-            </div>
-            <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground">
-              Niko Rolović Portal v1.0.0
-            </p>
-            <p className="text-[13px] leading-[1.4] font-bold text-muted-foreground">
-              Gimnazija &quot;Niko Rolović&quot; · Bar, Crna Gora
-            </p>
-          </Card>
-        </div>
-      )}
-
       {/* Admin panel button */}
       {(profile.role === 'admin' || profile.role === 'moderator' || profile.role === 'creator') && (
         <button
@@ -811,44 +491,6 @@ export default function ProfilePage() {
         Odjavi se
       </Button>
 
-      {/* Active users counter */}
-      {activeUsers !== null && (
-        <div className="flex items-center justify-center py-3">
-          <div className="flex items-center gap-2.5 px-5 h-11 rounded-2xl bg-primary-light border-2 border-primary-light-border">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
-            </span>
-            <span className="text-[13px] text-primary-text font-bold">
-              Registrovanih učenika:{' '}
-              <span className="inline-flex overflow-hidden h-5 align-middle" key={animKey}>
-                <span className="inline-block animate-count-up font-extrabold tabular-nums">
-                  {activeUsers}
-                </span>
-              </span>
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Contact & suggestions */}
-      <div className="flex items-center justify-center gap-3 py-2">
-        <a href="https://t.me/Dima_ivasch" target="_blank" rel="noopener noreferrer"
-          className="flex items-center gap-2 px-5 h-11 rounded-xl bg-secondary-light border-2 border-secondary-light-border text-secondary text-[12px] font-extrabold uppercase tracking-[0.04em] shadow-[0_2px_0_var(--color-secondary-light-border)] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-          Predlozi
-        </a>
-        <a href="viber://chat?number=%2B38268499621"
-          className="flex items-center gap-2 px-5 h-11 rounded-xl bg-[#F3E3FF] border-2 border-[#E1BDFF] text-accent-dark text-[12px] font-extrabold uppercase tracking-[0.04em] shadow-[0_2px_0_#E1BDFF] transition-[transform,box-shadow] duration-[80ms] active:translate-y-[2px] active:shadow-none">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.398.002C9.473.028 5.331.344 3.014 2.467 1.294 4.177.474 6.753.345 9.98.217 13.208.074 19.174 5.58 20.77l.01.006.006.004c.068.039.14.085.22.137v2.87s-.044.858.533 1.031c.637.188.953-.385 1.529-.997l1.252-1.418c3.34.288 5.882-.346 6.166-.445.655-.228 4.366-.687 4.973-5.623.623-5.076-.304-8.283-2.91-10.467C15.645.456 13.167-.022 11.398.002zm.286 1.727c1.524-.03 3.647.36 5.26 1.7 2.177 1.82 2.985 4.593 2.442 8.918-.488 3.906-3.272 4.265-3.81 4.453-.236.082-2.394.613-5.201.441 0 0-2.06 2.479-2.7 3.129-.105.107-.225.148-.306.128-.114-.028-.146-.161-.144-.354.002-.134.01-3.455.01-3.455C3.2 15.643 2.157 13.204 2.267 10.047c.095-2.731.726-4.89 2.176-6.34 1.836-1.767 5.282-2.02 7.24-1.978z"/></svg>
-          Viber
-        </a>
-      </div>
-
-      {/* Creator credit */}
-      <p className="text-center text-[13px] font-bold text-muted-foreground pb-4">
-        Napravio: Dmitrij Ivascenko II-1
-      </p>
     </div>
   )
 }
