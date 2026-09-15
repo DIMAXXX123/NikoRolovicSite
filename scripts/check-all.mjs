@@ -46,6 +46,8 @@ async function session(role) {
   return { ctx, page, errors, api, roleText: text, close: () => ctx.close() }
 }
 const go = async (page, path, ms = 1500) => { await page.goto(BASE + path, { waitUntil: 'networkidle0' }); await sleep(ms); return page.evaluate(() => document.body.innerText) }
+/** Polls innerText until `re` matches (client-rendered pages need a moment after networkidle). */
+const waitText = async (page, re, tries = 10) => { let t = ''; for (let i = 0; i < tries; i++) { t = await page.evaluate(() => document.body.innerText); if (re.test(t)) return t; await sleep(800) } return t }
 const clickText = async (page, sel, re) => { for (const el of await page.$$(sel)) { const t = await page.evaluate((e) => (e.getAttribute('aria-label') || '') + ' ' + e.innerText, el); if (re.test(t)) { await el.click(); return true } } return false }
 const overflow = (page) => page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)
 const noErrors = (s) => s.errors.filter((e) => !/Failed to fetch|AbortError|Load failed/i.test(e))
@@ -130,8 +132,9 @@ const noErrors = (s) => s.errors.filter((e) => !/Failed to fetch|AbortError|Load
   await check('ucenik', '/ednevnik subject expands + plan', async () => { const btns = await s.page.$$('section button'); for (const b of btns) { const tt = await s.page.evaluate((e) => e.innerText, b); if (/Ø/.test(tt)) { await b.click(); break } } await sleep(500); const tt = await s.page.evaluate(() => document.body.innerText); return [/Ocjene po redu/i.test(tt), ''] })
   await check('ucenik', '/ednevnik logout returns to setup', async () => { const b = await s.page.$('button[aria-label="Odjavi eDnevnik"]'); if (!b) return [false, 'no logout button']; await b.click(); await sleep(1500); const tt = await s.page.evaluate(() => document.body.innerText); return [/Tvoje ocjene, na jednom mjestu/.test(tt), ''] })
 
-  t = await go(s.page, '/profile', 2000)
-  await check('ucenik', '/profile: role switcher + rows', () => [/Isprobaj kao|ISPROBAJ KAO/i.test(t) && /Učenik/.test(t) && /Profesor/.test(t) && /Direktor/.test(t) && /Kalkulator/.test(t) && !/Podešavanja|Registrovanih|Napravio/.test(t), ''])
+  t = await go(s.page, '/profile', 1000)
+  t = await waitText(s.page, /ISPROBAJ KAO|Isprobaj kao/)
+  await check('ucenik', '/profile: role switcher + rows', () => [/Isprobaj kao/i.test(t) && /Učenik/i.test(t) && /Profesor/i.test(t) && /Direktor/i.test(t) && /Kalkulator/i.test(t) && !/Podešavanja|Registrovanih|Napravio/.test(t), t.slice(0, 400).replace(/\n/g, ' ')])
   await check('ucenik', '/profile: no panel rows for a pupil', () => [!/Panel profesora|Aplikacija\n/.test(t), ''])
   await check('ucenik', '/profile: calculator opens', async () => { await clickText(s.page, 'button', /kalkulator/i); await sleep(600); const tt = await s.page.evaluate(() => document.body.innerText); return [/prosjek|Prosjek|Kalkulator/i.test(tt) && tt !== t, ''] })
   await check('ucenik', 'notification bell opens', async () => { await go(s.page, '/news', 1500); const ok = await clickText(s.page, 'button', /obavje|notif|zvono/i); await sleep(600); const tt = await s.page.evaluate(() => document.body.innerText); return [ok && /Obavještenja|obavještenj/i.test(tt), ''] })
@@ -171,22 +174,27 @@ const noErrors = (s) => s.errors.filter((e) => !/Failed to fetch|AbortError|Load
     const tt = await go(s.page, path, 3500)
     await check('direktor', `${path} loads with numbers`, async () => [re.test(tt) && /\d/.test(tt) && !/Ova stranica se nije učitala|Failed/i.test(tt) && !(await overflow(s.page)), tt.slice(0, 100).replace(/\n/g, ' ')])
   }
-  await check('direktor', '/skola period switch reloads numbers', async () => { await go(s.page, '/skola', 3000); const a = await s.page.evaluate(() => document.body.innerText); await clickText(s.page, '[role=tab]', /prošla godina/i); await sleep(3500); const b = await s.page.evaluate(() => document.body.innerText); return [a !== b && /Prosjek škole/.test(b), ''] })
+  await check('direktor', '/skola period switch reloads numbers', async () => { await go(s.page, '/skola', 3000); const a = await s.page.evaluate(() => document.body.innerText); await clickText(s.page, '[role=tab]', /prošla godina/i); await sleep(3500); const b = await s.page.evaluate(() => document.body.innerText); await clickText(s.page, '[role=tab]', /škol\. godina/i); await sleep(1500); return [a !== b && /Prosjek škole/.test(b), ''] })
   await check('direktor', '/skola/ponasanje add + delete note', async () => {
+    await s.page.evaluate(() => localStorage.setItem('skola_period', 'year')) // a note written today is invisible under "Prošla godina"
     await go(s.page, '/skola/ponasanje', 3000)
     await clickText(s.page, 'button', /nova zabilješka/i); await sleep(400)
     await s.page.type('textarea', 'E2E test zabilješka — obriši me')
-    await clickText(s.page, 'button', /sačuvaj/i); await sleep(3500)
-    let tt = await s.page.evaluate(() => document.body.innerText)
+    await clickText(s.page, 'button', /sačuvaj/i)
+    let tt = await waitText(s.page, /E2E test zabilješka/, 12)
     const added = /E2E test zabilješka/.test(tt)
     // delete it (trash button on the first card)
-    const del = await s.page.$('button[aria-label="Obriši"]'); if (del) { await del.click(); await sleep(3000) }
-    tt = await s.page.evaluate(() => document.body.innerText)
-    return [added && !/E2E test zabilješka/.test(tt), added ? 'added' : 'not added']
+    // delete ONLY the E2E note (the trash button inside the card that carries our text)
+    const delOk = await s.page.evaluate(() => { const card = [...document.querySelectorAll('button[aria-label="Obriši"]')].map((b) => b.closest('[data-slot="card"]')).find((c) => c && /E2E test zabilješka/.test(c.innerText)); const b = card?.querySelector('button[aria-label="Obriši"]'); if (b) { b.click(); return true } return false })
+    if (!delOk) return [false, 'E2E note not found for deletion (not added?)']
+    for (let i = 0; i < 12; i++) { await sleep(800); tt = await s.page.evaluate(() => document.body.innerText); if (!/E2E test zabilješka/.test(tt)) break }
+    const statusLine = (tt.match(/Sačuvano[^\n]*|Nemaš[^\n]*|Nije uspjelo[^\n]*/) || [''])[0]
+    return [added && !/E2E test zabilješka/.test(tt), `${added ? 'added' : 'not added'} | ${statusLine} | notes api: ${s.api.filter((a) => /notes/.test(a.url)).map((a) => a.status).join(',')}`]
   })
   await check('direktor', '/skola/unos import 2 rows', async () => {
     await go(s.page, '/skola/unos', 3000)
-    await s.page.type('textarea', '1;1;E2E Predmet;4;14.09.2026;pismeni;E2E Uc\n1;1;E2E Predmet;5;14.09.2026;usmeni;E2E Uc')
+    const tag = `t${Date.now()}` // unique grade type → never a duplicate of an earlier run
+    await s.page.type('textarea', `1;1;E2E Predmet;4;14.09.2026;${tag};E2E Uc\n1;1;E2E Predmet;5;14.09.2026;${tag};E2E Uc`)
     await clickText(s.page, 'button', /uvezi/i); await sleep(3500)
     const tt = await s.page.evaluate(() => document.body.innerText)
     return [/Uvezeno 2/.test(tt), (tt.match(/Uvezeno[^\n]*/) || [''])[0]]
